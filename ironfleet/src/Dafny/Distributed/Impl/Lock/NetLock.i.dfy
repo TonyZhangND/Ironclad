@@ -26,18 +26,18 @@ ghost function AstractifyNetEventToLockIo(evt:NetEvent) : LockIo
 }
 
 ghost function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<LockIo>
-    ensures |AbstractifyRawLogToIos(rawlog)| == |rawlog|;
+    ensures |AbstractifyRawLogToIos(rawlog)| == |rawlog|
     ensures forall i {:trigger AstractifyNetEventToLockIo(rawlog[i])} 
                      {:trigger AbstractifyRawLogToIos(rawlog)[i]} :: 
-                0 <= i < |rawlog| ==> AbstractifyRawLogToIos(rawlog)[i] == AstractifyNetEventToLockIo(rawlog[i]);
+                0 <= i < |rawlog| ==> AbstractifyRawLogToIos(rawlog)[i] == AstractifyNetEventToLockIo(rawlog[i])
 {
     if (rawlog==[]) then [] else [AstractifyNetEventToLockIo(rawlog[0])] + AbstractifyRawLogToIos(rawlog[1..])
 }
 
 lemma lemma_EstablishAbstractifyRawLogToIos(rawlog:seq<NetEvent>, ios:seq<LockIo>)
-    requires |rawlog| == |ios|;
-    requires forall i :: 0<=i<|rawlog| ==> ios[i] == AstractifyNetEventToLockIo(rawlog[i]);
-    ensures AbstractifyRawLogToIos(rawlog) == ios;
+    requires |rawlog| == |ios|
+    requires forall i :: 0<=i<|rawlog| ==> ios[i] == AstractifyNetEventToLockIo(rawlog[i])
+    ensures AbstractifyRawLogToIos(rawlog) == ios
 {
     reveal_AbstractifyRawLogToIos();
 }
@@ -56,22 +56,22 @@ datatype ReceiveResult = RRFail() | RRTimeout() | RRPacket(cpacket:CLockPacket)
 
 method Receive(netClient:NetClient, localAddr:EndPoint) 
     returns (rr:ReceiveResult, ghost netEvent:NetEvent)
-    requires NetClientIsValid(netClient);
-    requires EndPoint(netClient.MyPublicKey()) == localAddr;
-    modifies NetClientRepr(netClient);
-    ensures netClient.env == old(netClient.env);
-    ensures netClient.MyPublicKey() == old(netClient.MyPublicKey());
-    ensures NetClientOk(netClient) <==> !rr.RRFail?;
-    ensures old(NetClientRepr(netClient)) == NetClientRepr(netClient);
-    ensures !rr.RRFail? ==>
+    requires NetClientIsValid(netClient)
+    requires EndPoint(netClient.MyPublicKey()) == localAddr
+    modifies NetClientRepr(netClient)
+    ensures netClient.env == old(netClient.env)
+    ensures netClient.MyPublicKey() == old(netClient.MyPublicKey())
+    ensures NetClientOk(netClient) <==> !rr.RRFail?
+    ensures old(NetClientRepr(netClient)) == NetClientRepr(netClient)
+    ensures !rr.RRFail? ==> (
            netClient.IsOpen()
-        && old(netClient.env.net.history()) + [netEvent] == netClient.env.net.history();
-    ensures rr.RRTimeout? ==> netEvent.LIoOpTimeoutReceive?;
-    ensures rr.RRPacket? ==>
+        && old(netClient.env.net.history()) + [netEvent] == netClient.env.net.history())
+    ensures rr.RRTimeout? ==> netEvent.LIoOpTimeoutReceive?
+    ensures rr.RRPacket? ==> (
            netEvent.LIoOpReceive?
         && EndPointIsValidPublicKey(rr.cpacket.src)
         && AbstractifyCLockPacket(rr.cpacket) == AbstractifyNetPacket(netEvent.r)
-        && rr.cpacket.msg == DemarshallData(netEvent.r.msg)
+        && rr.cpacket.msg == DemarshallData(netEvent.r.msg))
 {
     var timeout := 0;
     ghost var old_net_history := netClient.env.net.history();
@@ -111,20 +111,20 @@ ghost predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<C
 }
 
 method SendPacket(netClient:NetClient, opt_packet:Option<CLockPacket>, ghost localAddr:EndPoint) returns (ok:bool, ghost netEventLog:seq<NetEvent>)
-    requires NetClientIsValid(netClient);
-    requires EndPoint(netClient.MyPublicKey()) == localAddr;
-    requires OptionCLockPacketValid(opt_packet);
-    requires opt_packet.Some? ==> opt_packet.v.src == localAddr;
-    modifies NetClientRepr(netClient);
-    ensures old(NetClientRepr(netClient)) == NetClientRepr(netClient);
-    ensures netClient.env == old(netClient.env);
-    ensures netClient.MyPublicKey() == old(netClient.MyPublicKey());
-    ensures NetClientOk(netClient) <==> ok;
+    requires NetClientIsValid(netClient)
+    requires EndPoint(netClient.MyPublicKey()) == localAddr
+    requires OptionCLockPacketValid(opt_packet)
+    requires opt_packet.Some? ==> opt_packet.v.src == localAddr
+    modifies NetClientRepr(netClient)
+    ensures old(NetClientRepr(netClient)) == NetClientRepr(netClient)
+    ensures netClient.env == old(netClient.env)
+    ensures netClient.MyPublicKey() == old(netClient.MyPublicKey())
+    ensures NetClientOk(netClient) <==> ok
     ensures ok ==> ( NetClientIsValid(netClient)
                   && netClient.IsOpen()
                   && old(netClient.env.net.history()) + netEventLog == netClient.env.net.history()
                   && OnlySentMarshallableData(netEventLog)
-                  && SendLogReflectsPacket(netEventLog, opt_packet));
+                  && SendLogReflectsPacket(netEventLog, opt_packet))
 {
     netEventLog := [];
     ok := true;

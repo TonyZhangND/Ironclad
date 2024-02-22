@@ -78,8 +78,8 @@ method GetHostIndex(host:EndPoint, hosts:seq<EndPoint>) returns (found:bool, ind
   var i:uint64 := 0;
 
   while i < (|hosts| as uint64)
-    invariant i as int <= |hosts|;
-    invariant forall j :: 0 <= j < i ==> hosts[j] != host;
+    invariant i as int <= |hosts|
+    invariant forall j :: 0 <= j < i ==> hosts[j] != host
   {
     if host == hosts[i] {
       found := true;

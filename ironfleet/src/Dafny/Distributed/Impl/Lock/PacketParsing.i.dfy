@@ -34,19 +34,19 @@ function CMessageGrammar() : G
 ////////////////////////////////////////////////////////////////////
 
 function ParseCMessageTransfer(val:V) : CMessage
-    requires ValInGrammar(val, CMessageTransferGrammar());
+    requires ValInGrammar(val, CMessageTransferGrammar())
 {
     CTransfer(val.u)
 }
 
 function ParseCMessageLocked(val:V) : CMessage
-    requires ValInGrammar(val, CMessageLockedGrammar());
+    requires ValInGrammar(val, CMessageLockedGrammar())
 {
     CLocked(val.u)
 }
 
 function ParseCMessage(val:V) : CMessage
-    requires ValInGrammar(val, CMessageGrammar());
+    requires ValInGrammar(val, CMessageGrammar())
 {
     if val.c == 0 then
         ParseCMessageTransfer(val.val)
@@ -64,8 +64,8 @@ ghost function DemarshallData(data:seq<byte>) : CMessage
 }
 
 method DemarshallDataMethod(data:array<byte>) returns (msg:CMessage)
-    requires data.Length < 0x1_0000_0000_0000_0000;
-    ensures  msg == DemarshallData(data[..]);
+    requires data.Length < 0x1_0000_0000_0000_0000
+    ensures  msg == DemarshallData(data[..])
 //    ensures  if Demarshallable(data[..], msg_grammar) then 
 //                msg == PaxosDemarshallData(data[..]) 
 //             else msg.CMessage_Invalid?;
@@ -88,31 +88,31 @@ method DemarshallDataMethod(data:array<byte>) returns (msg:CMessage)
 ////////////////////////////////////////////////////////////////////
 
 method MarshallMessageTransfer(c:CMessage) returns (val:V)
-    requires c.CTransfer?;
-    ensures  ValInGrammar(val, CMessageTransferGrammar());
-    ensures  ValidVal(val);
-    ensures  ParseCMessageTransfer(val) == c;
-    ensures  SizeOfV(val) < MaxPacketSize();
+    requires c.CTransfer?
+    ensures  ValInGrammar(val, CMessageTransferGrammar())
+    ensures  ValidVal(val)
+    ensures  ParseCMessageTransfer(val) == c
+    ensures  SizeOfV(val) < MaxPacketSize()
 {
     val := VUint64(c.transfer_epoch);
 }
 
 method MarshallMessageLocked(c:CMessage) returns (val:V)
-    requires c.CLocked?;
-    ensures  ValInGrammar(val, CMessageLockedGrammar());
-    ensures  ValidVal(val);
-    ensures  ParseCMessageLocked(val) == c;
-    ensures  SizeOfV(val) < MaxPacketSize();
+    requires c.CLocked?
+    ensures  ValInGrammar(val, CMessageLockedGrammar())
+    ensures  ValidVal(val)
+    ensures  ParseCMessageLocked(val) == c
+    ensures  SizeOfV(val) < MaxPacketSize()
 {
     val := VUint64(c.locked_epoch);
 }
 
 method MarshallMessage(c:CMessage) returns (val:V)
-    requires !c.CInvalid?;
-    ensures  ValInGrammar(val, CMessageGrammar());
-    ensures  ValidVal(val);
-    ensures  ParseCMessage(val) == c;
-    ensures  SizeOfV(val) < MaxPacketSize();
+    requires !c.CInvalid?
+    ensures  ValInGrammar(val, CMessageGrammar())
+    ensures  ValidVal(val)
+    ensures  ParseCMessage(val) == c
+    ensures  SizeOfV(val) < MaxPacketSize()
 {
     if c.CTransfer? {
         var msg := MarshallMessageTransfer(c);
@@ -126,10 +126,10 @@ method MarshallMessage(c:CMessage) returns (val:V)
 }
 
 method MarshallLockMessage(msg:CMessage) returns (data:array<byte>)
-    requires !msg.CInvalid?;
-    ensures fresh(data);
-    ensures NetPacketBound(data[..]);
-    ensures DemarshallData(data[..]) == msg;
+    requires !msg.CInvalid?
+    ensures fresh(data)
+    ensures NetPacketBound(data[..])
+    ensures DemarshallData(data[..]) == msg
 {
     var val := MarshallMessage(msg);
     data := Marshall(val, CMessageGrammar());

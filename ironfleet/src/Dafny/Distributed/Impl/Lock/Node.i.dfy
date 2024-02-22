@@ -42,13 +42,13 @@ ghost function AbstractifyCNode(n:CNode) : Node
 }
 
 method NodeInitImpl(my_index:uint64, config:Config) returns (node:CNode)
-    requires 0 < |config| < 0x1_0000_0000_0000_0000;
-    requires 0 <= my_index as int < |config|;
-    requires ValidConfig(config);
-    ensures CNodeValid(node);
-    ensures NodeInit(AbstractifyCNode(node), my_index as int, config);
-    ensures node.my_index == my_index;
-    ensures node.config == config;
+    requires 0 < |config| < 0x1_0000_0000_0000_0000
+    requires 0 <= my_index as int < |config|
+    requires ValidConfig(config)
+    ensures CNodeValid(node)
+    ensures NodeInit(AbstractifyCNode(node), my_index as int, config)
+    ensures node.my_index == my_index
+    ensures node.config == config
 {
     node := CNode(my_index == 0, if my_index == 0 then 1 else 0, my_index, config);
     if node.held {
@@ -57,16 +57,16 @@ method NodeInitImpl(my_index:uint64, config:Config) returns (node:CNode)
 }
 
 method NodeGrantImpl(s:CNode) returns (s':CNode, packet:Option<CLockPacket>, ghost ios:seq<LockIo>)
-    requires CNodeValid(s);
-    ensures  NodeGrant(AbstractifyCNode(s), AbstractifyCNode(s'), ios);
-    ensures  s'.my_index == s.my_index && s'.config == s.config;
-    ensures  |ios| == 0 || |ios| == 1;
-    ensures  packet.Some? ==> |ios| == 1 && ios[0].LIoOpSend? 
-                           && ios[0].s == AbstractifyCLockPacket(packet.v);
+    requires CNodeValid(s)
+    ensures  NodeGrant(AbstractifyCNode(s), AbstractifyCNode(s'), ios)
+    ensures  s'.my_index == s.my_index && s'.config == s.config
+    ensures  |ios| == 0 || |ios| == 1
+    ensures  packet.Some? ==> (|ios| == 1 && ios[0].LIoOpSend? 
+                           && ios[0].s == AbstractifyCLockPacket(packet.v))
     ensures    OptionCLockPacketValid(packet) 
-            && (packet.Some? ==> packet.v.src == s.config[s.my_index]); 
-    ensures  packet.None? ==> ios == [] && s' == s;
-    ensures  CNodeValid(s');
+            && (packet.Some? ==> packet.v.src == s.config[s.my_index])
+    ensures  packet.None? ==> ios == [] && s' == s
+    ensures  CNodeValid(s')
 {
     if s.held && s.epoch < 0xFFFF_FFFF_FFFF_FFFF {
         var ssss := CNode(false, s.epoch, s.my_index, s.config);
@@ -84,18 +84,18 @@ method NodeGrantImpl(s:CNode) returns (s':CNode, packet:Option<CLockPacket>, gho
 
 method NodeAcceptImpl(s:CNode, transfer_packet:CLockPacket) 
     returns (s':CNode, locked_packet:Option<CLockPacket>, ghost ios:seq<LockIo>)
-    requires CNodeValid(s);
-    ensures  NodeAccept(AbstractifyCNode(s), AbstractifyCNode(s'), ios);
-    ensures  s'.my_index == s.my_index && s'.config == s.config;
-    ensures  |ios| == 1 || |ios| == 2;
-    ensures  locked_packet.None? ==> |ios| == 1 && ios[0].LIoOpReceive? 
-                                  && ios[0].r == AbstractifyCLockPacket(transfer_packet);
-    ensures  locked_packet.Some? ==> |ios| == 2 
+    requires CNodeValid(s)
+    ensures  NodeAccept(AbstractifyCNode(s), AbstractifyCNode(s'), ios)
+    ensures  s'.my_index == s.my_index && s'.config == s.config
+    ensures  |ios| == 1 || |ios| == 2
+    ensures  locked_packet.None? ==> (|ios| == 1 && ios[0].LIoOpReceive? 
+                                  && ios[0].r == AbstractifyCLockPacket(transfer_packet))
+    ensures  locked_packet.Some? ==> (|ios| == 2 
                                   && ios == [LIoOpReceive(AbstractifyCLockPacket(transfer_packet)), 
-                                             LIoOpSend(AbstractifyCLockPacket(locked_packet.v))];
+                                             LIoOpSend(AbstractifyCLockPacket(locked_packet.v))])
     ensures    OptionCLockPacketValid(locked_packet) 
-            && (locked_packet.Some? ==> locked_packet.v.src == s.config[s.my_index]); 
-    ensures  CNodeValid(s');
+            && (locked_packet.Some? ==> locked_packet.v.src == s.config[s.my_index])
+    ensures  CNodeValid(s')
 {
     ios := [LIoOpReceive(AbstractifyCLockPacket(transfer_packet))];
 

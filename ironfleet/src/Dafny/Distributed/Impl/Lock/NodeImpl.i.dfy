@@ -15,19 +15,19 @@ import opened Common__NetClient_i
 
 class NodeImpl
 {
-    var node:CNode;
-    var netClient:NetClient?;
-    var localAddr:EndPoint;
+    var node:CNode
+    var netClient:NetClient?
+    var localAddr:EndPoint
 
-    ghost var Repr : set<object>;
+    ghost var Repr : set<object>
 
     constructor () {
         netClient := null;
     }
 
     ghost predicate Valid()
-        reads this;
-        reads NetClientIsValid.reads(netClient);
+        reads this
+        reads NetClientIsValid.reads(netClient)
     {
            CNodeValid(node)
         && NetClientIsValid(netClient)
@@ -37,7 +37,7 @@ class NodeImpl
     }
         
     ghost function Env() : HostEnvironment?
-        reads this, NetClientIsValid.reads(netClient);
+        reads this, NetClientIsValid.reads(netClient)
     {
         if netClient!=null then netClient.env else null
     }
@@ -49,12 +49,12 @@ class NodeImpl
         requires EndPoint(nc.MyPublicKey()) == config[my_index]
         requires nc.env == env_
         modifies this
-        ensures ok ==>
+        ensures ok ==> (
                Valid()
             && Env() == env_
             && NodeInit(AbstractifyCNode(node), my_index as int, config)
             && node.config == config 
-            && node.my_index == my_index
+            && node.my_index == my_index)
     {
         netClient := nc;
         node := NodeInitImpl(my_index, config);
@@ -65,17 +65,17 @@ class NodeImpl
     }
 
     method NodeNextGrant() returns (ok:bool, ghost netEventLog:seq<NetEvent>, ghost ios:seq<LockIo>)
-        requires Valid();
-        modifies Repr;
-        ensures Repr == old(Repr);
-        ensures ok == NetClientOk(netClient);
-        ensures Env() == old(Env());
+        requires Valid()
+        modifies Repr
+        ensures Repr == old(Repr)
+        ensures ok == NetClientOk(netClient)
+        ensures Env() == old(Env())
         ensures ok ==> (
                Valid()
             && NodeGrant(old(AbstractifyCNode(node)), AbstractifyCNode(node), ios)
             && AbstractifyRawLogToIos(netEventLog) == ios
             && OnlySentMarshallableData(netEventLog)
-            && old(Env().net.history()) + netEventLog == Env().net.history());
+            && old(Env().net.history()) + netEventLog == Env().net.history())
     {
         var transfer_packet;
         node, transfer_packet, ios := NodeGrantImpl(node);
@@ -92,17 +92,17 @@ class NodeImpl
     }
 
     method NodeNextAccept() returns (ok:bool, ghost netEventLog:seq<NetEvent>, ghost ios:seq<LockIo>)
-        requires Valid();
-        modifies Repr;
-        ensures Repr == old(Repr);
-        ensures ok == NetClientOk(netClient);
-        ensures Env() == old(Env());
+        requires Valid()
+        modifies Repr
+        ensures Repr == old(Repr)
+        ensures ok == NetClientOk(netClient)
+        ensures Env() == old(Env())
         ensures ok ==> (
                Valid()
             && NodeAccept(old(AbstractifyCNode(node)), AbstractifyCNode(node), ios)
             && AbstractifyRawLogToIos(netEventLog) == ios
             && OnlySentMarshallableData(netEventLog)
-            && old(Env().net.history()) + netEventLog == Env().net.history());
+            && old(Env().net.history()) + netEventLog == Env().net.history())
     {
         var rr;
         ghost var receiveEvent;
@@ -132,18 +132,18 @@ class NodeImpl
 
     method HostNextMain()
         returns (ok:bool, ghost netEventLog:seq<NetEvent>, ghost ios:seq<LockIo>)
-        requires Valid();
-        modifies Repr;
-        ensures  Repr == old(Repr);
-        ensures  ok <==> Env() != null && Env().Valid() && Env().ok.ok();
-        ensures  Env() == old(Env());
+        requires Valid()
+        modifies Repr
+        ensures  Repr == old(Repr)
+        ensures  ok <==> Env() != null && Env().Valid() && Env().ok.ok()
+        ensures  Env() == old(Env())
         ensures  ok ==> (
                    Valid()
                 && NodeNext(old(AbstractifyCNode(node)), AbstractifyCNode(node), ios)
                 && AbstractifyRawLogToIos(netEventLog) == ios
                 && OnlySentMarshallableData(netEventLog)
                 && old(Env().net.history()) + netEventLog == Env().net.history()
-                );
+                )
     {
         if node.held {
             ok, netEventLog, ios := NodeNextGrant();
