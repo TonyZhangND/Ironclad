@@ -12,14 +12,14 @@ module Host_i {
     import opened Types_i
     import opened Impl_Node_i
     import opened NetLock_i
-    // export Spec
-    //     provides Native__Io_s, Environment_s, Native__NativeTypes_s
-    //     provides HostState
-    //     provides ConcreteConfiguration
-    //     provides HostInit, HostNext, ConcreteConfigInit, HostStateInvariants
-    //     provides ConcreteConfigToServers, ParseCommandLineConfiguration, ArbitraryObject
-    //     provides HostInitImpl, HostNextImpl
-    // export All reveals *
+    export Spec
+        provides Native__Io_s, Environment_s, Native__NativeTypes_s
+        provides HostState
+        provides ConcreteConfiguration
+        provides HostInit, HostNext, ConcreteConfigInit, HostStateInvariants
+        provides ConcreteConfigToServers, ParseCommandLineConfiguration, ArbitraryObject
+        provides HostInitImpl, HostNextImpl
+    export All reveals *
 
     import opened Native__Io_s
     import opened Environment_s 
