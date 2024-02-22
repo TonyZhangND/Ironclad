@@ -6,7 +6,7 @@ import opened Math__mod_auto_i
 import opened Math__mod_auto_proofs_i
 import opened Math__div_auto_proofs_i
 
-predicate DivAuto(n:int)
+ghost predicate DivAuto(n:int)
   requires n > 0 // TODO: allow n < 0
 {
  && ModAuto(n)
@@ -94,7 +94,7 @@ lemma lemma_div_auto(n:int)
   }
 }
 
-predicate TDivAutoLe(x:int, y:int) { x <= y }
+ghost predicate TDivAutoLe(x:int, y:int) { x <= y }
 
 lemma lemma_div_auto_induction(n:int, x:int, f:int->bool)
   requires n > 0

@@ -27,15 +27,15 @@ datatype CSingleDeliveryAcct = CSingleDeliveryAcct(receiveState:CTombstoneTable,
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Useful to give this cast a name, so it can be used as a higher-order function
-function uint64_to_nat_t(u:uint64) : nat_t { u as nat_t }
+// Useful to give this cast a name, so it can be used as a higher-order ghost function
+ghost function uint64_to_nat_t(u:uint64) : nat_t { u as nat_t }
 
-predicate CTombstoneTableIsAbstractable(ts:CTombstoneTable) 
+ghost predicate CTombstoneTableIsAbstractable(ts:CTombstoneTable) 
 {
     forall e :: e in ts ==> EndPointIsAbstractable(e)
 }
 
-function AbstractifyCTombstoneTableToTombstoneTable(ts:CTombstoneTable) : TombstoneTable
+ghost function AbstractifyCTombstoneTableToTombstoneTable(ts:CTombstoneTable) : TombstoneTable
     requires CTombstoneTableIsAbstractable(ts);
 {
   lemma_AbstractifyEndPointToNodeIdentity_injective_forall();
@@ -45,48 +45,48 @@ function AbstractifyCTombstoneTableToTombstoneTable(ts:CTombstoneTable) : Tombst
 //////////////////////////////////////////////////////////////////////////////
 // Unacked list
 
-predicate CAckStateIsAbstractable(cas:CAckState) 
+ghost predicate CAckStateIsAbstractable(cas:CAckState) 
 {
     CSingleMessageSeqIsAbstractable(cas.unAcked)
 }
 
-function AbstractifyCAskStateToAckState(cas:CAckState) : AckState<Message>
+ghost function AbstractifyCAskStateToAckState(cas:CAckState) : AckState<Message>
     requires CAckStateIsAbstractable(cas);                                          
 {
     AckState(cas.numPacketsAcked as int, AbstractifySeqOfCSingleMessageToSeqOfSingleMessage(cas.unAcked))
 }
 
 
-predicate NoAcksInUnAcked(list:seq<CSingleMessage>)
+ghost predicate NoAcksInUnAcked(list:seq<CSingleMessage>)
 {
     forall i :: 0 <= i < |list| ==> list[i].CSingleMessage?
 }
 
-predicate UnAckedListSequential(list:seq<CSingleMessage>)
+ghost predicate UnAckedListSequential(list:seq<CSingleMessage>)
     requires NoAcksInUnAcked(list);
 {
     forall i, j :: 0 <= i && j == i + 1 && j < |list|
         ==> list[i].seqno as int + 1 == list[j].seqno as int
 }
 
-predicate CUnAckedValid(msg:CSingleMessage)
+ghost predicate CUnAckedValid(msg:CSingleMessage)
 {
     msg.CSingleMessage? && CSingleMessageIsAbstractable(msg) && CSingleMessageMarshallable(msg)
 }
 
-predicate CUnAckedListValid(list:seq<CSingleMessage>)
+ghost predicate CUnAckedListValid(list:seq<CSingleMessage>)
 {
     (forall i :: 0 <= i < |list| ==> CUnAckedValid(list[i]))
     &&  UnAckedListSequential(list)
 }
 
-predicate CUnAckedListValidForDst(list:seq<CSingleMessage>, dst:EndPoint)
+ghost predicate CUnAckedListValidForDst(list:seq<CSingleMessage>, dst:EndPoint)
 {
     CUnAckedListValid(list) 
  && (forall i :: 0 <= i < |list| ==> list[i].dst == dst)
 }
 
-predicate CAckStateIsValid(cas:CAckState, dst:EndPoint, params:CParameters)
+ghost predicate CAckStateIsValid(cas:CAckState, dst:EndPoint, params:CParameters)
 {
     CAckStateIsAbstractable(cas) && CUnAckedListValidForDst(cas.unAcked, dst)
  && cas.numPacketsAcked as int + |cas.unAcked| <= params.max_seqno as int
@@ -95,18 +95,18 @@ predicate CAckStateIsValid(cas:CAckState, dst:EndPoint, params:CParameters)
 
 //////////////////////////////////////////////////////////////////////////////
 
-predicate CSendStateIsAbstractable(sendState:CSendState)
+ghost predicate CSendStateIsAbstractable(sendState:CSendState)
 {
     MapIsAbstractable(sendState, AbstractifyEndPointToNodeIdentity, AbstractifyCAskStateToAckState, RefineNodeIdentityToEndPoint)
 }
 
-function AbstractifyCSendStateToSendState(sendState:CSendState) : SendState<Message>
+ghost function AbstractifyCSendStateToSendState(sendState:CSendState) : SendState<Message>
     requires CSendStateIsAbstractable(sendState);
 {
     AbstractifyMap(sendState, AbstractifyEndPointToNodeIdentity, AbstractifyCAskStateToAckState, RefineNodeIdentityToEndPoint)
 }
 
-predicate CSendStateIsValid(sendState:CSendState, params:CParameters)
+ghost predicate CSendStateIsValid(sendState:CSendState, params:CParameters)
 {
     CSendStateIsAbstractable(sendState) 
     && forall e :: e in sendState ==> CAckStateIsValid(sendState[e], e, params)
@@ -114,18 +114,18 @@ predicate CSendStateIsValid(sendState:CSendState, params:CParameters)
 
 //////////////////////////////////////////////////////////////////////////////
 
-predicate CSingleDeliveryAcctIsAbstractable(acct:CSingleDeliveryAcct) 
+ghost predicate CSingleDeliveryAcctIsAbstractable(acct:CSingleDeliveryAcct) 
 {
     CTombstoneTableIsAbstractable(acct.receiveState) && CSendStateIsAbstractable(acct.sendState)
 }
 
-function AbstractifyCSingleDeliveryAcctToSingleDeliveryAcct(acct:CSingleDeliveryAcct) : SingleDeliveryAcct<Message>
+ghost function AbstractifyCSingleDeliveryAcctToSingleDeliveryAcct(acct:CSingleDeliveryAcct) : SingleDeliveryAcct<Message>
     requires CSingleDeliveryAcctIsAbstractable(acct);
 {
     SingleDeliveryAcct(AbstractifyCTombstoneTableToTombstoneTable(acct.receiveState), AbstractifyCSendStateToSendState(acct.sendState))
 } 
 
-predicate CSingleDeliveryAccountIsValid(acct:CSingleDeliveryAcct, params:CParameters) 
+ghost predicate CSingleDeliveryAccountIsValid(acct:CSingleDeliveryAcct, params:CParameters) 
 {
     CSingleDeliveryAcctIsAbstractable(acct) && CSendStateIsValid(acct.sendState, params)
 }

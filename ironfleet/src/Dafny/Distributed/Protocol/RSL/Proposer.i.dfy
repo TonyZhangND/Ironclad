@@ -61,38 +61,38 @@ datatype LProposer = LProposer(
   )
 
 ///////////////////////////////////
-// HELPER FUNCTIONS
+// HELPER ghost functionS
 ///////////////////////////////////
  
-predicate LIsAfterLogTruncationPoint(opn:OperationNumber, received_1b_packets:set<RslPacket>)
+ghost predicate LIsAfterLogTruncationPoint(opn:OperationNumber, received_1b_packets:set<RslPacket>)
 {
   (forall p :: p in received_1b_packets && p.msg.RslMessage_1b? ==> p.msg.log_truncation_point <= opn)
 }
 
-predicate LSetOfMessage1b(S:set<RslPacket>)
+ghost predicate LSetOfMessage1b(S:set<RslPacket>)
 {
   forall p :: p in S ==> p.msg.RslMessage_1b?
 }
 
-predicate LSetOfMessage1bAboutBallot(S:set<RslPacket>, b:Ballot)
+ghost predicate LSetOfMessage1bAboutBallot(S:set<RslPacket>, b:Ballot)
 {
   && LSetOfMessage1b(S)
   && (forall p :: p in S ==> p.msg.bal_1b == b)
 }
 
-predicate LAllAcceptorsHadNoProposal(S:set<RslPacket>, opn:OperationNumber)
+ghost predicate LAllAcceptorsHadNoProposal(S:set<RslPacket>, opn:OperationNumber)
   requires LSetOfMessage1b(S)
 {
   forall p :: p in S ==> !(opn in p.msg.votes)
 }
 
-predicate LMaxBallotInS(c:Ballot, S:set<RslPacket>, opn:OperationNumber)
+ghost predicate LMaxBallotInS(c:Ballot, S:set<RslPacket>, opn:OperationNumber)
   requires LSetOfMessage1b(S)
 {
   forall p :: p in S && opn in p.msg.votes ==> BalLeq(p.msg.votes[opn].max_value_bal, c)
 }
 
-predicate LExistsBallotInS(v:RequestBatch, c:Ballot, S:set<RslPacket>, opn:OperationNumber)
+ghost predicate LExistsBallotInS(v:RequestBatch, c:Ballot, S:set<RslPacket>, opn:OperationNumber)
   requires LSetOfMessage1b(S)
 {
   exists p :: && p in S
@@ -101,20 +101,20 @@ predicate LExistsBallotInS(v:RequestBatch, c:Ballot, S:set<RslPacket>, opn:Opera
         && p.msg.votes[opn].max_val==v
 }
 
-predicate LValIsHighestNumberedProposalAtBallot(v:RequestBatch, c:Ballot, S:set<RslPacket>, opn:OperationNumber)
+ghost predicate LValIsHighestNumberedProposalAtBallot(v:RequestBatch, c:Ballot, S:set<RslPacket>, opn:OperationNumber)
   requires LSetOfMessage1b(S)
 {
   && LMaxBallotInS(c, S, opn)
   && LExistsBallotInS(v, c, S, opn)
 }
 
-predicate LValIsHighestNumberedProposal(v:RequestBatch, S:set<RslPacket>, opn:OperationNumber)
+ghost predicate LValIsHighestNumberedProposal(v:RequestBatch, S:set<RslPacket>, opn:OperationNumber)
   requires LSetOfMessage1b(S)
 {
   exists c :: LValIsHighestNumberedProposalAtBallot(v, c, S, opn)
 }
 
-predicate LProposerCanNominateUsingOperationNumber(s:LProposer, log_truncation_point:OperationNumber, opn:OperationNumber)
+ghost predicate LProposerCanNominateUsingOperationNumber(s:LProposer, log_truncation_point:OperationNumber, opn:OperationNumber)
 {
   && s.election_state.current_view == s.max_ballot_i_sent_1a
   && s.current_state == 2
@@ -134,7 +134,7 @@ predicate LProposerCanNominateUsingOperationNumber(s:LProposer, log_truncation_p
 // INITIALIZATION
 ///////////////////////////////////
 
-predicate LProposerInit(s:LProposer, c:LReplicaConstants)
+ghost predicate LProposerInit(s:LProposer, c:LReplicaConstants)
   requires WellFormedLConfiguration(c.all.config)
 {
   && s.constants == c
@@ -152,7 +152,7 @@ predicate LProposerInit(s:LProposer, c:LReplicaConstants)
 // ACTIONS
 ///////////////////////////////////
 
-predicate LProposerProcessRequest(s:LProposer, s':LProposer, packet:RslPacket)
+ghost predicate LProposerProcessRequest(s:LProposer, s':LProposer, packet:RslPacket)
   requires packet.msg.RslMessage_Request?
 {
   var val := Request(packet.src, packet.msg.seqno_req, packet.msg.val);
@@ -167,7 +167,7 @@ predicate LProposerProcessRequest(s:LProposer, s':LProposer, packet:RslPacket)
        s' == s.(election_state := s'.election_state)
 }
 
-predicate LProposerMaybeEnterNewViewAndSend1a(s:LProposer, s':LProposer, sent_packets:seq<RslPacket>)
+ghost predicate LProposerMaybeEnterNewViewAndSend1a(s:LProposer, s':LProposer, sent_packets:seq<RslPacket>)
 {
   if  && s.election_state.current_view.proposer_id == s.constants.my_index
       && BalLt(s.max_ballot_i_sent_1a, s.election_state.current_view) then
@@ -181,7 +181,7 @@ predicate LProposerMaybeEnterNewViewAndSend1a(s:LProposer, s':LProposer, sent_pa
     s' == s && sent_packets == []
 }
 
-predicate LProposerProcess1b(s:LProposer, s':LProposer, p:RslPacket)
+ghost predicate LProposerProcess1b(s:LProposer, s':LProposer, p:RslPacket)
   requires p.msg.RslMessage_1b?
   requires p.src in s.constants.all.config.replica_ids
   requires p.msg.bal_1b == s.max_ballot_i_sent_1a
@@ -191,7 +191,7 @@ predicate LProposerProcess1b(s:LProposer, s':LProposer, p:RslPacket)
   s' == s.(received_1b_packets := s.received_1b_packets + { p })
 }
 
-predicate LProposerMaybeEnterPhase2(s:LProposer, s':LProposer, log_truncation_point:OperationNumber, sent_packets:seq<RslPacket>)
+ghost predicate LProposerMaybeEnterPhase2(s:LProposer, s':LProposer, log_truncation_point:OperationNumber, sent_packets:seq<RslPacket>)
 {
   if  && |s.received_1b_packets| >= LMinQuorumSize(s.constants.all.config)
       && LSetOfMessage1bAboutBallot(s.received_1b_packets, s.max_ballot_i_sent_1a)
@@ -204,7 +204,7 @@ predicate LProposerMaybeEnterPhase2(s:LProposer, s':LProposer, log_truncation_po
     s' == s && sent_packets == []
 }
 
-predicate LProposerNominateNewValueAndSend2a(s:LProposer, s':LProposer, clock:int, log_truncation_point:OperationNumber,
+ghost predicate LProposerNominateNewValueAndSend2a(s:LProposer, s':LProposer, clock:int, log_truncation_point:OperationNumber,
                                              sent_packets:seq<RslPacket>)
   requires LProposerCanNominateUsingOperationNumber(s, log_truncation_point, s.next_operation_number_to_propose)
   requires LAllAcceptorsHadNoProposal(s.received_1b_packets, s.next_operation_number_to_propose)
@@ -221,7 +221,7 @@ predicate LProposerNominateNewValueAndSend2a(s:LProposer, s':LProposer, clock:in
   && LBroadcastToEveryone(s.constants.all.config, s.constants.my_index, RslMessage_2a(s.max_ballot_i_sent_1a, opn, v), sent_packets)
 }
 
-predicate LProposerNominateOldValueAndSend2a(s:LProposer, s':LProposer, log_truncation_point:OperationNumber, sent_packets:seq<RslPacket>)
+ghost predicate LProposerNominateOldValueAndSend2a(s:LProposer, s':LProposer, log_truncation_point:OperationNumber, sent_packets:seq<RslPacket>)
   requires LProposerCanNominateUsingOperationNumber(s, log_truncation_point, s.next_operation_number_to_propose)
   requires !LAllAcceptorsHadNoProposal(s.received_1b_packets, s.next_operation_number_to_propose)
 {
@@ -232,7 +232,7 @@ predicate LProposerNominateOldValueAndSend2a(s:LProposer, s':LProposer, log_trun
     && LBroadcastToEveryone(s.constants.all.config, s.constants.my_index, RslMessage_2a(s.max_ballot_i_sent_1a, opn, v), sent_packets)
 }
 
-predicate LProposerMaybeNominateValueAndSend2a(s:LProposer, s':LProposer, clock:int, log_truncation_point:int, sent_packets:seq<RslPacket>)
+ghost predicate LProposerMaybeNominateValueAndSend2a(s:LProposer, s':LProposer, clock:int, log_truncation_point:int, sent_packets:seq<RslPacket>)
 {
   if !LProposerCanNominateUsingOperationNumber(s, log_truncation_point, s.next_operation_number_to_propose) then
     s' == s && sent_packets == []
@@ -249,7 +249,7 @@ predicate LProposerMaybeNominateValueAndSend2a(s:LProposer, s':LProposer, clock:
     s' == s && sent_packets == []
 }
 
-predicate LProposerProcessHeartbeat(s:LProposer, s':LProposer, p:RslPacket, clock:int)
+ghost predicate LProposerProcessHeartbeat(s:LProposer, s':LProposer, p:RslPacket, clock:int)
   requires p.msg.RslMessage_Heartbeat?
 {
   && ElectionStateProcessHeartbeat(s.election_state, s'.election_state, p, clock)
@@ -263,13 +263,13 @@ predicate LProposerProcessHeartbeat(s:LProposer, s':LProposer, p:RslPacket, cloc
              request_queue := s'.request_queue)
 }
 
-predicate LProposerCheckForViewTimeout(s:LProposer, s':LProposer, clock:int)
+ghost predicate LProposerCheckForViewTimeout(s:LProposer, s':LProposer, clock:int)
 {
   && ElectionStateCheckForViewTimeout(s.election_state, s'.election_state, clock)
   && s' == s.(election_state := s'.election_state)
 }
 
-predicate LProposerCheckForQuorumOfViewSuspicions(s:LProposer, s':LProposer, clock:int)
+ghost predicate LProposerCheckForQuorumOfViewSuspicions(s:LProposer, s':LProposer, clock:int)
 {
   && ElectionStateCheckForQuorumOfViewSuspicions(s.election_state, s'.election_state, clock)
   && (if BalLt(s.election_state.current_view, s'.election_state.current_view) then
@@ -282,7 +282,7 @@ predicate LProposerCheckForQuorumOfViewSuspicions(s:LProposer, s':LProposer, clo
              request_queue := s'.request_queue)
 }
 
-predicate LProposerResetViewTimerDueToExecution(s:LProposer, s':LProposer, val:RequestBatch)
+ghost predicate LProposerResetViewTimerDueToExecution(s:LProposer, s':LProposer, val:RequestBatch)
 {
   && ElectionStateReflectExecutedRequestBatch(s.election_state, s'.election_state, val)
   && s' == s.(election_state := s'.election_state)

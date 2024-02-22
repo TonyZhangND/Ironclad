@@ -36,7 +36,7 @@ module Main_i refines Main_s {
         provides DS_s, Native__Io_s, Native__NativeTypes_s
         provides IronfleetMain
 
-    predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
+    ghost predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
         reads *;
     {
            |db| > 0
@@ -44,7 +44,7 @@ module Main_i refines Main_s {
         && forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1])
     }
 
-    predicate IsValidBehaviorLs(config:ConcreteConfiguration, db:seq<LS_State>)
+    ghost predicate IsValidBehaviorLs(config:ConcreteConfiguration, db:seq<LS_State>)
         reads *;
     {
            |db| > 0
@@ -52,12 +52,12 @@ module Main_i refines Main_s {
         && forall i {:trigger LS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> LS_Next(db[i], db[i+1])
     }
 
-    function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, LockMessage>
+    ghost function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, LockMessage>
     {
         LPacket(p.dst, p.src, AbstractifyCMessage(DemarshallData(p.msg)))
     }
 
-    predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
+    ghost predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
     {
         match step {
             case LEnvStepHostIos(actor, ios) => true
@@ -67,7 +67,7 @@ module Main_i refines Main_s {
         }
     }
 
-    function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, LockMessage>
+    ghost function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, LockMessage>
         requires LEnvStepIsAbstractable(step);
     {
         match step {
@@ -78,17 +78,17 @@ module Main_i refines Main_s {
         }
     }
 
-    predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
+    ghost predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
     {
         LEnvStepIsAbstractable(ds_env.nextStep)
     }
 
-    function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, LockMessage>>
+    ghost function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, LockMessage>>
     {
         set p | p in sent :: AbstractifyConcretePacket(p)
     }
 
-    function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, LockMessage>
+    ghost function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, LockMessage>
         requires ConcreteEnvironmentIsAbstractable(ds_env);
     {
         LEnvironment(ds_env.time,
@@ -97,7 +97,7 @@ module Main_i refines Main_s {
                      AbstractifyConcreteEnvStep(ds_env.nextStep))
     }
 
-    function {:opaque} AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : map<EndPoint,Node>
+    ghost function {:opaque} AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : map<EndPoint,Node>
         requires forall i :: 0 <= i < |replica_order| ==> replica_order[i] in replicas;
         requires SeqIsUnique(replica_order);
         ensures  |AbstractifyConcreteReplicas(replicas, replica_order)| == |replica_order|;
@@ -118,13 +118,13 @@ module Main_i refines Main_s {
             rest[replica_order[0] := replicas[replica_order[0]].node]
     }
 
-    predicate DsStateIsAbstractable(ds:DS_State) 
+    ghost predicate DsStateIsAbstractable(ds:DS_State) 
     {
            ValidConfig(ds.config)
         && (forall r :: r in ds.config ==> r in ds.servers)
     }
 
-    function AbstractifyDsState(ds:DS_State) : LS_State
+    ghost function AbstractifyDsState(ds:DS_State) : LS_State
         requires DsStateIsAbstractable(ds);
     {
         LS_State(AbstractifyConcreteEnvironment(ds.environment),

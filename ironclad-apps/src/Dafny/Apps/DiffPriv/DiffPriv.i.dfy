@@ -13,7 +13,7 @@ include "SumReducer.i.dfy"
 include "RelationalProperties.i.dfy"
 include "../Common/CommonState.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_Clip (value:int, min:int, max:int):int
+static function{:CompiledSpec} CompiledSpec_Clip (value:int, min:int, max:int):int
 
 //-////////////////////////////////////////////
 //- DiffPrivStateImpl
@@ -21,7 +21,7 @@ static function method{:CompiledSpec} CompiledSpec_Clip (value:int, min:int, max
 
 datatype DiffPrivStateImpl = DiffPrivStateImpl_ctor(db:seq<Row>, budget:BigRat, rows_received:int);
 
-static function DiffPrivStateImplToSpec(s:DiffPrivStateImpl) : DiffPrivState
+static ghost function DiffPrivStateImplToSpec(s:DiffPrivStateImpl) : DiffPrivState
 {
     DiffPrivState_ctor(s.db, if WellformedBigRat(s.budget) then RV(s.budget) else 0.0, s.rows_received)
 }
@@ -99,7 +99,7 @@ static lemma Lemma_CompareDivisionToOne(x:int, y:int)
 //- Decrypting add-row requests
 //-////////////////////////////////////////////
 
-static predicate WellformedDecryptedAddRowRequest(request:DecryptedAddRowRequest)
+static ghost predicate WellformedDecryptedAddRowRequest(request:DecryptedAddRowRequest)
 {
     match request
         case DecryptedAddRowRequest_c(row, max_budget_num, max_budget_den) =>

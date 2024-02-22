@@ -10,28 +10,28 @@ include "../Util/ProfileIfc.i.dfy"
 datatype MulRow = MulRow_c(
     a_fragment:int, a_partial_sum:int, product:int);
 
-predicate FNMulBase(row:MulRow)
+ghost predicate FNMulBase(row:MulRow)
 {
     row.a_partial_sum == row.a_fragment
 }
 
-predicate FNMulRelation(row:MulRow, b:int, r:int)
+ghost predicate FNMulRelation(row:MulRow, b:int, r:int)
 {
     row.product == row.a_partial_sum * b + r
 }
 
-predicate FNMulNext(row:MulRow, row':MulRow)
+ghost predicate FNMulNext(row:MulRow, row':MulRow)
 {
     row'.a_partial_sum == row'.a_fragment + row.a_partial_sum
 }
 
-predicate FNMulEnd(row:MulRow, p:int, a:int)
+ghost predicate FNMulEnd(row:MulRow, p:int, a:int)
 {
     row.product == p
     && row.a_partial_sum == a
 }
 
-predicate FNMulProblemValid_partial(wks:seq<MulRow>, b:int, r:int)
+ghost predicate FNMulProblemValid_partial(wks:seq<MulRow>, b:int, r:int)
 {
     0<|wks|
     && (forall i :: 0<=i<|wks| ==> FNMulRelation(wks[i], b, r))
@@ -39,7 +39,7 @@ predicate FNMulProblemValid_partial(wks:seq<MulRow>, b:int, r:int)
     && (forall i :: 1<=i<|wks| ==> FNMulNext(wks[i-1], wks[i]))
 }
 
-predicate FNMulProblemValid(wks:seq<MulRow>, p:int, a:int, b:int, r:int)
+ghost predicate FNMulProblemValid(wks:seq<MulRow>, p:int, a:int, b:int, r:int)
 {
     FNMulProblemValid_partial(wks, b, r)
     && FNMulEnd(wks[|wks|-1], p, a)
@@ -51,7 +51,7 @@ lemma lemma_FNMultiplication(wks:seq<MulRow>, p:int, a:int, b:int, r:int)
 {
 }
 
-predicate FNMulRowReflectsBEDigits(pv:int, wks:seq<MulRow>, i:int, a:seq<int>)
+ghost predicate FNMulRowReflectsBEDigits(pv:int, wks:seq<MulRow>, i:int, a:seq<int>)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires 0<=i<|wks|<=|a|;
@@ -59,7 +59,7 @@ predicate FNMulRowReflectsBEDigits(pv:int, wks:seq<MulRow>, i:int, a:seq<int>)
     wks[i].a_partial_sum == BEDigitSeqToInt(pv, a[|a|-1-i..])
 }
 
-predicate PNWksReflectsBEDigits(pv:int, wks:seq<MulRow>, a:seq<int>)
+ghost predicate PNWksReflectsBEDigits(pv:int, wks:seq<MulRow>, a:seq<int>)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires 0<|wks|<=|a|;
@@ -67,7 +67,7 @@ predicate PNWksReflectsBEDigits(pv:int, wks:seq<MulRow>, a:seq<int>)
     forall i :: 0<=i<|wks| ==> FNMulRowReflectsBEDigits(pv, wks, i, a)
 }
 
-predicate FNMulProblemReflectsBESeq(pv:int, wks:seq<MulRow>, p:seq<int>, a:seq<int>, b:seq<int>, r:seq<int>)
+ghost predicate FNMulProblemReflectsBESeq(pv:int, wks:seq<MulRow>, p:seq<int>, a:seq<int>, b:seq<int>, r:seq<int>)
     requires 1<pv;
     requires IsDigitSeq(pv, p);
     requires IsDigitSeq(pv, a);
@@ -117,7 +117,7 @@ method AllocArray(c:nat, right_zeros:nat) returns (a:array<int>)
 datatype M1Data = M1Data_c(b:array<int>, a:int, shiftd:int, pp:array<int>, i:int, carry:int);
 datatype M1Ghost = M1Ghost_c(Bs:seq<int>, Ps:seq<int>);
 
-predicate {:heap} M1invariant(d:M1Data, g:M1Ghost)
+ghost predicate {:heap} M1invariant(d:M1Data, g:M1Ghost)
     reads d.b;
     reads d.pp;
 {
@@ -567,7 +567,7 @@ method PNAddWrapper(a:array<int>, ghost As:seq<int>, b:array<int>, ghost Bs:seq<
     Cs := c[..];
 }
 
-predicate FNMultiply_loop_invariant(pv:int, As:seq<int>, Bs:seq<int>, Rs:seq<int>, wks:seq<MulRow>, i:int)
+ghost predicate FNMultiply_loop_invariant(pv:int, As:seq<int>, Bs:seq<int>, Rs:seq<int>, wks:seq<MulRow>, i:int)
 {
        1<pv
     && IsDigitSeq(pv, As)
@@ -738,7 +738,7 @@ lemma lemma_FNMultiply_inductive_step(pv:int, As:seq<int>, Bs:seq<int>,
 datatype FNMulData = FNMulData_c(a:array<int>, b:array<int>, running_sum:array<int>, i:int);
 datatype FNMulGhost = FNMulGhost_c(As:seq<int>, Bs:seq<int>, Rs:seq<int>, wks:seq<MulRow>);
 
-predicate {:heap} FNMultiply_loop_invariant_kit(d:FNMulData, g:FNMulGhost)
+ghost predicate {:heap} FNMultiply_loop_invariant_kit(d:FNMulData, g:FNMulGhost)
     reads d.a;
     reads d.b;
     reads d.running_sum;

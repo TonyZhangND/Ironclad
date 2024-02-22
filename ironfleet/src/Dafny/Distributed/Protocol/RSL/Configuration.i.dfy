@@ -14,29 +14,29 @@ datatype LConfiguration = LConfiguration(
   )
 
 // Jay suggests using a less-general notion of quorum.
-function LMinQuorumSize(c:LConfiguration) : int
+ghost function LMinQuorumSize(c:LConfiguration) : int
 {
   |c.replica_ids|/2+1
 }
 
-predicate ReplicasDistinct(replica_ids:seq<NodeIdentity>, i:int, j:int)
+ghost predicate ReplicasDistinct(replica_ids:seq<NodeIdentity>, i:int, j:int)
 {
   0 <= i < |replica_ids| && 0 <= j < |replica_ids| && replica_ids[i] == replica_ids[j] ==> i == j
 }
 
-predicate WellFormedLConfiguration(c:LConfiguration)
+ghost predicate WellFormedLConfiguration(c:LConfiguration)
 {
   && 0 < |c.replica_ids|
   && (forall i, j :: ReplicasDistinct(c.replica_ids, i, j))
 }
 
-predicate IsReplicaIndex(idx:int, id:NodeIdentity, c:LConfiguration)
+ghost predicate IsReplicaIndex(idx:int, id:NodeIdentity, c:LConfiguration)
 {
   && 0 <= idx < |c.replica_ids|
   && c.replica_ids[idx] == id
 }
 
-function GetReplicaIndex(id:NodeIdentity, c:LConfiguration):int
+ghost function GetReplicaIndex(id:NodeIdentity, c:LConfiguration):int
   requires id in c.replica_ids
   ensures  var idx := GetReplicaIndex(id, c);
            0 <= idx < |c.replica_ids| && c.replica_ids[idx] == id

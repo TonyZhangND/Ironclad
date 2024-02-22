@@ -13,10 +13,10 @@ import opened Common__GenericMarshalling_i
 import opened PacketParsing_i 
 
 //////////////////////////////////////////////////////////////////////////////
-// These functions relate IO events with bytes to those with LockMessages
+// These ghost functions relate IO events with bytes to those with LockMessages
 // 
 
-function AstractifyNetEventToLockIo(evt:NetEvent) : LockIo
+ghost function AstractifyNetEventToLockIo(evt:NetEvent) : LockIo
 {
     match evt
         case LIoOpSend(s) => LIoOpSend(AbstractifyNetPacket(s))
@@ -25,7 +25,7 @@ function AstractifyNetEventToLockIo(evt:NetEvent) : LockIo
         case LIoOpReadClock(t) => LIoOpReadClock(t as int)
 }
 
-function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<LockIo>
+ghost function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<LockIo>
     ensures |AbstractifyRawLogToIos(rawlog)| == |rawlog|;
     ensures forall i {:trigger AstractifyNetEventToLockIo(rawlog[i])} 
                      {:trigger AbstractifyRawLogToIos(rawlog)[i]} :: 
@@ -42,7 +42,7 @@ lemma lemma_EstablishAbstractifyRawLogToIos(rawlog:seq<NetEvent>, ios:seq<LockIo
     reveal_AbstractifyRawLogToIos();
 }
 
-predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
+ghost predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
 {
     forall io :: io in rawlog && io.LIoOpSend? ==> 
         NetPacketBound(io.s.msg) && Demarshallable(io.s.msg, CMessageGrammar())
@@ -96,13 +96,13 @@ method Receive(netClient:NetClient, localAddr:EndPoint)
     rr := RRPacket(cpacket);
 }
 
-predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CLockPacket)
+ghost predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CLockPacket)
 {
        event.LIoOpSend?
     && AbstractifyCLockPacket(cpacket) == AbstractifyNetPacket(event.s)
 }
 
-predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<CLockPacket>)
+ghost predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<CLockPacket>)
 {
     match packet {
         case Some(p) => |netEventLog| == 1 && SendLogEntryReflectsPacket(netEventLog[0], p)

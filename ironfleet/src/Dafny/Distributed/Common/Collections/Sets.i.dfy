@@ -43,28 +43,28 @@ lemma ThingsIKnowAboutASingletonSet<T>(foo:set<T>, x:T, y:T)
   }
 }
 
-predicate Injective<X(!new), Y>(f:X-->Y)
+ghost predicate Injective<X(!new), Y>(f:X-->Y)
   reads f.reads
   requires forall x :: f.requires(x)
 {
   forall x1, x2 :: f(x1) == f(x2) ==> x1 == x2
 }
 
-predicate InjectiveOver<X, Y>(xs:set<X>, ys:set<Y>, f:X-->Y)
+ghost predicate InjectiveOver<X(!new), Y>(xs:set<X>, ys:set<Y>, f:X-->Y)
   reads f.reads
   requires forall x :: x in xs ==> f.requires(x)
 {
   forall x1, x2 :: x1 in xs && x2 in xs && f(x1) in ys && f(x2) in ys && f(x1) == f(x2) ==> x1 == x2
 }
 
-predicate InjectiveOverSeq<X, Y>(xs:seq<X>, ys:set<Y>, f:X-->Y)
+ghost predicate InjectiveOverSeq<X(!new), Y>(xs:seq<X>, ys:set<Y>, f:X-->Y)
   reads f.reads
   requires forall x :: x in xs ==> f.requires(x)
 {
   forall x1, x2 :: x1 in xs && x2 in xs && f(x1) in ys && f(x2) in ys && f(x1) == f(x2) ==> x1 == x2
 }
 
-lemma lemma_MapSetCardinality<X, Y>(xs:set<X>, ys:set<Y>, f:X-->Y)
+lemma lemma_MapSetCardinality<X(!new), Y>(xs:set<X>, ys:set<Y>, f:X-->Y)
   requires forall x :: f.requires(x)
   requires Injective(f)
   requires forall x :: x in xs <==> f(x) in ys
@@ -143,7 +143,7 @@ lemma lemma_MapSubseqCardinalityOver<X, Y>(xs:seq<X>, ys:set<Y>, f:X-->Y)
   }
 }
 
-function/*TODO:{:opaque}*/ MapSetToSet<X(!new), Y>(xs:set<X>, f:X-->Y):set<Y>
+ghost function/*TODO:{:opaque}*/ MapSetToSet<X(!new), Y>(xs:set<X>, f:X-->Y):set<Y>
   reads f.reads
   requires forall x :: f.requires(x)
   requires Injective(f)
@@ -155,7 +155,7 @@ function/*TODO:{:opaque}*/ MapSetToSet<X(!new), Y>(xs:set<X>, f:X-->Y):set<Y>
   ys
 }
 
-function/*TODO:{:opaque}*/ MapSetToSetOver<X, Y>(xs:set<X>, f:X-->Y):set<Y>
+ghost function/*TODO:{:opaque}*/ MapSetToSetOver<X(!new), Y>(xs:set<X>, f:X-->Y):set<Y>
   reads f.reads
   requires forall x :: x in xs ==> f.requires(x)
   requires InjectiveOver(xs, set x | x in xs :: f(x), f)
@@ -167,7 +167,7 @@ function/*TODO:{:opaque}*/ MapSetToSetOver<X, Y>(xs:set<X>, f:X-->Y):set<Y>
   ys
 }
 
-function/*TODO:{:opaque}*/ MapSeqToSet<X(!new), Y>(xs:seq<X>, f:X-->Y):set<Y>
+ghost function/*TODO:{:opaque}*/ MapSeqToSet<X(!new), Y>(xs:seq<X>, f:X-->Y):set<Y>
   reads f.reads
   requires forall x :: f.requires(x)
   requires Injective(f)
@@ -176,7 +176,7 @@ function/*TODO:{:opaque}*/ MapSeqToSet<X(!new), Y>(xs:seq<X>, f:X-->Y):set<Y>
   set x | x in xs :: f(x)
 }
 
-function SeqToSet<X(!new)>(xs:seq<X>):set<X>
+ghost function SeqToSet<X(!new)>(xs:seq<X>):set<X>
 {
   set x | x in xs
 }
@@ -195,7 +195,7 @@ lemma lemma_SubsetCardinality<X>(xs:set<X>, ys:set<X>, f:X-->bool)
   }
 }
 
-function/*TODO:{:opaque}*/ MakeSubset<X(!new)>(xs:set<X>, f:X->bool):set<X>
+ghost function/*TODO:{:opaque}*/ MakeSubset<X(!new)>(xs:set<X>, f:X->bool):set<X>
   reads f.reads
   requires forall x :: x in xs ==> f.requires(x)
   ensures  forall x :: x in MakeSubset(xs, f) <==> x in xs && f(x)
@@ -207,14 +207,14 @@ function/*TODO:{:opaque}*/ MakeSubset<X(!new)>(xs:set<X>, f:X->bool):set<X>
 }
 
 /* examples:
-function{:opaque} setAdd1(xs:set<int>):set<int>
+ghost function{:opaque} setAdd1(xs:set<int>):set<int>
   ensures forall x :: x in xs <==> x + 1 in setAdd1(xs)
   ensures |xs| == |setAdd1(xs)|
 {
   MapSetToSet(xs, x => x + 1)
 }
 
-function{:opaque} setPos(xs:set<int>):set<int>
+ghost function{:opaque} setPos(xs:set<int>):set<int>
   ensures forall x :: x in setPos(xs) <==> x in xs && x > 0
 {
   MakeSubset(xs, x => x > 0)
@@ -242,7 +242,7 @@ lemma lemma_UnionCardinality<X>(xs:set<X>, ys:set<X>, us:set<X>)
   }
 }
 
-function SetOfNumbersInRightExclusiveRange(a:int, b:int):set<int>
+ghost function SetOfNumbersInRightExclusiveRange(a:int, b:int):set<int>
   requires a <= b
   ensures forall opn :: a <= opn < b ==> opn in SetOfNumbersInRightExclusiveRange(a, b)
   ensures forall opn :: opn in SetOfNumbersInRightExclusiveRange(a, b) ==> a <= opn < b
@@ -259,14 +259,14 @@ lemma lemma_CardinalityOfBoundedSet(s:set<int>, a:int, b:int)
 {
   var range := SetOfNumbersInRightExclusiveRange(a, b);
   forall i | i in s
-    ensures i in range;
+    ensures i in range
   {
   }
   assert s <= range;
   SubsetCardinality(s, range);
 }
 
-function intsetmax(s:set<int>):int
+ghost function intsetmax(s:set<int>):int
   requires |s| > 0
   ensures  var m := intsetmax(s);
            m in s && forall i :: i in s ==> m >= i

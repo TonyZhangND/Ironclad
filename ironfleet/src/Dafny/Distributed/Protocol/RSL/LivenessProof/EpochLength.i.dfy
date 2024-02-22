@@ -29,7 +29,7 @@ import opened Temporal__WF1_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate HostReadyToIncreaseEpochLength(
+ghost predicate HostReadyToIncreaseEpochLength(
   ps:RslState,
   idx:int,
   epoch_length:int,
@@ -42,7 +42,7 @@ predicate HostReadyToIncreaseEpochLength(
     && es.epoch_end_time == epoch_end_time
 }
 
-function{:opaque} HostReadyToIncreaseEpochLengthTemporal(
+ghost function{:opaque} HostReadyToIncreaseEpochLengthTemporal(
   b:Behavior<RslState>,
   idx:int,
   epoch_length:int,
@@ -56,13 +56,13 @@ function{:opaque} HostReadyToIncreaseEpochLengthTemporal(
   stepmap(imap i :: HostReadyToIncreaseEpochLength(b[i], idx, epoch_length, epoch_end_time))
 }
 
-predicate EpochLengthEqualOrGreater(ps:RslState, idx:int, epoch_length:int)
+ghost predicate EpochLengthEqualOrGreater(ps:RslState, idx:int, epoch_length:int)
 {
   && 0 <= idx < |ps.replicas|
   && ps.replicas[idx].replica.proposer.election_state.epoch_length >= epoch_length
 }
 
-function{:opaque} EpochLengthEqualOrGreaterTemporal(b:Behavior<RslState>, idx:int, epoch_length:int):temporal
+ghost function{:opaque} EpochLengthEqualOrGreaterTemporal(b:Behavior<RslState>, idx:int, epoch_length:int):temporal
   requires imaptotal(b)
   ensures  forall i{:trigger sat(i, EpochLengthEqualOrGreaterTemporal(b, idx, epoch_length))} ::
              sat(i, EpochLengthEqualOrGreaterTemporal(b, idx, epoch_length)) == EpochLengthEqualOrGreater(b[i], idx, epoch_length)

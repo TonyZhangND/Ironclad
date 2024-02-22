@@ -71,7 +71,7 @@ method ComputeKeySize(N:array<int>) returns (k:nat)
     }
 }
 
-static predicate RSAKeyGenerationWorksheetValid_premium(keybits:int, worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate RSAKeyGenerationWorksheetValid_premium(keybits:int, worksheet:RSAKeyGenerationWorksheet)
     requires forall i :: 0 <= i < |worksheet.rows|
         ==> 0 < |worksheet.rows[i].P.rows|
          && 0 < |worksheet.rows[i].Q.rows|
@@ -82,20 +82,20 @@ static predicate RSAKeyGenerationWorksheetValid_premium(keybits:int, worksheet:R
     RSAKeyGenerationWorksheetValid(keybits, worksheet)
 }
 
-static predicate RSAKeyConsistentWithWorksheet_precondition(worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate RSAKeyConsistentWithWorksheet_precondition(worksheet:RSAKeyGenerationWorksheet)
 {
     (forall i :: 0 <= i < |worksheet.rows|
         ==> PrimeGenerationWorksheetValid_precondition(worksheet.rows[i].P)
          && PrimeGenerationWorksheetValid_precondition(worksheet.rows[i].Q))
 }
 
-static predicate RSAKeyConsistentWithWorksheet_premium(requested_keybits:int, key:RSAKeyPairSpec, worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate RSAKeyConsistentWithWorksheet_premium(requested_keybits:int, key:RSAKeyPairSpec, worksheet:RSAKeyGenerationWorksheet)
     requires RSAKeyConsistentWithWorksheet_precondition(worksheet);
 {
     RSAKeyConsistentWithWorksheet(requested_keybits, key, worksheet)
 }
 
-static predicate RSAKeyGenerationWorksheetSummaryValid_Impl(worksheet:RSAKeyGenerationWorksheet, last_accepted:bool)
+static ghost predicate RSAKeyGenerationWorksheetSummaryValid_Impl(worksheet:RSAKeyGenerationWorksheet, last_accepted:bool)
     requires 0 < |worksheet.rows|;
     requires 0 < |worksheet.rows[|worksheet.rows|-1].P.rows|;
     requires 0 < |worksheet.rows[|worksheet.rows|-1].Q.rows|;
@@ -111,7 +111,7 @@ static predicate RSAKeyGenerationWorksheetSummaryValid_Impl(worksheet:RSAKeyGene
     && worksheet.n == worksheet.p*worksheet.q
 }
 
-static predicate RSAKeyGenerationWorksheetValid_Impl(keybits:int, worksheet:RSAKeyGenerationWorksheet, last_accepted:bool)
+static ghost predicate RSAKeyGenerationWorksheetValid_Impl(keybits:int, worksheet:RSAKeyGenerationWorksheet, last_accepted:bool)
     requires RSAKeyConsistentWithWorksheet_precondition(worksheet);
 {
     (forall i :: 0 <= i < |worksheet.rows| ==> RSAKeyGenerationWorksheetRowValid(worksheet.keybits, worksheet.rows[i]))
@@ -121,7 +121,7 @@ static predicate RSAKeyGenerationWorksheetValid_Impl(keybits:int, worksheet:RSAK
     && (0<|worksheet.rows| ==> RSAKeyGenerationWorksheetSummaryValid_Impl(worksheet, last_accepted))
 }
 
-static function RSAKeyGenerationWorksheetAppend(worksheet:RSAKeyGenerationWorksheet, worksheet_row:RSAKeyGenerationWorksheetRow, last_accepted:bool) : RSAKeyGenerationWorksheet
+static ghost function RSAKeyGenerationWorksheetAppend(worksheet:RSAKeyGenerationWorksheet, worksheet_row:RSAKeyGenerationWorksheetRow, last_accepted:bool) : RSAKeyGenerationWorksheet
     requires 0 < |worksheet_row.P.rows|;
     requires 0 < |worksheet_row.Q.rows|;
     requires RSAKeyConsistentWithWorksheet_precondition(worksheet);
@@ -418,7 +418,7 @@ static lemma lemma_RSAKeyGen_3(worksheet:RSAKeyGenerationWorksheet, worksheet_ro
     lemma_mul_strictly_positive(worksheet'.p-1, worksheet'.q-1);
 }
 
-predicate {:heap} RSAKeyGenLoop_requires(keybits:nat, e:array<int>, halfbits:nat, one:array<int>)
+ghost predicate {:heap} RSAKeyGenLoop_requires(keybits:nat, e:array<int>, halfbits:nat, one:array<int>)
     reads one;
     reads e;
     reads this`TPM;
@@ -437,7 +437,7 @@ predicate {:heap} RSAKeyGenLoop_requires(keybits:nat, e:array<int>, halfbits:nat
     && (TPM_ready())
 }
 
-predicate {:heap} RSAKeyGenLoop_success_properties(
+ghost predicate {:heap} RSAKeyGenLoop_success_properties(
     keybits:nat,
     e:array<int>,
     started:bool,
@@ -466,7 +466,7 @@ predicate {:heap} RSAKeyGenLoop_success_properties(
     && (worksheet.q == J(q))
 }
 
-predicate RSAKeyGenLoop_invariant(
+ghost predicate RSAKeyGenLoop_invariant(
     keybits:nat,
     e:array<int>,
     started:bool,

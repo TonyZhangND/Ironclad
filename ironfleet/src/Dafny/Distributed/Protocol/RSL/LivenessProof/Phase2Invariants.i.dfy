@@ -39,7 +39,7 @@ import opened Environment_s
 import opened Collections__Maps2_s
 import opened Common__UpperBound_s
 
-predicate ReplicaCaughtUp(
+ghost predicate ReplicaCaughtUp(
   ps:RslState,
   idx:int,
   opn:OperationNumber
@@ -48,7 +48,7 @@ predicate ReplicaCaughtUp(
   0 <= idx < |ps.replicas| && ps.replicas[idx].replica.executor.ops_complete >= opn
 }
 
-function{:opaque} ReplicaCaughtUpTemporal(
+ghost function{:opaque} ReplicaCaughtUpTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:OperationNumber
@@ -60,7 +60,7 @@ function{:opaque} ReplicaCaughtUpTemporal(
   stepmap(imap i :: ReplicaCaughtUp(b[i], idx, opn))
 }
 
-function{:opaque} AllReplicasCaughtUpTemporalSet(
+ghost function{:opaque} AllReplicasCaughtUpTemporalSet(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   opn:OperationNumber
@@ -72,7 +72,7 @@ function{:opaque} AllReplicasCaughtUpTemporalSet(
   set idx | idx in live_quorum :: ReplicaCaughtUpTemporal(b, idx, opn)
 }
 
-predicate AllLiveReplicasReadyForNextOperation(
+ghost predicate AllLiveReplicasReadyForNextOperation(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot,
@@ -87,7 +87,7 @@ predicate AllLiveReplicasReadyForNextOperation(
       && s.acceptor.log_truncation_point >= opn
 }
 
-function {:opaque} AllLiveReplicasReadyForNextOperationTemporal(
+ghost function {:opaque} AllLiveReplicasReadyForNextOperationTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot,

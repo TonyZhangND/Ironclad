@@ -11,18 +11,18 @@ datatype ConstantsState = ConstantsState(
   params:ParametersState
   )
 
-predicate ConstantsStateIsAbstractable(constants:ConstantsState)
+ghost predicate ConstantsStateIsAbstractable(constants:ConstantsState)
 {
   CPaxosConfigurationIsAbstractable(constants.config)
 }
 
-predicate WFConstantsState(constants:ConstantsState)
+ghost predicate WFConstantsState(constants:ConstantsState)
 {
   && WFCPaxosConfiguration(constants.config)
   && WFParametersState(constants.params)
 }
 
-predicate ConstantsStateIsValid(cs:ConstantsState)
+ghost predicate ConstantsStateIsValid(cs:ConstantsState)
 {
   && CPaxosConfigurationIsValid(cs.config)
   && ConstantsStateIsAbstractable(cs)
@@ -34,7 +34,7 @@ predicate ConstantsStateIsValid(cs:ConstantsState)
   && 0 < cs.params.max_batch_size as int <= RequestBatchSizeLimit()
 }
 
-function AbstractifyConstantsStateToLConstants(constants:ConstantsState) : LConstants
+ghost function AbstractifyConstantsStateToLConstants(constants:ConstantsState) : LConstants
   requires ConstantsStateIsAbstractable(constants)
 {
   LConstants(

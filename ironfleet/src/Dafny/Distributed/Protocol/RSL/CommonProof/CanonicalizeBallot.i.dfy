@@ -17,12 +17,12 @@ import opened Math__div_nonlinear_i
 import opened Math__div_i
 import opened Common__UpperBound_s
 
-predicate IsValidBallot(b:Ballot, c:LConstants)
+ghost predicate IsValidBallot(b:Ballot, c:LConstants)
 {
   0 <= b.proposer_id < |c.config.replica_ids|
 }
 
-predicate BallotHasSuccessor(b:Ballot, c:LConstants)
+ghost predicate BallotHasSuccessor(b:Ballot, c:LConstants)
 {
   || LtUpperBound(b.seqno, c.params.max_integer_val)
   || (b.seqno == c.params.max_integer_val.n && 0 <= b.proposer_id + 1 < |c.config.replica_ids|)
@@ -32,7 +32,7 @@ predicate BallotHasSuccessor(b:Ballot, c:LConstants)
 // CanonicalizeBallot
 //////////////////////////
 
-function{:opaque} CanonicalizeBallot(b:Ballot, c:LConstants):int
+ghost function{:opaque} CanonicalizeBallot(b:Ballot, c:LConstants):int
 {
   b.seqno * |c.config.replica_ids| + b.proposer_id
 }
@@ -122,7 +122,7 @@ lemma lemma_NothingBetweenViewAndSuccessor(b:Ballot, b':Ballot, c:LConstants)
   }
 }
 
-function DecanonicalizeBallot(i:int, c:LConstants):Ballot
+ghost function DecanonicalizeBallot(i:int, c:LConstants):Ballot
   requires WellFormedLConfiguration(c.config)
 {
   Ballot(i / |c.config.replica_ids|, i % |c.config.replica_ids|)
@@ -145,7 +145,7 @@ lemma lemma_DecanonicalizeBallotProperties(i:int, c:LConstants)
   }
 }
 
-function ComputePredecessorView(b:Ballot, c:LConstants):Ballot
+ghost function ComputePredecessorView(b:Ballot, c:LConstants):Ballot
   requires CanonicalizeBallot(b, c) > 0
   requires WellFormedLConfiguration(c.config)
 {

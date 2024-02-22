@@ -10,13 +10,13 @@ import opened SHT__Host_i
 import opened SHT__Network_i
 import opened LiveSHT__Environment_i
 
-function AddPacketSets<Packet>(ps:seq<set<Packet>>) : set<Packet>
+ghost function AddPacketSets<Packet>(ps:seq<set<Packet>>) : set<Packet>
     ensures forall i :: 0 <= i < |ps| ==> ps[i] <= AddPacketSets(ps);
 {
     if |ps| == 0 then {} else ps[0] + AddPacketSets(ps[1..])
 }
 
-predicate HostNextOrStutter(host:Host, host':Host, receives:set<Packet>, sends:set<Packet>)
+ghost predicate HostNextOrStutter(host:Host, host':Host, receives:set<Packet>, sends:set<Packet>)
 {
        (host == host' && sends == {})
     || (   (forall p :: p in receives ==> p.dst == host.me)
@@ -45,12 +45,12 @@ lemma Lemma_HostRefinementForPacketsAppliesToIos(
     assert ExtractPacketsFromLSHTPackets(sent_packets) == LSHTIoSeq_RefineAsSends(ios);
 }
 
-predicate LScheduler_RefinementInvariant(s:LScheduler)
+ghost predicate LScheduler_RefinementInvariant(s:LScheduler)
 {
     0 <= s.nextActionIndex < LHost_NumActions()
 }
 
-function LScheduler_Refine(s:LScheduler) : Host
+ghost function LScheduler_Refine(s:LScheduler) : Host
 {
     s.host
 }

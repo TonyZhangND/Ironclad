@@ -3,18 +3,18 @@ include "../Util/seqs_common.i.dfy"
 include "../BigNum/BigNatX86Shim.i.dfy"
 include "CanonicalArrays.i.dfy"
 
-function FatNatAddIndex(L:int, index:int, i:int) : int { L - 1 - (index + i) }
+ghost function FatNatAddIndex(L:int, index:int, i:int) : int { L - 1 - (index + i) }
 
 //- Treat i as a "little-endian index", so LEDigitAt(0) is the least-valued,
 //- rightmost digit in a BE sequence.
-static function method DigitAt(a:seq<int>, i:int) : int
+static function DigitAt(a:seq<int>, i:int) : int
 {
     if (0 <= i < |a|) then a[|a|-1-i] else 0
 }
 
 //- SelectDigitRange(a, 1, 0) is the bottom digit of a BEDigitSeq
 //- (just as a[0..1] is the bottom digit of a LEDigitSeq).
-function method SelectDigitRange(a:seq<int>, i:int, j:int) : seq<int>
+function SelectDigitRange(a:seq<int>, i:int, j:int) : seq<int>
     requires 0<=j<=i<=|a|;
 {
     a[|a|-i..|a|-j]
@@ -88,7 +88,7 @@ lemma lemma_SelectDigitSubrange(a:seq<int>, h:int, m:int, l:int)
 }
 
 //- Note that SelectDigits(a,0) == [].
-function method SelectDigits(a:seq<int>, i:int) : seq<int>
+function SelectDigits(a:seq<int>, i:int) : seq<int>
     requires 0<=i<=|a|;
     ensures SelectDigits(a,i) == SelectDigitRange(a,i,0);
 {
@@ -96,7 +96,7 @@ function method SelectDigits(a:seq<int>, i:int) : seq<int>
 }
 
 
-function {:opaque} MaxLen_def(ss:seq<seq<int>>) : int
+ghost function {:opaque} MaxLen_def(ss:seq<seq<int>>) : int
     decreases |ss|;
 {
     if (|ss|==0)
@@ -153,7 +153,7 @@ lemma lemma_MaxLen(ss:seq<seq<int>>)
 
 
 
-function MaxLen(ss:seq<seq<int>>) : int
+ghost function MaxLen(ss:seq<seq<int>>) : int
     ensures forall i :: 0<=i<|ss| ==> |ss[i]| <= MaxLen(ss);
     ensures |ss|>0 ==> exists i :: 0<=i<|ss| && |ss[i]|==MaxLen(ss);
 {
@@ -161,7 +161,7 @@ function MaxLen(ss:seq<seq<int>>) : int
     MaxLen_def(ss)
 }
 
-function MaxLen3(a:seq<int>, b:seq<int>, c:seq<int>) : int
+ghost function MaxLen3(a:seq<int>, b:seq<int>, c:seq<int>) : int
     ensures |a| <= MaxLen3(a,b,c);
     ensures |b| <= MaxLen3(a,b,c);
     ensures |c| <= MaxLen3(a,b,c);
@@ -176,7 +176,7 @@ function MaxLen3(a:seq<int>, b:seq<int>, c:seq<int>) : int
     MaxLen(s3)
 }
 
-function Stretch(s:seq<int>, len:int) : seq<int>
+ghost function Stretch(s:seq<int>, len:int) : seq<int>
     requires |s| <= len;
 {
     RepeatDigit_premium(0, len-|s|) + s
@@ -185,7 +185,7 @@ function Stretch(s:seq<int>, len:int) : seq<int>
 //-////////////////////////////////////////////////////////////////////////////
 //- Array access
 
-static function method ArrayDigitAt(a:array<int>, i:int) : int
+static function ArrayDigitAt(a:array<int>, i:int) : int
     requires a!=null;
     reads a;
     ensures ArrayDigitAt(a,i) == DigitAt(a[..],i);
@@ -193,7 +193,7 @@ static function method ArrayDigitAt(a:array<int>, i:int) : int
     if (0 <= i < a.Length) then a[a.Length-1-i] else 0
 }
 
-function method ArrayDigitAt_add(a:array<int>, i:int) : int
+function ArrayDigitAt_add(a:array<int>, i:int) : int
     requires a!=null;
     reads a;
     ensures ArrayDigitAt_add(a,i) == DigitAt(a[..],i);
@@ -201,7 +201,7 @@ function method ArrayDigitAt_add(a:array<int>, i:int) : int
     if (0 <= i < a.Length) then a[a.Length-1-i] else 0
 }
 
-function method ArrayDigitAt_sub(a:array<int>, i:int) : int
+function ArrayDigitAt_sub(a:array<int>, i:int) : int
     requires a!=null;
     reads a;
     ensures ArrayDigitAt_sub(a,i) == DigitAt(a[..],i);
@@ -209,7 +209,7 @@ function method ArrayDigitAt_sub(a:array<int>, i:int) : int
     if (0 <= i < a.Length) then a[a.Length-1-i] else 0
 }
 
-function method ArrayDigitAt_cmp(a:array<int>, i:int) : int
+function ArrayDigitAt_cmp(a:array<int>, i:int) : int
     requires a!=null;
     reads a;
     ensures ArrayDigitAt_cmp(a,i) == DigitAt(a[..],i);
@@ -217,7 +217,7 @@ function method ArrayDigitAt_cmp(a:array<int>, i:int) : int
     if (0 <= i < a.Length) then a[a.Length-1-i] else 0
 }
 
-function method ArrayDigitAt_mul(a:array<int>, i:int) : int
+function ArrayDigitAt_mul(a:array<int>, i:int) : int
     requires a!=null;
     reads a;
     ensures ArrayDigitAt_mul(a,i) == DigitAt(a[..],i);
@@ -225,14 +225,14 @@ function method ArrayDigitAt_mul(a:array<int>, i:int) : int
     if (0 <= i < a.Length) then a[a.Length-1-i] else 0
 }
 
-predicate {:heap} WellformedFatNat(X:array<int>)
+ghost predicate {:heap} WellformedFatNat(X:array<int>)
 //- Word-specific wellformedness.
     reads X;
 {
     X!=null && IsWordSeq(X[..])
 }
 
-function {:heap} J(X:array<int>) : int
+ghost function {:heap} J(X:array<int>) : int
     reads X;
     requires WellformedFatNat(X);
     ensures 0<=J(X);

@@ -2,13 +2,13 @@ include "../../Libraries/Math/power2.i.dfy"
 include "../../Drivers/CPU/assembly_premium.i.dfy"
 include "Mapper.s.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_BooleanToInt(b:bool):int
-static function method{:CompiledSpec} CompiledSpec_ExtractColumn(column_index:int, row:Row):int
-//-static function method{:CompiledSpec} CompiledSpec_StackSizeChangeFromOperation(t:Operation):int
-static function method{:CompiledSpec} CompiledSpec_WordToOperation(w:int):Operation
+static function{:CompiledSpec} CompiledSpec_BooleanToInt(b:bool):int
+static function{:CompiledSpec} CompiledSpec_ExtractColumn(column_index:int, row:Row):int
+//-static function{:CompiledSpec} CompiledSpec_StackSizeChangeFromOperation(t:Operation):int
+static function{:CompiledSpec} CompiledSpec_WordToOperation(w:int):Operation
 
 //-///////////////////////////////////////////////////
-//- Premium versions of spec functions
+//- Premium versions of spec ghost functions
 //-///////////////////////////////////////////////////
 
 static lemma Lemma_BooleanToInt_IsWord32(b:bool)
@@ -104,7 +104,7 @@ static method ApplyBinaryInstructionImpl(inst:BinaryInstruction, v1:int, v2:int)
     }
 }
 
-static function HowOperationChangesExpressionStackWhenValid(op:Operation, estack:seq<Expression>):seq<Expression>
+static ghost function HowOperationChangesExpressionStackWhenValid(op:Operation, estack:seq<Expression>):seq<Expression>
     requires |estack| + StackSizeChangeFromOperation(op) >= 1;
     ensures |HowOperationChangesExpressionStackWhenValid(op, estack)| == |estack| + StackSizeChangeFromOperation(op);
 {
@@ -130,7 +130,7 @@ static lemma Lemma_HowOperationChangesExpressionStackWhenValidEquivalent(op:Oper
     }
 }
 
-static function HowOperationChangesExpressionStack_premium(op:Operation, estack:seq<Expression>):seq<Expression>
+static ghost function HowOperationChangesExpressionStack_premium(op:Operation, estack:seq<Expression>):seq<Expression>
     requires |estack| + StackSizeChangeFromOperation(op) >= 1;
     ensures HowOperationChangesExpressionStack_premium(op, estack) == HowOperationChangesExpressionStack(op, estack);
 {
@@ -233,7 +233,7 @@ static lemma Lemma_EvaluateExpressionProducesWord(e:Expression, row:Row)
     }
 }
 
-static function EvaluateExpression_premium(e:Expression, row:Row):int
+static ghost function EvaluateExpression_premium(e:Expression, row:Row):int
     requires ExpressionValid(e);
     requires RowValid(row);
     ensures Word32(EvaluateExpression_premium(e, row));
@@ -253,7 +253,7 @@ static lemma Lemma_ProgramToExpressionYieldsValidExpression(program:seq<Operatio
     Lemma_ProgramPrefixToExpressionStackContainsOnlyWords(program);
 }
 
-static function ProgramToExpression_premium(program:seq<Operation>):Expression
+static ghost function ProgramToExpression_premium(program:seq<Operation>):Expression
     requires ProgramValid(program);
     ensures ExpressionValid(ProgramToExpression_premium(program));
     ensures ProgramToExpression_premium(program) == ProgramToExpression(program);
@@ -273,7 +273,7 @@ static lemma Lemma_MessageToProgramCreatesProgramOfOnlyWords(message:seq<int>)
     }
 }
 
-static function MessageToProgram_premium(message:seq<int>):seq<Operation>
+static ghost function MessageToProgram_premium(message:seq<int>):seq<Operation>
     requires forall i :: 0 <= i < |message| ==> Word32(message[i]);
     ensures ProgramContainsOnlyWords(MessageToProgram_premium(message));
     ensures MessageToProgram_premium(message) == MessageToProgram(message);
@@ -291,7 +291,7 @@ static lemma Lemma_EvaluateProgramProducesWord(program:seq<Operation>, row:Row)
     Lemma_EvaluateExpressionProducesWord(ProgramToExpression(program), row);
 }
 
-static function EvaluateProgram_premium(program:seq<Operation>, row:Row):int
+static ghost function EvaluateProgram_premium(program:seq<Operation>, row:Row):int
     requires ProgramValid(program);
     requires RowValid(row);
     ensures Word32(EvaluateProgram_premium(program, row));

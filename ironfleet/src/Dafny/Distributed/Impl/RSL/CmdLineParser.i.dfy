@@ -9,13 +9,13 @@ import opened CmdLineParser_i
 import opened Common__NetClient_i
 import opened LiveRSL__CPaxosConfiguration_i
 
-function paxos_config_parsing(args:seq<seq<byte>>) : CPaxosConfiguration
+ghost function paxos_config_parsing(args:seq<seq<byte>>) : CPaxosConfiguration
 {
   var (_, endpoints) := parse_end_points(args);
   CPaxosConfiguration(endpoints)
 }
 
-function paxos_parse_id(arg:seq<byte>) : EndPoint
+ghost function paxos_parse_id(arg:seq<byte>) : EndPoint
 {
   var (_, ep) := parse_end_point(arg);
   ep

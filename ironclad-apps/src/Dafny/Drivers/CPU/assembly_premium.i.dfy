@@ -93,8 +93,8 @@ static lemma lemma_IntBit_is_BEWordToBitSeq_specific(index:int, x:int)
 static lemma lemma_index_shift(index:int, x:int) 
     requires 0 <= index < 31;
     requires Word32(x);
-    ensures |BEIntToDigitSeq_private(2, 32, x/2)| == 32;    //- To assuage function precondition below
-    ensures |BEIntToDigitSeq_private(2, 32-1, x/2)| == 31;    //- To assuage function precondition below
+    ensures |BEIntToDigitSeq_private(2, 32, x/2)| == 32;    //- To assuage ghost function precondition below
+    ensures |BEIntToDigitSeq_private(2, 32-1, x/2)| == 31;    //- To assuage ghost function precondition below
     ensures BEIntToDigitSeq_private(2, 32, x/2)[index+1] ==
             BEIntToDigitSeq_private(2, 32-1, x/2)[index];
 {
@@ -207,7 +207,7 @@ static method{:instruction "inout@EDX", "inout@EAX", "in"}{:strict_operands} Met
     m, r := method_DivMod(zero, x, y);
 }
 
-static function method{:instruction "inout", "in"} Asm_Add(x:int, y:int):int
+static function{:instruction "inout", "in"} Asm_Add(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_Add(x, y));
@@ -219,7 +219,7 @@ static function method{:instruction "inout", "in"} Asm_Add(x:int, y:int):int
     asm_Add(x, y)
 }
 
-static function method{:instruction "inout", "in"} Asm_Sub(x:int, y:int):int
+static function{:instruction "inout", "in"} Asm_Sub(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_Sub(x, y));
@@ -230,7 +230,7 @@ static function method{:instruction "inout", "in"} Asm_Sub(x:int, y:int):int
     asm_Sub(x, y)
 }
 
-static function method Asm_Mul(x:int, y:int):int
+static function Asm_Mul(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_Mul(x, y));
@@ -241,7 +241,7 @@ static function method Asm_Mul(x:int, y:int):int
     asm_Mul(x, y)
 }
 
-static function method Asm_Div(x:int, y:int):int
+static function Asm_Div(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     requires y > 0;
@@ -253,7 +253,7 @@ static function method Asm_Div(x:int, y:int):int
     asm_Div(x, y)
 }
 
-static function method Asm_Mod(x:int, y:int):int
+static function Asm_Mod(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     requires y > 0;
@@ -265,7 +265,7 @@ static function method Asm_Mod(x:int, y:int):int
     asm_Mod(x, y)
 }
 
-static function method{:instruction "inout", "in@ECX"} Asm_LeftShift(x:int, amount:int):int
+static function{:instruction "inout", "in@ECX"} Asm_LeftShift(x:int, amount:int):int
     requires Word32(x);
     requires 0 <= amount < 32;
     ensures Word32(Asm_LeftShift(x, amount));
@@ -280,7 +280,7 @@ static function method{:instruction "inout", "in@ECX"} Asm_LeftShift(x:int, amou
     asm_LeftShift(x, amount)
 }
 
-static function method{:instruction "inout", "in@ECX"} Asm_RightShift(x:int, amount:int):int
+static function{:instruction "inout", "in@ECX"} Asm_RightShift(x:int, amount:int):int
     requires Word32(x);
     requires 0 <= amount < 32;
     ensures Word32(Asm_RightShift(x, amount));
@@ -295,7 +295,7 @@ static function method{:instruction "inout", "in@ECX"} Asm_RightShift(x:int, amo
     asm_RightShift(x, amount)
 }
 
-static function method{:instruction "inout", "in@ECX"} Asm_RotateLeft(x:int, amount:int):int
+static function{:instruction "inout", "in@ECX"} Asm_RotateLeft(x:int, amount:int):int
     requires Word32(x);
     requires 0 <= amount < 32;
     ensures Word32(Asm_RotateLeft(x, amount));
@@ -310,7 +310,7 @@ static function method{:instruction "inout", "in@ECX"} Asm_RotateLeft(x:int, amo
     asm_RotateLeft(x, amount)
 }
 
-static function method{:instruction "inout", "in@ECX"} Asm_RotateRight(x:int, amount:int):int
+static function{:instruction "inout", "in@ECX"} Asm_RotateRight(x:int, amount:int):int
     requires Word32(x);
     requires 0 <= amount < 32;
     ensures Word32(Asm_RotateRight(x, amount));
@@ -325,7 +325,7 @@ static function method{:instruction "inout", "in@ECX"} Asm_RotateRight(x:int, am
     asm_RotateRight(x, amount)
 }
 
-static function method{:instruction "inout"} Asm_BitwiseNot(x:int):int
+static function{:instruction "inout"} Asm_BitwiseNot(x:int):int
     requires Word32(x);
     ensures Word32(Asm_BitwiseNot(x));
     ensures |BEWordToBitSeq_premium(x)| == |BEWordToBitSeq_premium(Asm_BitwiseNot(x))| == 32;
@@ -357,7 +357,7 @@ static lemma lemma_bitwise_and_commutative(x:int, y:int)
     assert BEWordToBitSeq_premium(Asm_BitwiseAnd(x, y)) == BEWordToBitSeq_premium(Asm_BitwiseAnd(y, x));
 }
 
-static function method{:instruction "inout", "in"} Asm_BitwiseAnd(x:int, y:int):int
+static function{:instruction "inout", "in"} Asm_BitwiseAnd(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_BitwiseAnd(x, y));
@@ -373,7 +373,7 @@ static function method{:instruction "inout", "in"} Asm_BitwiseAnd(x:int, y:int):
     asm_BitwiseAnd(x,y)
 }
 
-static function method{:instruction "inout", "in"} Asm_BitwiseOr(x:int, y:int):int
+static function{:instruction "inout", "in"} Asm_BitwiseOr(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_BitwiseOr(x, y));
@@ -389,7 +389,7 @@ static function method{:instruction "inout", "in"} Asm_BitwiseOr(x:int, y:int):i
     asm_BitwiseOr(x, y)
 }
 
-static function method{:instruction "inout", "in"} Asm_BitwiseXor(x:int, y:int):int
+static function{:instruction "inout", "in"} Asm_BitwiseXor(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(Asm_BitwiseXor(x, y));

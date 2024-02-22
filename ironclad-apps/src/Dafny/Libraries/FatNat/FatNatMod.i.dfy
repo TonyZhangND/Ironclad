@@ -162,7 +162,7 @@ datatype FatNatModExp_ghost = FatNatModExp_ghost_c(
     E1v:int,
     Onev:int);
 
-predicate FatNatRepresents(a:array<int>, av:int)
+ghost predicate FatNatRepresents(a:array<int>, av:int)
     reads a;
 {
     a!=null
@@ -171,7 +171,7 @@ predicate FatNatRepresents(a:array<int>, av:int)
     && 0<=BEWordSeqToInt(a[..])     
 }
 
-predicate {:heap} FatNatModExp_invariant(d:FatNatModExp_data, g:FatNatModExp_ghost)
+ghost predicate {:heap} FatNatModExp_invariant(d:FatNatModExp_data, g:FatNatModExp_ghost)
     reads d.B;
     reads d.E;
     reads d.N;

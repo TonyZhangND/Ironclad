@@ -6,14 +6,14 @@ import opened Math__div_nonlinear_i
 import opened Math__mul_nonlinear_i
 import opened Math__mul_i
 
-predicate eq_mod(x:int, y:int, n:int)
+ghost predicate eq_mod(x:int, y:int, n:int)
   requires n > 0
 {
   (x - y) % n == 0 // same as x % n == y % n, but easier to do induction on x - y than x and y separately
 }
 
-predicate ModAuto(n:int)
-    requires n > 0;
+ghost predicate ModAuto(n:int)
+    requires n > 0
 {
  && (n % n == (-n) % n == 0)
  && (forall x:int {:trigger (x % n) % n} :: (x % n) % n == x % n)
@@ -103,7 +103,7 @@ lemma lemma_mod_auto(n:int)
   }
 }
 
-predicate TModAutoLe(x:int, y:int) { x <= y }
+ghost predicate TModAutoLe(x:int, y:int) { x <= y }
 
 lemma lemma_mod_auto_induction(n:int, x:int, f:int->bool)
   requires n > 0

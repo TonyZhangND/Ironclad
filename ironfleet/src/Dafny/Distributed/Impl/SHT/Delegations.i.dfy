@@ -20,19 +20,19 @@ import opened Common__NetClient_i
 datatype Mapping = Mapping(klo:KeyPlus, id:EndPoint)
 datatype CDelegationMap = CDelegationMap(lows:seq<Mapping>)
 
-predicate CDelegationMapBoundedSize(m:CDelegationMap)
+ghost predicate CDelegationMapBoundedSize(m:CDelegationMap)
 {
     0 < |m.lows| < 0x1_0000_0000_0000_0000 - 1
 }
 
-predicate CDelegationMapIsSorted_Helper(m:CDelegationMap)
+ghost predicate CDelegationMapIsSorted_Helper(m:CDelegationMap)
     requires CDelegationMapBoundedSize(m)
 {
     forall i {:trigger KeyPlusLt(m.lows[i].klo, m.lows[i+1].klo)} :: 0<=i<|m.lows|-1
         ==> KeyPlusLt(m.lows[i].klo, m.lows[i+1].klo)
 }
 
-predicate CDelegationMapIsSorted(m:CDelegationMap)
+ghost predicate CDelegationMapIsSorted(m:CDelegationMap)
 {
        CDelegationMapBoundedSize(m)
     && CDelegationMapIsSorted_Helper(m)
@@ -63,48 +63,48 @@ lemma CDelegationMapIsSortedExtension(m:CDelegationMap)
     }
 }
 
-predicate CDelegationMapIsComplete(m:CDelegationMap)
+ghost predicate CDelegationMapIsComplete(m:CDelegationMap)
 {
     CDelegationMapBoundedSize(m) && CDelegationMapIsSorted(m) && m.lows[0].klo == KeyZero()
 }
 
-predicate CDelegationMapHasValidEndPoints(lows:seq<Mapping>)
+ghost predicate CDelegationMapHasValidEndPoints(lows:seq<Mapping>)
 {
     forall m :: m in lows ==> EndPointIsValidPublicKey(m.id)
 }
 
-predicate CDelegationMapIsValid(m:CDelegationMap)
+ghost predicate CDelegationMapIsValid(m:CDelegationMap)
 {
        CDelegationMapHasValidEndPoints(m.lows)
     && CDelegationMapIsComplete(m)
 }
 
-function CDM_IndexToNextKeyBoundary(m:CDelegationMap, i:int) : KeyPlus
+ghost function CDM_IndexToNextKeyBoundary(m:CDelegationMap, i:int) : KeyPlus
     requires 0 <= i < |m.lows|;
 {
     if i < |m.lows| - 1 then m.lows[i+1].klo else KeyInf()
 }
 
 // Key range from the i-th to the j-th key boundary
-function CDM_IndexRangeToKeyRange(m:CDelegationMap, i:int, j:int) : KeyRange
+ghost function CDM_IndexRangeToKeyRange(m:CDelegationMap, i:int, j:int) : KeyRange
     requires 0<=i<=j<|m.lows|;
 {
     KeyRange(m.lows[i].klo, CDM_IndexToNextKeyBoundary(m, j))
 }
 
 // Key range from i-th key boundary to the next key boundary
-function CDM_IndexToKeyRange(m:CDelegationMap, idx:int) : KeyRange
+ghost function CDM_IndexToKeyRange(m:CDelegationMap, idx:int) : KeyRange
     requires 0<=idx<|m.lows|;
 {
     CDM_IndexRangeToKeyRange(m, idx, idx)
 }
 
-function KeyRangesFromCDelegationMap(m:CDelegationMap) : set<KeyRange>
+ghost function KeyRangesFromCDelegationMap(m:CDelegationMap) : set<KeyRange>
 {
     set i | 0<=i<|m.lows| :: CDM_IndexToKeyRange(m, i)
 }
 
-function method {:opaque} CDM_IndexForKey_helper(m:CDelegationMap, k:KeyPlus, index:uint64) : uint64
+function {:opaque} CDM_IndexForKey_helper(m:CDelegationMap, k:KeyPlus, index:uint64) : uint64
     requires CDelegationMapIsAbstractable(m);
     requires forall i :: 0 <= i <= index as int && i < |m.lows| ==> KeyPlusLe(m.lows[i].klo, k);
     decreases |m.lows| - index as int;
@@ -157,7 +157,7 @@ lemma CDM_Partitioned(m:CDelegationMap, k:KeyPlus, index:int)
 
 }
 
-function method CDM_IndexForKey(m:CDelegationMap, k:KeyPlus) : uint64
+function CDM_IndexForKey(m:CDelegationMap, k:KeyPlus) : uint64
     requires 0<|m.lows|;
     requires CDelegationMapIsAbstractable(m)
     ensures 0 <= CDM_IndexForKey(m, k) as int < |m.lows|;
@@ -169,7 +169,7 @@ function method CDM_IndexForKey(m:CDelegationMap, k:KeyPlus) : uint64
 }
 
 // Explicitly naming this :| so Dafny will cooperate:
-function CDM_IndexForKeyRange(m:CDelegationMap, kr:KeyRange) : uint64 
+ghost function CDM_IndexForKeyRange(m:CDelegationMap, kr:KeyRange) : uint64 
     requires CDelegationMapIsAbstractable(m);
     requires kr in KeyRangesFromCDelegationMap(m);
     ensures 0 <= CDM_IndexForKeyRange(m, kr) as int < |m.lows|;
@@ -177,20 +177,20 @@ function CDM_IndexForKeyRange(m:CDelegationMap, kr:KeyRange) : uint64
     var idx :| 0<=idx<|m.lows| && kr==CDM_IndexToKeyRange(m,idx); idx as uint64
 }
 
-predicate CDelegationMapIsAbstractable(m:CDelegationMap)
+ghost predicate CDelegationMapIsAbstractable(m:CDelegationMap)
 {
   && (forall low :: low in m.lows ==> EndPointIsAbstractable(low.id))
   && CDelegationMapIsComplete(m)
 }
 
-function RefineToDelegationMapEntry(m:CDelegationMap, k:Key) : NodeIdentity
+ghost function RefineToDelegationMapEntry(m:CDelegationMap, k:Key) : NodeIdentity
     requires CDelegationMapIsAbstractable(m);
     requires forall low :: low in m.lows ==> EndPointIsAbstractable(low.id);
 {
     AbstractifyEndPointToNodeIdentity(m.lows[CDM_IndexForKey(m,KeyPlus(k))].id)
 }
 
-function AbstractifyCDelegationMapToDelegationMap(m:CDelegationMap) : DelegationMap
+ghost function AbstractifyCDelegationMapToDelegationMap(m:CDelegationMap) : DelegationMap
     requires CDelegationMapIsAbstractable(m);
     requires forall low :: low in m.lows ==> EndPointIsAbstractable(low.id);
 {
@@ -282,13 +282,13 @@ lemma CDM_SubsequenceIsSorted(m:CDelegationMap, sm:CDelegationMap, lo:int, hi:in
 
 //////////////////////////////////////////////////////////////////////////////
 
-function CDelegationMapDelegate(m:CDelegationMap, k:Key) : NodeIdentity
+ghost function CDelegationMapDelegate(m:CDelegationMap, k:Key) : NodeIdentity
     requires CDelegationMapIsAbstractable(m);
 {
     AbstractifyCDelegationMapToDelegationMap(m)[k]
 }
 
-predicate CDM_PrefixAgrees(m:CDelegationMap, dm:DelegationMap, klim:KeyPlus)
+ghost predicate CDM_PrefixAgrees(m:CDelegationMap, dm:DelegationMap, klim:KeyPlus)
     requires CDelegationMapIsAbstractable(m);
     requires DelegationMapComplete(dm);
 {

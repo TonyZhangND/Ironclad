@@ -7,14 +7,14 @@ import opened Environment_s
 
 class HostEnvironment
 {
-  ghost var ok:OkState;
-  ghost var now:NowState;
-  ghost var net:NetState;
-  ghost var files:FileSystemState;
+  ghost var ok:OkState
+  ghost var now:NowState
+  ghost var net:NetState
+  ghost var files:FileSystemState
 
   constructor{:axiom} () requires false
 
-  predicate Valid()
+  ghost predicate Valid()
     reads this
   {
     true
@@ -29,7 +29,7 @@ class HostEnvironment
 class OkState
 {
   constructor{:axiom} () requires false
-  function{:axiom} ok():bool reads this
+  ghost function{:axiom} ok():bool reads this
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,8 +39,8 @@ class OkState
 class PrintParams
 {
   constructor{:axiom} () requires false
-  static function method{:axiom} ShouldPrintProfilingInfo() : bool
-  static function method{:axiom} ShouldPrintProgress() : bool
+  static function{:axiom} ShouldPrintProfilingInfo() : bool
+  static function{:axiom} ShouldPrintProgress() : bool
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,12 +52,12 @@ class PrintParams
 class NowState
 {
   constructor{:axiom} () requires false
-  function{:axiom} now():int reads this
+  ghost function{:axiom} now():int reads this
 }
 
 // maximum assumed time taken by any non-waiting code (in milliseconds)
-function{:axiom} realTimeBound():int
-predicate AdvanceTime(oldTime:int, newTime:int, delay:int) { oldTime <= newTime < oldTime + delay + realTimeBound() }
+ghost function{:axiom} realTimeBound():int
+ghost predicate AdvanceTime(oldTime:int, newTime:int, delay:int) { oldTime <= newTime < oldTime + delay + realTimeBound() }
 
 class Time
 {
@@ -83,21 +83,21 @@ datatype EndPoint = EndPoint(public_key:seq<byte>)
 type NetPacket = LPacket<EndPoint, seq<byte>>
 type NetEvent = LIoOp<EndPoint, seq<byte>>
 
-function MaxPacketSize() : int { 0xFFFF_FFFF_FFFF_FFFF }
+ghost function MaxPacketSize() : int { 0xFFFF_FFFF_FFFF_FFFF }
 
-predicate ValidPhysicalAddress(endPoint:EndPoint)
+ghost predicate ValidPhysicalAddress(endPoint:EndPoint)
 {
   |endPoint.public_key| < 0x10_0000 // < 1 MB
 }
     
-predicate ValidPhysicalPacket(p:LPacket<EndPoint, seq<byte>>)
+ghost predicate ValidPhysicalPacket(p:LPacket<EndPoint, seq<byte>>)
 {
   && ValidPhysicalAddress(p.src)
   && ValidPhysicalAddress(p.dst)
   && |p.msg| <= MaxPacketSize()
 }
   
-predicate ValidPhysicalIo(io:LIoOp<EndPoint, seq<byte>>)
+ghost predicate ValidPhysicalIo(io:LIoOp<EndPoint, seq<byte>>)
 {
   && (io.LIoOpReceive? ==> ValidPhysicalPacket(io.r))
   && (io.LIoOpSend? ==> ValidPhysicalPacket(io.s))
@@ -106,14 +106,14 @@ predicate ValidPhysicalIo(io:LIoOp<EndPoint, seq<byte>>)
 class NetState
 {
   constructor{:axiom} () requires false
-  function{:axiom} history():seq<NetEvent> reads this
+  ghost function{:axiom} history():seq<NetEvent> reads this
 }
 
 class NetClient
 {
   ghost var env:HostEnvironment
-  function method{:axiom} MyPublicKey():seq<byte> reads this
-  function{:axiom} IsOpen():bool reads this
+  function{:axiom} MyPublicKey():seq<byte> reads this
+  ghost function{:axiom} IsOpen():bool reads this
   constructor{:axiom} () requires false
 
   method{:axiom} Close() returns(ok:bool)
@@ -170,12 +170,12 @@ class FileSystemState
 
 class MutableSet<T(0,==,!new)>
 {
-  static function method {:axiom} SetOf(s:MutableSet<T>) : set<T>
+  static function {:axiom} SetOf(s:MutableSet<T>) : set<T>
     reads s
 
   static method {:axiom} EmptySet() returns (s:MutableSet<T>)
     ensures SetOf(s) == {}
-    ensures fresh(s);
+    ensures fresh(s)
 
   constructor{:axiom} () requires false
 
@@ -212,7 +212,7 @@ class MutableSet<T(0,==,!new)>
     ensures SetOf(this) == {}
 }
 
-function KVTupleSeqToMap<K(!new), V(!new)>(kvs: seq<(K, V)>) : (m: map<K, V>)
+ghost function KVTupleSeqToMap<K(!new), V(!new)>(kvs: seq<(K, V)>) : (m: map<K, V>)
   ensures  forall k, v :: (k, v) in kvs ==> k in m
   ensures  forall k :: k in m ==> (k, m[k]) in kvs
 {
@@ -227,12 +227,12 @@ function KVTupleSeqToMap<K(!new), V(!new)>(kvs: seq<(K, V)>) : (m: map<K, V>)
 
 class MutableMap<K(==),V>
 {
-  static function method {:axiom} MapOf(m:MutableMap<K,V>) : map<K,V>
+  static function {:axiom} MapOf(m:MutableMap<K,V>) : map<K,V>
     reads m
 
   static method {:axiom} EmptyMap() returns (m:MutableMap<K,V>)
     ensures MapOf(m) == map []
-    ensures fresh(m);
+    ensures fresh(m)
 
   static method {:axiom} FromMap(dafny_map:map<K,V>) returns (m:MutableMap<K,V>)
     ensures MapOf(m) == dafny_map
@@ -243,7 +243,7 @@ class MutableMap<K(==),V>
 
   constructor{:axiom} () requires false
 
-  function method {:axiom} Size() : int
+  function {:axiom} Size() : int
     reads this
     ensures this.Size() == |MapOf(this)|
 
@@ -302,17 +302,17 @@ datatype FileOp =
 class FileSystemState
 {
     constructor{:axiom} () requires false;
-    function{:axiom} state():FileSystem reads this;
+    ghost function{:axiom} state():FileSystem reads this;
 }
 
-function{:axiom} FileOpRequires(fs:FileSystem, fileName:string, op:FileOp):bool
-function{:axiom} FileOpEnsures(fsOld:FileSystem, fsNew:FileSystem, fileName:string, op:FileOp):bool
+ghost function{:axiom} FileOpRequires(fs:FileSystem, fileName:string, op:FileOp):bool
+ghost function{:axiom} FileOpEnsures(fsOld:FileSystem, fsNew:FileSystem, fileName:string, op:FileOp):bool
 
 class FileStream
 {
     ghost var env:HostEnvironment;
-    function{:axiom} Name():string reads this;
-    function{:axiom} IsOpen():bool reads this;
+    ghost function{:axiom} Name():string reads this;
+    ghost function{:axiom} IsOpen():bool reads this;
     constructor{:axiom} () requires false;
 
     static method{:axiom} Open(name:array<char>, ghost env:HostEnvironment)

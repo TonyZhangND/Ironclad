@@ -42,7 +42,7 @@ import opened Common__Util_i
 import opened AppStateMachine_s
 
 // Same as x == y, but triggers extensional equality on fields and provides better error diagnostics
-predicate Eq_LProposer(x:LProposer, y:LProposer)
+ghost predicate Eq_LProposer(x:LProposer, y:LProposer)
 {
   && x.constants == y.constants
   && x.current_state == y.current_state
@@ -104,7 +104,7 @@ method InitProposerState(constants:ReplicaConstantsState) returns (proposer:Prop
   assert ElectionStateInit(ref_proposer.election_state, ref_constants);
 }
 
-//function method maprange_impl<KT,VT>(m:map<KT,VT>) : set<VT>
+//function maprange_impl<KT,VT>(m:map<KT,VT>) : set<VT>
 //{
 //  set k | k in m :: m[k]
 //}
@@ -481,7 +481,7 @@ method {:timeLimitMultiplier 8} ProposerMaybeEnterPhase2(proposer:ProposerState,
   ghost var ref_logTruncationPoint := AbstractifyCOperationNumberToOperationNumber(log_truncation_point);
 }
 
-predicate Proposer_CanNominateUsingOperationNumber(s:ProposerState, log_truncation_point:COperationNumber, opn:COperationNumber)
+ghost predicate Proposer_CanNominateUsingOperationNumber(s:ProposerState, log_truncation_point:COperationNumber, opn:COperationNumber)
   requires ConstantsStateIsAbstractable(s.constants.all)
 {
   && s.election_state.current_view == s.max_ballot_i_sent_1a
@@ -645,7 +645,7 @@ method {:timeLimitMultiplier 7} ProposerNominateNewValueAndSend2a(proposer:Propo
   assert  OutboundPacketsHasCorrectSrc(Broadcast(sent_packets), proposer.constants.all.config.replica_ids[proposer.constants.my_index]);
 }
 
-predicate ExistsCBallotInS(v:CRequestBatch, c:CBallot, S:set<CPacket>, opn:COperationNumber)
+ghost predicate ExistsCBallotInS(v:CRequestBatch, c:CBallot, S:set<CPacket>, opn:COperationNumber)
 //  requires CRequestIsAbstractable(v) && COperationNumberIsAbstractable(opn) && CBallotIsAbstractable(c)
 //  requires CPacketsIsAbstractable(S)
   requires SetOfMessage1b(S)
@@ -656,7 +656,7 @@ predicate ExistsCBallotInS(v:CRequestBatch, c:CBallot, S:set<CPacket>, opn:COper
         && p.msg.votes.v[opn].max_val==v
 }
 
-predicate CValIsHighestNumberedProposalAtBallot(v:CRequestBatch, c:CBallot, S:set<CPacket>, opn:COperationNumber)
+ghost predicate CValIsHighestNumberedProposalAtBallot(v:CRequestBatch, c:CBallot, S:set<CPacket>, opn:COperationNumber)
   requires CBallotIsAbstractable(c) && CPacketsIsAbstractable(S) && COperationNumberIsAbstractable(opn)
   requires SetOfMessage1b(S)
 {
@@ -666,7 +666,7 @@ predicate CValIsHighestNumberedProposalAtBallot(v:CRequestBatch, c:CBallot, S:se
   && ExistsCBallotInS(v, c, S, opn)
 }
 
-predicate CValIsHighestNumberedProposal(v:CRequestBatch, S:set<CPacket>, opn:COperationNumber)
+ghost predicate CValIsHighestNumberedProposal(v:CRequestBatch, S:set<CPacket>, opn:COperationNumber)
   requires CRequestBatchIsAbstractable(v) && COperationNumberIsAbstractable(opn)
   requires CPacketsIsAbstractable(S)
   requires SetOfMessage1b(S)
@@ -1008,7 +1008,7 @@ lemma {:timeLimitMultiplier 6} lemma_AllAcceptorsHadNoProposalImpl(proposer:Prop
   lemma_AbstractifySetOfCPacketsToSetOfRslPackets_propertiesProposer(proposer.received_1b_packets);
 }
 
-predicate ExistsPred(proposer:ProposerState, ref_proposer:LProposer, existsOpn:bool)
+ghost predicate ExistsPred(proposer:ProposerState, ref_proposer:LProposer, existsOpn:bool)
   requires ProposerIsAbstractable(proposer)
   requires ref_proposer == AbstractifyProposerStateToLProposer(proposer)
   requires LSetOfMessage1b(ref_proposer.received_1b_packets)
@@ -1019,7 +1019,7 @@ predicate ExistsPred(proposer:ProposerState, ref_proposer:LProposer, existsOpn:b
                          && !LAllAcceptorsHadNoProposal(ref_proposer.received_1b_packets, opn))
 }
 
-predicate AnAcceptorHadProposal(ref_proposer:LProposer, opn:OperationNumber)
+ghost predicate AnAcceptorHadProposal(ref_proposer:LProposer, opn:OperationNumber)
   requires LSetOfMessage1b(ref_proposer.received_1b_packets)
 {
   opn > ref_proposer.next_operation_number_to_propose &&

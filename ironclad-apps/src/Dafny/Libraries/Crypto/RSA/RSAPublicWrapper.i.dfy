@@ -20,7 +20,7 @@ datatype RSAPubKeyImpl = RSAPubKeyImpl_c(
     e:BigNat     //- public key exponent
     );
 
-predicate WellformedRSAPubKeyImpl(pub:RSAPubKeyImpl)
+ghost predicate WellformedRSAPubKeyImpl(pub:RSAPubKeyImpl)
 {
     true
     && WellformedBigNat(pub.n)
@@ -34,25 +34,25 @@ datatype RSAKeyPairImpl = RSAKeyPairImpl_c(
     d:BigNat     //- private key exponent
     );
 
-predicate WellformedRSAKeyPairImpl(p:RSAKeyPairImpl)
+ghost predicate WellformedRSAKeyPairImpl(p:RSAKeyPairImpl)
 {
     WellformedRSAPubKeyImpl(p.pub)
     && WellformedBigNat(p.d)
 }
 
-function PubKeyImplToSpec(pubkey:RSAPubKeyImpl) : RSAPubKeySpec
+ghost function PubKeyImplToSpec(pubkey:RSAPubKeyImpl) : RSAPubKeySpec
     requires WellformedRSAPubKeyImpl(pubkey);
 {
     RSAPublicKeySpec_c(I(pubkey.n), pubkey.size, I(pubkey.e))
 }
 
-function KeyPairImplToSpec(key:RSAKeyPairImpl) : RSAKeyPairSpec
+ghost function KeyPairImplToSpec(key:RSAKeyPairImpl) : RSAKeyPairSpec
     requires WellformedRSAKeyPairImpl(key);
 {
     RSAKeyPairSpec_c(PubKeyImplToSpec(key.pub), I(key.d))
 }
 
-predicate ModestKeyValue(x:BigNat)
+ghost predicate ModestKeyValue(x:BigNat)
 {
     ModestBigNatValue(x)
 }
@@ -144,7 +144,7 @@ method GenDummyKey() returns (key_pair:RSAKeyPairImpl)
     key_pair := RSAKeyPairImpl_c(RSAPubKeyImpl_c(zilch, 0, zilch), zilch);
 }
 
-function KV(X:BigNat) : int
+ghost function KV(X:BigNat) : int
     requires WellformedBigNat(X);
 {
     I(X)

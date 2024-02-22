@@ -48,12 +48,12 @@ method {:timeLimitMultiplier 2} CreateNotaryStatement (new_counter_value:BigNat,
 
 datatype NotaryStateImpl = NotaryStateImplConstructor(counter:BigNat);
 
-static function NotaryStateImplToSpec(s:NotaryStateImpl):NotaryState
+static ghost function NotaryStateImplToSpec(s:NotaryStateImpl):NotaryState
 {
     NotaryStateConstructor(if WellformedBigNat(s.counter) then I(s.counter) else 0)
 }
 
-static predicate NotaryStateImplValid(notary_state:NotaryStateImpl)
+static ghost predicate NotaryStateImplValid(notary_state:NotaryStateImpl)
 {
     WellformedBigNat(notary_state.counter)
     && ModestBigNatValue(notary_state.counter)
@@ -86,7 +86,7 @@ method NotaryInitialize() returns (notary_state:NotaryStateImpl)
     assert NotaryStateImplToSpec(notary_state) == NotaryStateConstructor(0);
 }
 
-static predicate NotaryAdvanceCounterValid_premium(in_state:NotaryState, out_state:NotaryState, common_state:CommonState,
+static ghost predicate NotaryAdvanceCounterValid_premium(in_state:NotaryState, out_state:NotaryState, common_state:CommonState,
                                                    message_in:seq<int>, notary_statement_out:seq<int>, notary_attestation_out:seq<int>)
     requires WellformedRSAKeyPairSpec(common_state.key_pair);
     requires IsByteSeq(message_in);

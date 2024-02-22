@@ -12,7 +12,7 @@ type RslEnvironment = LEnvironment<NodeIdentity, RslMessage>
 type RslPacket = LPacket<NodeIdentity, RslMessage>
 type RslIo = LIoOp<NodeIdentity, RslMessage>
 
-function ConcatenatePaxosIos(s:seq<seq<RslIo>>) : seq<RslIo>
+ghost function ConcatenatePaxosIos(s:seq<seq<RslIo>>) : seq<RslIo>
 {
   if |s| == 0 then
     []

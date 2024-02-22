@@ -10,23 +10,23 @@ import opened LiveRSL__ProposerState_i
 import opened Collections__Sets_i
 import opened Common__SeqIsUnique_i
 
-predicate SetOfMessage1b(S:set<CPacket>)
+ghost predicate SetOfMessage1b(S:set<CPacket>)
 {
   forall p :: p in S ==> p.msg.CMessage_1b?
 }
 
-predicate SetOfMessage1bAboutBallot(S:set<CPacket>, b:CBallot)
+ghost predicate SetOfMessage1bAboutBallot(S:set<CPacket>, b:CBallot)
 {
   && SetOfMessage1b(S)
   && (forall p :: p in S ==> p.msg.bal_1b == b)
 }
 
-predicate IsAfterLogTruncationPoint(opn:COperationNumber, received_1b_packets:set<CPacket>)
+ghost predicate IsAfterLogTruncationPoint(opn:COperationNumber, received_1b_packets:set<CPacket>)
 {
   forall p :: p in received_1b_packets && p.msg.CMessage_1b? ==> p.msg.log_truncation_point.n <= opn.n
 }
 
-predicate AllAcceptorsHadNoProposal(S:set<CPacket>, opn:COperationNumber)
+ghost predicate AllAcceptorsHadNoProposal(S:set<CPacket>, opn:COperationNumber)
   requires SetOfMessage1b(S)
 {
   forall p :: p in S ==> !(opn in p.msg.votes.v)
@@ -114,7 +114,7 @@ lemma lemma_AbstractifySetOfCPacketsToSetOfRslPackets_propertiesProposer(cps:set
 }
 
 // Name this accessor for the proof below
-function PacketSrc(pkt:CPacket) : EndPoint
+ghost function PacketSrc(pkt:CPacket) : EndPoint
 {
   pkt.src      
 }

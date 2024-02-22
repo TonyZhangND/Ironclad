@@ -6,18 +6,18 @@ datatype BigRat = BigRat_ctor(
     n : BigNum,
     d : BigNat);
 
-static function WellformedBigRat(Q:BigRat) : bool
+static ghost function WellformedBigRat(Q:BigRat) : bool
 {
     WellformedBigNum(Q.n) && WellformedBigNat(Q.d) && !zero(Q.d)
 }
 
-static function RV(Q:BigRat) : real
+static ghost function RV(Q:BigRat) : real
     requires WellformedBigRat(Q);
 {
     real(BV(Q.n)) / real(I(Q.d))
 }
 
-static function method BigRatNegate(Q:BigRat) : BigRat
+static function BigRatNegate(Q:BigRat) : BigRat
     requires WellformedBigRat(Q);
     ensures WellformedBigRat(BigRatNegate(Q));
     ensures RV(BigRatNegate(Q)) == 0.0 - RV(Q);
@@ -208,7 +208,7 @@ method BigRatDiv(A:BigRat, B:BigRat) returns (R:BigRat)
     }
 }
 
-static function method MakeSmallLiteralBigRat(x:nat) : BigRat
+static function MakeSmallLiteralBigRat(x:nat) : BigRat
     requires x < Width();
     ensures WellformedBigRat(MakeSmallLiteralBigRat(x));
     ensures RV(MakeSmallLiteralBigRat(x)) == real(x);
@@ -217,7 +217,7 @@ static function method MakeSmallLiteralBigRat(x:nat) : BigRat
     BigRat_ctor(MakeSmallLiteralBigNum(x), MakeSmallLiteralBigNat(1))
 }
 
-static function method BigNatToBigRat(x:BigNat) : BigRat
+static function BigNatToBigRat(x:BigNat) : BigRat
     requires WellformedBigNat(x);
     ensures WellformedBigRat(BigNatToBigRat(x));
     ensures RV(BigNatToBigRat(x)) == real(I(x));

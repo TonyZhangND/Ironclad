@@ -10,7 +10,7 @@ include "../Util/repeat_digit.i.dfy"
  * Real definition in spec directory (included above);
  * but here's a commented copy for your edification.
 
-static function {:opaque} power2(exp: nat) : nat
+static ghost function {:opaque} power2(exp: nat) : nat
     ensures power2(exp) > 0;
 {
     if (exp==0) then
@@ -523,7 +523,7 @@ static lemma lemma_power2_unfolding(a:nat, b:nat)
     lemma_power2_is_power_2(a*b);
 }
 
-static function{:opaque} NatNumBits(n:nat):nat
+static ghost function{:opaque} NatNumBits(n:nat):nat
     ensures NatNumBits(n) >= 0;
 {
     if n == 0 then 0 else 1 + NatNumBits(n / 2)

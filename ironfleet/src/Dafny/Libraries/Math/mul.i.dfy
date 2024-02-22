@@ -8,20 +8,20 @@ import opened Math__mul_auto_i
 // TODO_MODULE: module Math__mul_i {
 // TODO_MODULE: import opened Math__mul_nonlinear_i
 
-function mul(x:int, y:int) : int { x*y }
+ghost function mul(x:int, y:int) : int { x*y }
 
 //-////////////////////////////////////////////////////////////
 //- Recursive definitions that can be handy for proving 
 //- properties we can't or don't want to rely on nonlinear for
 //-////////////////////////////////////////////////////////////
 
-function mul_recursive(x:int, y:int) : int
+ghost function mul_recursive(x:int, y:int) : int
 {
   if x >= 0 then mul_pos(x, y)
   else -1*mul_pos(-1*x, y)
 }
 
-function{:opaque} mul_pos(x:int, y:int) : int
+ghost function{:opaque} mul_pos(x:int, y:int) : int
   requires x >= 0
 {
   if x == 0 then 0
@@ -290,7 +290,7 @@ lemma lemma_mul_strict_inequality_converse_forall()
   ensures  forall x:int, y:int, z:int {:trigger x*z, y*z} :: x*z < y*z && z>=0 ==> x < y
 {
     forall (x:int, y:int, z:int | x*z < y*z && z>=0)
-        ensures x < y;
+        ensures x < y
     {
         lemma_mul_strict_inequality_converse(x,y,z);
     }
@@ -320,7 +320,7 @@ lemma lemma_mul_is_distributive_sub_forall()
   ensures forall x:int, y:int, z:int {:trigger x*(y - z)} :: x*(y - z) == x*y - x*z
 {
   forall (x:int, y:int, z:int)
-    ensures x*(y - z) == x*y - x*z;
+    ensures x*(y - z) == x*y - x*z
   {
     lemma_mul_is_distributive_sub(x,y,z);
   }
@@ -351,7 +351,7 @@ lemma lemma_mul_nonzero_forall()
   ensures forall x:int, y:int {:trigger x*y} :: x*y != 0 <==> x != 0 && y != 0
 {
   forall (x:int, y:int)
-    ensures x*y != 0 <==> x != 0 && y != 0;
+    ensures x*y != 0 <==> x != 0 && y != 0
   {
     lemma_mul_nonzero(x,y);
   }
@@ -467,7 +467,7 @@ lemma lemma_mul_properties()
 }
 
 //- Kept for legacy reasons:
-function INTERNAL_mul_recursive(x:int, y:int) : int { mul_recursive(x, y) }
+ghost function INTERNAL_mul_recursive(x:int, y:int) : int { mul_recursive(x, y) }
 
 // TODO_MODULE: } import opened Math__mul_i_ = Math__mul_i
 

@@ -25,7 +25,7 @@ class NodeImpl
         netClient := null;
     }
 
-    predicate Valid()
+    ghost predicate Valid()
         reads this;
         reads NetClientIsValid.reads(netClient);
     {
@@ -36,7 +36,7 @@ class NodeImpl
         && Repr == { this } + NetClientRepr(netClient)
     }
         
-    function Env() : HostEnvironment?
+    ghost function Env() : HostEnvironment?
         reads this, NetClientIsValid.reads(netClient);
     {
         if netClient!=null then netClient.env else null

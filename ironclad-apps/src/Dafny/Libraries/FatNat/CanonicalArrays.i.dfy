@@ -60,7 +60,7 @@ method CopyArraySimple(dst:array<int>, src:array<int>)
 
 
 
-function CanonicalizeSeq_def(pv:int, s:seq<int>) : seq<int>
+ghost function CanonicalizeSeq_def(pv:int, s:seq<int>) : seq<int>
     requires 1<pv;
     requires IsDigitSeq(pv, s);
     decreases |s|;
@@ -94,7 +94,7 @@ lemma lemma_CanonicalizeSeq(pv:int, s:seq<int>)
 
 
 
-function CanonicalizeSeq(pv:int, s:seq<int>) : seq<int>
+ghost function CanonicalizeSeq(pv:int, s:seq<int>) : seq<int>
     requires 1<pv;
     requires IsDigitSeq(pv, s);
     ensures IsCanonicalDigitSeq(pv, CanonicalizeSeq(pv,s));
@@ -155,7 +155,7 @@ method MakeBELiteralArray(x:nat) returns (xa:array<int>)
     lemma_BEDigitSeqToInt_singleton(power2(32), x);
 }
 
-predicate IsZeroValue_def(a:seq<int>)
+ghost predicate IsZeroValue_def(a:seq<int>)
     requires IsWordSeq(a);
 {
     forall j :: 0<=j<|a| ==> a[j]==0
@@ -204,7 +204,7 @@ lemma lemma_IsZeroValue(a:seq<int>)
     }
 }
 
-predicate IsZeroValue(a:seq<int>)
+ghost predicate IsZeroValue(a:seq<int>)
     requires IsWordSeq(a);
     ensures IsZeroValue(a) <==> (BEWordSeqToInt(a[..])==0);
 {

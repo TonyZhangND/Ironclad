@@ -31,8 +31,8 @@ import opened Collections__Maps2_s
 
 lemma Lemma_RoundRobinSchedulerTimelyForAllActionsTemporal<S>(
   behavior:Behavior<S>,                   // The behavior we'll prove it for
-  next_action_type_fun:imap<int, int>,    // A function that takes a step and computes which action type has priority
-  real_time_fun:imap<int, int>,           // A function that takes a step and computes at what real time it happened
+  next_action_type_fun:imap<int, int>,    // A ghost function that takes a step and computes which action type has priority
+  real_time_fun:imap<int, int>,           // A ghost function that takes a step and computes at what real time it happened
   scheduler_action:temporal,              // The subaction of 'next' that executes the scheduler
   schedule:seq<temporal>,                 // The schedule the scheduler follows
   start_step:int,                         // The step at which the scheduler starts executing regularly
@@ -146,7 +146,7 @@ lemma Lemma_mod_incr_decreases(x:int, y:int, n:int)
   lemma_mod_auto(n);
 }
 
-function{:opaque} SchedulerActsOrNextActionTypeUnchangedTemporal<S>(
+ghost function{:opaque} SchedulerActsOrNextActionTypeUnchangedTemporal<S>(
   behavior:Behavior<S>,
   next_action_type_fun:imap<int, int>,
   scheduler_action:temporal
@@ -248,7 +248,7 @@ lemma Lemma_RoundRobinSchedulerEventuallyPerformsCertainNextAction<S>(
 
 lemma Lemma_RoundRobinSchedulerEventuallyPerformsSpecificAction<S>(
   behavior:Behavior<S>,                   // The behavior we'll prove it for
-  next_action_type_fun:imap<int, int>,    // A function that takes a step and computes which action type has priority
+  next_action_type_fun:imap<int, int>,    // A ghost function that takes a step and computes which action type has priority
   scheduler_action:temporal,              // The subaction of 'next' that executes the scheduler
   schedule:seq<temporal>,                 // The schedule the scheduler follows
   start_step:int,                         // The step at which the scheduler starts executing regularly

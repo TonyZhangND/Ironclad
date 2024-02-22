@@ -29,24 +29,24 @@ datatype CScheduler = CScheduler(ghost sched:LScheduler, replica_impl:ReplicaImp
 type HostState = CScheduler
 type ConcreteConfiguration = ConstantsState
 
-predicate ConcreteConfigInit(config:ConcreteConfiguration) 
+ghost predicate ConcreteConfigInit(config:ConcreteConfiguration) 
 {
   ConstantsStateIsValid(config)
 }
 
-function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
+ghost function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
 {
   MapSeqToSet(config.config.replica_ids, x=>x)
 }
 
-predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
 {
   && host_state.replica_impl.Valid() 
   && host_state.replica_impl.Env() == env
   && host_state.sched == host_state.replica_impl.AbstractifyToLScheduler()
 }
 
-predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
+ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
 {
   && host_state.replica_impl.Valid()
   && host_state.replica_impl.replica.constants.all == config
@@ -55,7 +55,7 @@ predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoi
                    AbstractifyReplicaConstantsStateToLReplicaConstants(host_state.replica_impl.replica.constants))
 }
 
-predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+ghost predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
 {
   && NetEventLogIsAbstractable(ios)
   && OnlySentMarshallableData(ios)
@@ -63,7 +63,7 @@ predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<En
      || HostNextIgnoreUnsendable(host_state.sched, host_state'.sched, ios))
 }
 
-function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
+ghost function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
 {
   var paxos_config := paxos_config_parsing(args);
   var params := StaticParams();
@@ -109,7 +109,7 @@ method {:timeLimitMultiplier 4} HostInitImpl(
   host_state := CScheduler(scheduler.AbstractifyToLScheduler(), scheduler);
 }
 
-predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
+ghost predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
 {
   forall e :: && (e in recvs  ==> e.LIoOpReceive?) 
         && (e in clocks ==> e.LIoOpReadClock? || e.LIoOpTimeoutReceive?) 
@@ -141,7 +141,7 @@ ghost method RemoveRecvs(events:seq<NetEvent>) returns (recvs:seq<NetEvent>, res
   }
 }
 
-predicate NetEventsReductionCompatible(events:seq<NetEvent>)
+ghost predicate NetEventsReductionCompatible(events:seq<NetEvent>)
 {
   forall i :: 0 <= i < |events| - 1 ==> events[i].LIoOpReceive? || events[i+1].LIoOpSend?
 }

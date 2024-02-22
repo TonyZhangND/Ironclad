@@ -146,7 +146,7 @@ static method BEBitwiseMask(X:seq<int>, c:nat) returns (M:seq<int>)
                     lemma_Asm_BitwiseAnd_is_PureBitwiseAnd(X[wordi], word_mask);
                     assert PureBitwiseAnd(X[wordi], word_mask) == nextword;
                     lemma_BitwiseAnd_equivalence(X[wordi], word_mask, nextword);
-                    assert BitwiseAndPredicate(X[wordi], word_mask, nextword);
+                    assert BitwiseAndghost predicate(X[wordi], word_mask, nextword);
                     assert SelectBit(b%32, nextword) == 
                         (SelectBit(b%32, X[wordi]) && SelectBit(b%32, word_mask));
                     

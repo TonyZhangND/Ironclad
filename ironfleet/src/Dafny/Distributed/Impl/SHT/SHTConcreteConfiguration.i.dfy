@@ -22,13 +22,13 @@ datatype SHTConcreteConfiguration = SHTConcreteConfiguration(
     rootIdentity:EndPoint,
     params:CParameters)
 
-predicate SHTConcreteConfigurationIsAbstractable(config:SHTConcreteConfiguration)
+ghost predicate SHTConcreteConfigurationIsAbstractable(config:SHTConcreteConfiguration)
 {
     (forall e :: e in config.hostIds ==> EndPointIsAbstractable(e))
     && EndPointIsAbstractable(config.rootIdentity)
 }
 
-predicate SHTConcreteConfigurationIsValid(config:SHTConcreteConfiguration)
+ghost predicate SHTConcreteConfigurationIsValid(config:SHTConcreteConfiguration)
 {
        0 < |config.hostIds| < 0xffff_ffff_ffff_ffff
     && SHTConcreteConfigurationIsAbstractable(config)
@@ -36,25 +36,25 @@ predicate SHTConcreteConfigurationIsValid(config:SHTConcreteConfiguration)
     && CParametersIsValid(config.params)
 }
 
-function method SHTEndPointIsValid(endPoint:EndPoint, config:SHTConcreteConfiguration) : bool
+function SHTEndPointIsValid(endPoint:EndPoint, config:SHTConcreteConfiguration) : bool
     requires SHTConcreteConfigurationIsValid(config);
 {
     EndPointIsValidPublicKey(endPoint)
 }
 
 
-function AbstractifyToConfiguration(config:SHTConcreteConfiguration) : SHTConfiguration
+ghost function AbstractifyToConfiguration(config:SHTConcreteConfiguration) : SHTConfiguration
     requires SHTConcreteConfigurationIsAbstractable(config);
 {
     SHTConfiguration([], AbstractifyEndPointsToNodeIdentities(config.hostIds), AbstractifyEndPointToNodeIdentity(config.rootIdentity), AbstractifyCParametersToParameters(config.params))
 }
 
-predicate ReplicaIndexValid(index:uint64, config:SHTConcreteConfiguration)
+ghost predicate ReplicaIndexValid(index:uint64, config:SHTConcreteConfiguration)
 {
     0 <= index as int < |config.hostIds|
 }
 
-predicate ReplicaIndicesValid(indices:seq<uint64>, config:SHTConcreteConfiguration)
+ghost predicate ReplicaIndicesValid(indices:seq<uint64>, config:SHTConcreteConfiguration)
 {
     forall i :: 0 <= i < |indices| ==> ReplicaIndexValid(indices[i], config)
 }
@@ -95,7 +95,7 @@ lemma lemma_WFSHTConcreteConfiguration(config:SHTConcreteConfiguration)
     }
 }
 
-predicate WFSHTConcreteConfiguration(config:SHTConcreteConfiguration)
+ghost predicate WFSHTConcreteConfiguration(config:SHTConcreteConfiguration)
     ensures WFSHTConcreteConfiguration(config) ==>
        SHTConcreteConfigurationIsAbstractable(config)
         && WFSHTConfiguration(AbstractifyToConfiguration(config));

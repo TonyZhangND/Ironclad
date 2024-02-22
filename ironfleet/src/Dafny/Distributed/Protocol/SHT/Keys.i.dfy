@@ -3,7 +3,7 @@ include "../../Services/SHT/AppInterface.i.dfy"
 module SHT__Keys_i {
 import opened AppInterface_i`All
 
-predicate method KeyLe(ka:Key, kb:Key) {
+predicate KeyLe(ka:Key, kb:Key) {
     ka == kb || KeyLt(ka, kb)
 }
 
@@ -52,7 +52,7 @@ lemma KeyTransitivity(ka:Key, kb:Key, kc:Key)
     
 datatype KeyPlus = KeyZero() | KeyPlus(k:Key) | KeyInf()
 
-predicate method KeyPlusLt(kp:KeyPlus, kp':KeyPlus) {
+predicate KeyPlusLt(kp:KeyPlus, kp':KeyPlus) {
     kp != kp' &&
     match kp {
         case KeyZero => true
@@ -66,7 +66,7 @@ predicate method KeyPlusLt(kp:KeyPlus, kp':KeyPlus) {
     }
 }
 
-predicate method KeyPlusLe(kp:KeyPlus, kp':KeyPlus) {
+predicate KeyPlusLe(kp:KeyPlus, kp':KeyPlus) {
     kp == kp' || KeyPlusLt(kp, kp')
 }
 
@@ -97,23 +97,23 @@ lemma KeyPlusTransitivity(ka:KeyPlus, kb:KeyPlus, kc:KeyPlus)
 datatype KeyRange = KeyRange(klo:KeyPlus, khi:KeyPlus)
     // range includes all keys klo <= k < khi
 
-predicate method KeyRangeContains(range:KeyRange, kp:KeyPlus) {
+predicate KeyRangeContains(range:KeyRange, kp:KeyPlus) {
     KeyPlusLe(range.klo, kp) && KeyPlusLt(kp, range.khi)
 }
 
-predicate RangesOverlap(kra:KeyRange, krb:KeyRange) {
+ghost predicate RangesOverlap(kra:KeyRange, krb:KeyRange) {
        KeyRangeContains(kra, krb.klo)
     || KeyRangeContains(kra, krb.khi)
     || KeyRangeContains(krb, kra.klo)
     || KeyRangeContains(krb, kra.khi)   // Redundant, but adds symmetry
 }
 
-function CompleteRange() : KeyRange
+ghost function CompleteRange() : KeyRange
 {
     KeyRange(KeyZero(), KeyInf())
 }
 
-predicate method EmptyKeyRange(kr:KeyRange)
+predicate EmptyKeyRange(kr:KeyRange)
 {
     KeyPlusLe(kr.khi, kr.klo)
 }

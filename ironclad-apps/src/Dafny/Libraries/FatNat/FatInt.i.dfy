@@ -8,7 +8,7 @@ datatype FatInt = FatInt_ctor(
 
 //-////////////////////////////////////////////////////////////////////////////
 
-function {:heap} WellformedFatInt(A:FatInt) : bool
+ghost function {:heap} WellformedFatInt(A:FatInt) : bool
     reads A.value;
 {
     A.value != null
@@ -18,7 +18,7 @@ function {:heap} WellformedFatInt(A:FatInt) : bool
 
 //-////////////////////////////////////////////////////////////////////////////
 
-function {:heap} FIV(A:FatInt) : int
+ghost function {:heap} FIV(A:FatInt) : int
     requires WellformedFatInt(A);
     reads A.value;
     ensures (FIV(A) < 0) <==> A.negate;

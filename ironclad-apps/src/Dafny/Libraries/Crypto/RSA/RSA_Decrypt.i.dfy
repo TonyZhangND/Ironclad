@@ -9,7 +9,7 @@ include "KeyImpl.i.dfy"
 include "RSA.i.dfy"
 include "RSAOps.i.dfy"
 
-static function PKCS15_EncryptionPad_premium(msg:seq<int>, k:nat, padding:seq<int>) : seq<int>
+static ghost function PKCS15_EncryptionPad_premium(msg:seq<int>, k:nat, padding:seq<int>) : seq<int>
     requires IsByteSeq(msg);
     requires IsByteSeq(padding);
     requires |padding| == PadCount(msg, k);

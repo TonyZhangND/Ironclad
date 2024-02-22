@@ -39,7 +39,7 @@ import opened DirectRefinement__StateMachine_i
 import opened Environment_s
 import opened Math__mod_auto_i
 
-predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
+ghost predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
   reads *
 {
   && |db| > 0
@@ -47,18 +47,18 @@ predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
   && forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1])
 }   
 
-predicate LPacketIsAbstractable(cp:LPacket<EndPoint,seq<byte>>)
+ghost predicate LPacketIsAbstractable(cp:LPacket<EndPoint,seq<byte>>)
 {
   CMessageIsAbstractable(PaxosDemarshallData(cp.msg))
 }
 
-function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, RslMessage>
+ghost function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, RslMessage>
   requires LPacketIsAbstractable(p)
 {
   LPacket(p.dst, p.src, AbstractifyCMessageToRslMessage(PaxosDemarshallData(p.msg)))
 }
 
-predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
+ghost predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
 {
   match step {
     case LEnvStepHostIos(actor, ios) => NetEventLogIsAbstractable(ios)
@@ -68,7 +68,7 @@ predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
   }
 }
 
-function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, RslMessage>
+ghost function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, RslMessage>
   requires LEnvStepIsAbstractable(step)
 {
   match step {
@@ -79,19 +79,19 @@ function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvSte
   }
 }
 
-predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
+ghost predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
 {
   && (forall p :: p in ds_env.sentPackets ==> LPacketIsAbstractable(p))
   && LEnvStepIsAbstractable(ds_env.nextStep)
 }
 
-function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, RslMessage>>
+ghost function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, RslMessage>>
   requires forall p :: p in sent ==> LPacketIsAbstractable(p)
 {
   set p | p in sent :: AbstractifyConcretePacket(p)
 }
 
-function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, RslMessage>
+ghost function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, RslMessage>
   requires ConcreteEnvironmentIsAbstractable(ds_env)
 {
   LEnvironment(ds_env.time,
@@ -100,7 +100,7 @@ function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>)
                AbstractifyConcreteEnvStep(ds_env.nextStep))
 }
 
-function AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : seq<LScheduler>
+ghost function AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : seq<LScheduler>
   requires forall r :: r in replica_order ==> r in replicas
   ensures  |AbstractifyConcreteReplicas(replicas, replica_order)| == |replica_order|
   ensures  forall i :: 0 <= i < |replica_order| ==>
@@ -111,14 +111,14 @@ function AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_o
     [replicas[replica_order[0]].sched] + AbstractifyConcreteReplicas(replicas, replica_order[1..])
 }
 
-predicate DsStateIsAbstractable(ds:DS_State)
+ghost predicate DsStateIsAbstractable(ds:DS_State)
 {
   && ConstantsStateIsAbstractable(ds.config)
   && ConcreteEnvironmentIsAbstractable(ds.environment)
   && (forall r :: r in ds.config.config.replica_ids ==> r in ds.servers)
 }
 
-function AbstractifyDsState(ds:DS_State) : RslState
+ghost function AbstractifyDsState(ds:DS_State) : RslState
   requires DsStateIsAbstractable(ds)
 {
   RslState(AbstractifyConstantsStateToLConstants(ds.config),
@@ -796,39 +796,39 @@ lemma lemma_GetImplBehaviorRefinement(config:ConcreteConfiguration, db:seq<DS_St
   }
 }
 
-function RenameToAppRequestMessage(request:Request) : AppRequestMessage
+ghost function RenameToAppRequestMessage(request:Request) : AppRequestMessage
 {
   AppRequestMessage(request.client, request.seqno, request.request)
 }
 
-function RenameToAppReplyMessage(reply:Reply) : AppReplyMessage
+ghost function RenameToAppReplyMessage(reply:Reply) : AppReplyMessage
 {
   AppReplyMessage(reply.client, reply.seqno, reply.reply)
 }
 
-function RenameToAppRequestMessages(requests:set<Request>) : set<AppRequestMessage>
+ghost function RenameToAppRequestMessages(requests:set<Request>) : set<AppRequestMessage>
 {
   set r | r in requests :: RenameToAppRequestMessage(r)
 }
 
-function RenameToAppReplies(replies:set<Reply>) : set<AppReplyMessage>
+ghost function RenameToAppReplies(replies:set<Reply>) : set<AppReplyMessage>
 {
   set r | r in replies :: RenameToAppReplyMessage(r)
 }
 
-function RenameToAppBatch(batch:seq<Request>) : seq<AppRequestMessage>
+ghost function RenameToAppBatch(batch:seq<Request>) : seq<AppRequestMessage>
   ensures |RenameToAppBatch(batch)| == |batch|
   ensures forall i :: 0 <= i < |batch| ==> RenameToAppBatch(batch)[i] == RenameToAppRequestMessage(batch[i])
 {
   if |batch| == 0 then [] else RenameToAppBatch(all_but_last(batch)) + [RenameToAppRequestMessage(last(batch))]
 }
 
-function RenameToServiceState(rs:RSLSystemState) : ServiceState
+ghost function RenameToServiceState(rs:RSLSystemState) : ServiceState
 {
   ServiceState'(rs.server_addresses, rs.app, RenameToAppRequestMessages(rs.requests), RenameToAppReplies(rs.replies))
 }
 
-function RenameToServiceStates(rs:seq<RSLSystemState>) : seq<ServiceState>
+ghost function RenameToServiceStates(rs:seq<RSLSystemState>) : seq<ServiceState>
   ensures |rs| == |RenameToServiceStates(rs)|
   ensures forall i :: 0 <= i < |rs| ==> RenameToServiceState(rs[i]) == RenameToServiceStates(rs)[i]
 {

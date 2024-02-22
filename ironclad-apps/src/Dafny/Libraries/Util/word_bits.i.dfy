@@ -121,7 +121,7 @@ static lemma lemma_ComputePower2_is_power2(e:int, p2:int)
     }
 }
 
-static function method ComputePower2(e:int) : int
+static function ComputePower2(e:int) : int
     requires 0 <= e < 32;
     ensures Word32(1) && Word32(e);
     ensures |BEWordToBitSeq(ComputePower2(e))| == 32;
@@ -136,7 +136,7 @@ static function method ComputePower2(e:int) : int
 
 //-------------------------------------------------------------------------
 
-//-static function power2minus1_word(e:nat) : seq<int>
+//-static ghost function power2minus1_word(e:nat) : seq<int>
 //-    requires 0 <= e <= 32;
 //-{
 //-    SequenceOfZeros(32-e) + RepeatDigit_premium(1, e)
@@ -233,7 +233,7 @@ static lemma lemma_ComputePower2Minus1(e:int, p2m1:int)
     }
 }
 
-static function method ComputePower2Minus1_mostly(e:int) : int
+static function ComputePower2Minus1_mostly(e:int) : int
     requires 0 <= e < 32;
     ensures Word32(1) && Word32(e);
     ensures |BEWordToBitSeq(ComputePower2Minus1_mostly(e))| == 32;
@@ -252,7 +252,7 @@ static lemma lemma_0xffffffff_is_2to32minus1()
     lemma_2toX();
 }
 
-static function method ComputePower2Minus1(e:int) : int
+static function ComputePower2Minus1(e:int) : int
     requires 0 <= e < 32;
     ensures Word32(1) && Word32(e);
     ensures |BEWordToBitSeq(ComputePower2Minus1(e))| == 32;
@@ -266,7 +266,7 @@ static function method ComputePower2Minus1(e:int) : int
 
 //-------------------------------------------------------------------------
 
-static function GetWordBit(x: int, b: int) : int
+static ghost function GetWordBit(x: int, b: int) : int
     requires Word32(x);
     requires 0 <= b < 32;
     ensures IsBit(GetWordBit(x, b));

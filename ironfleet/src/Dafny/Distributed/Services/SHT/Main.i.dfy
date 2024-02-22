@@ -50,7 +50,7 @@ module Main_i refines Main_s {
         provides DS_s, Native__Io_s, Native__NativeTypes_s
         provides IronfleetMain
 
-    predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
+    ghost predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
         reads *;
     {
            |db| > 0
@@ -58,18 +58,18 @@ module Main_i refines Main_s {
         && (forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1]))
     }
 
-    predicate LPacketIsAbstractable(cp:LPacket<EndPoint,seq<byte>>)
+    ghost predicate LPacketIsAbstractable(cp:LPacket<EndPoint,seq<byte>>)
     {
         CSingleMessageIsAbstractable(SHTDemarshallData(cp.msg))
     }
 
-    function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, SingleMessage<Message>>
+    ghost function AbstractifyConcretePacket(p:LPacket<EndPoint,seq<byte>>) : LPacket<NodeIdentity, SingleMessage<Message>>
         requires LPacketIsAbstractable(p);
     {
         LPacket(p.dst, p.src, AbstractifyCSingleMessageToSingleMessage(SHTDemarshallData(p.msg)))
     }
 
-    predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
+    ghost predicate LEnvStepIsAbstractable(step:LEnvStep<EndPoint,seq<byte>>)
     {
         match step {
             case LEnvStepHostIos(actor, ios) => NetEventLogIsAbstractable(ios)
@@ -79,7 +79,7 @@ module Main_i refines Main_s {
         }
     }
 
-    function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, SingleMessage<Message>>
+    ghost function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, SingleMessage<Message>>
         requires LEnvStepIsAbstractable(step);
     {
         match step {
@@ -90,19 +90,19 @@ module Main_i refines Main_s {
         }
     }
 
-    predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
+    ghost predicate ConcreteEnvironmentIsAbstractable(ds_env:LEnvironment<EndPoint,seq<byte>>)
     {
         (forall p :: p in ds_env.sentPackets ==> LPacketIsAbstractable(p))
      && LEnvStepIsAbstractable(ds_env.nextStep)
     }
 
-    function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, SingleMessage<Message>>>
+    ghost function AbstractifyConcreteSentPackets(sent:set<LPacket<EndPoint,seq<byte>>>) : set<LPacket<NodeIdentity, SingleMessage<Message>>>
         requires forall p :: p in sent ==> LPacketIsAbstractable(p);
     {
         set p | p in sent :: AbstractifyConcretePacket(p)
     }
 
-    function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, SingleMessage<Message>>
+    ghost function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, SingleMessage<Message>>
         requires ConcreteEnvironmentIsAbstractable(ds_env);
     {
         LEnvironment(ds_env.time,
@@ -111,7 +111,7 @@ module Main_i refines Main_s {
                      AbstractifyConcreteEnvStep(ds_env.nextStep))
     }
 
-    function AbstractifyConcreteConfiguration(ds_config:ConcreteConfiguration) : SHTConfiguration
+    ghost function AbstractifyConcreteConfiguration(ds_config:ConcreteConfiguration) : SHTConfiguration
         requires ConstantsStateIsAbstractable(ds_config);
     {
         AbstractifyToConfiguration( 
@@ -123,7 +123,7 @@ module Main_i refines Main_s {
                               )
     }
 
-    function{:opaque} AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : seq<LScheduler>
+    ghost function{:opaque} AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : seq<LScheduler>
         requires forall r :: r in replica_order ==> r in replicas;
         ensures  |AbstractifyConcreteReplicas(replicas, replica_order)| == |replica_order|;
         ensures  forall i {:trigger AbstractifyConcreteReplicas(replicas, replica_order)[i]} :: 0 <= i < |replica_order| ==> 
@@ -134,14 +134,14 @@ module Main_i refines Main_s {
             [replicas[replica_order[0]].sched] + AbstractifyConcreteReplicas(replicas, replica_order[1..])
     }
 
-    predicate DsStateIsAbstractable(ds:DS_State) 
+    ghost predicate DsStateIsAbstractable(ds:DS_State) 
     {
            ConstantsStateIsValid(ds.config)
         && ConcreteEnvironmentIsAbstractable(ds.environment)
         && (forall r :: r in ds.config.hostIds ==> r in ds.servers)
     }
 
-    function AbstractifyDsState(ds:DS_State) : LSHT_State
+    ghost function AbstractifyDsState(ds:DS_State) : LSHT_State
         requires DsStateIsAbstractable(ds);
     {
         LSHT_State(AbstractifyConcreteConfiguration(ds.config),
@@ -620,7 +620,7 @@ module Main_i refines Main_s {
         assert LEnvironment_PerformIos(le, le', id, r_ios);
     }
 
-    predicate ReplicasDistinct(replica_ids:seq<NodeIdentity>, i:int, j:int)
+    ghost predicate ReplicasDistinct(replica_ids:seq<NodeIdentity>, i:int, j:int)
     {
         0 <= i < |replica_ids| && 0 <= j < |replica_ids| && replica_ids[i] == replica_ids[j] ==> i == j
     }
@@ -1399,7 +1399,7 @@ module Main_i refines Main_s {
         lemma_ServiceStateServerAddressesNeverChange(sb, server_addresses, i-1);
     }
 
-    predicate HostStateReq(sht_state:SHT_State, req:AppRequest)
+    ghost predicate HostStateReq(sht_state:SHT_State, req:AppRequest)
     {
         exists h,req_index :: h in maprange(sht_state.hosts) && 0 <= req_index < |h.receivedRequests| && req == h.receivedRequests[req_index]
     }

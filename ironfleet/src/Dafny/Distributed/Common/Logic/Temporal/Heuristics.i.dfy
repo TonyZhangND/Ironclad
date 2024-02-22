@@ -9,7 +9,7 @@ import opened Collections__Maps2_i
 // DEFINITIONS
 ////////////////////
 
-function TBlast(i:int):bool { true }
+ghost function TBlast(i:int):bool { true }
 
 ////////////////////
 // LEMMAS

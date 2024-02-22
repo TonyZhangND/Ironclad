@@ -20,7 +20,7 @@ datatype BenchmarkState = NopState()
                         | FatNatAddState(a:array<int>, b:array<int>)
                         | ShaState(arr_is_words:bool, arr:array<int>, use_original:bool)
 
-predicate {:opaque} {:heap} WellformedBenchmarkState(state:BenchmarkState)
+ghost predicate {:opaque} {:heap} WellformedBenchmarkState(state:BenchmarkState)
     reads if state.FatNatAddState? then state.a else null;
     reads if state.FatNatAddState? then state.b else null;
     reads if state.ShaState? then state.arr else null;
@@ -45,7 +45,7 @@ predicate {:opaque} {:heap} WellformedBenchmarkState(state:BenchmarkState)
     else true
 }
 
-predicate {:opaque} CorrectBenchmarkState(state:BenchmarkState, Benchmark:int)
+ghost predicate {:opaque} CorrectBenchmarkState(state:BenchmarkState, Benchmark:int)
 {
     if Benchmark == BenchmarkFatAdd() || Benchmark == BenchmarkFatAddSlowly() then state.FatNatAddState?
     else if Benchmark == BenchmarkSha256() then state.ShaState?

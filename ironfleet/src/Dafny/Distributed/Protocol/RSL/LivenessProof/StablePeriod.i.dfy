@@ -15,7 +15,7 @@ import opened Temporal__Temporal_s
 import opened Temporal__Time_s
 import opened Collections__Maps2_s
     
-function CurrentViewOfHost(
+ghost function CurrentViewOfHost(
   ps:RslState,
   replica_index:int
   ):Ballot
@@ -24,7 +24,7 @@ function CurrentViewOfHost(
   ps.replicas[replica_index].replica.proposer.election_state.current_view
 }
 
-predicate StablePeriodStarted(
+ghost predicate StablePeriodStarted(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot,
@@ -38,7 +38,7 @@ predicate StablePeriodStarted(
   && (forall idx :: 0 <= idx < |ps.replicas| ==> BalLt(ps.replicas[idx].replica.proposer.max_ballot_i_sent_1a, view))
 }
 
-function{:opaque} StablePeriodStartedTemporal(
+ghost function{:opaque} StablePeriodStartedTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot,
@@ -52,7 +52,7 @@ function{:opaque} StablePeriodStartedTemporal(
   stepmap(imap i :: StablePeriodStarted(b[i], live_quorum, view, ahead_idx))
 }
 
-predicate NoReplicaBeyondView(
+ghost predicate NoReplicaBeyondView(
   ps:RslState,
   view:Ballot
   )
@@ -60,7 +60,7 @@ predicate NoReplicaBeyondView(
   forall idx :: 0 <= idx < |ps.replicas| ==> BalLeq(CurrentViewOfHost(ps, idx), view)
 }
 
-function{:opaque} NoReplicaBeyondViewTemporal(
+ghost function{:opaque} NoReplicaBeyondViewTemporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -71,7 +71,7 @@ function{:opaque} NoReplicaBeyondViewTemporal(
   stepmap(imap i :: NoReplicaBeyondView(b[i], view))
 }
 
-predicate NoMaxBallotISent1aBeyondView(
+ghost predicate NoMaxBallotISent1aBeyondView(
   ps:RslState,
   view:Ballot
   )
@@ -79,7 +79,7 @@ predicate NoMaxBallotISent1aBeyondView(
   forall idx :: 0 <= idx < |ps.replicas| ==> BalLeq(ps.replicas[idx].replica.proposer.max_ballot_i_sent_1a, view)
 }
 
-function{:opaque} NoMaxBallotISent1aBeyondViewTemporal(
+ghost function{:opaque} NoMaxBallotISent1aBeyondViewTemporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -90,12 +90,12 @@ function{:opaque} NoMaxBallotISent1aBeyondViewTemporal(
   stepmap(imap i :: NoMaxBallotISent1aBeyondView(b[i], view))
 }
 
-predicate ObjectInFirstNOfSequence<T>(obj:T, s:seq<T>, n:int)
+ghost predicate ObjectInFirstNOfSequence<T>(obj:T, s:seq<T>, n:int)
 {
   if |s| <= n then (obj in s) else (n > 0 && obj in s[..n])
 }
 
-predicate RequestInFirstN(
+ghost predicate RequestInFirstN(
   ps:RslState,
   idx:int,
   req:Request,
@@ -106,7 +106,7 @@ predicate RequestInFirstN(
   && ObjectInFirstNOfSequence(req, ps.replicas[idx].replica.proposer.election_state.requests_received_prev_epochs, n)
 }
 
-function{:opaque} RequestInFirstNTemporal(
+ghost function{:opaque} RequestInFirstNTemporal(
   b:Behavior<RslState>,
   idx:int,
   req:Request,
@@ -119,7 +119,7 @@ function{:opaque} RequestInFirstNTemporal(
   stepmap(imap i :: RequestInFirstN(b[i], idx, req, n))
 }
 
-predicate RequestInFirstNOfRequestQueue(
+ghost predicate RequestInFirstNOfRequestQueue(
   ps:RslState,
   idx:int,
   req:Request,
@@ -143,18 +143,18 @@ datatype Phase2Params = Phase2Params(
   ios:seq<RslIo>
   )
 
-function TimeToBeginPhase2(asp:AssumptionParameters, processing_bound:int):int
+ghost function TimeToBeginPhase2(asp:AssumptionParameters, processing_bound:int):int
 {
   processing_bound * 3
 }
 
-function TimeToAdvanceOneOperation(asp:AssumptionParameters, processing_bound:int):int
+ghost function TimeToAdvanceOneOperation(asp:AssumptionParameters, processing_bound:int):int
   requires asp.host_period > 0
 {
   asp.c.params.max_batch_delay + asp.max_clock_ambiguity * 4 + asp.c.params.heartbeat_period + TimeToPerformGenericAction(asp) * 6 + processing_bound * 3
 }
 
-predicate Phase2Started(
+ghost predicate Phase2Started(
   ps:RslState,
   ps':RslState,
   asp:AssumptionParameters,
@@ -177,7 +177,7 @@ predicate Phase2Started(
     && s'.acceptor.log_truncation_point == h.log_truncation_point
 }
 
-function{:opaque} Phase2StartedTemporal(
+ghost function{:opaque} Phase2StartedTemporal(
   b:Behavior<RslState>,
   asp:AssumptionParameters,
   h:Phase2Params
@@ -190,7 +190,7 @@ function{:opaque} Phase2StartedTemporal(
   stepmap(imap i :: Phase2Started(b[i], b[nextstep(i)], asp, h))
 }
 
-predicate Phase2StableWithRequest(
+ghost predicate Phase2StableWithRequest(
   b:Behavior<RslState>,
   asp:AssumptionParameters,
   h:Phase2Params

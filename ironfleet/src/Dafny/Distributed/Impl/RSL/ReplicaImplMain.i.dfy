@@ -72,7 +72,7 @@ method {:timeLimitMultiplier 2} ReplicaNextMainProcessPacketX(r:ReplicaImpl)
 
   assert r.Valid();
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -81,7 +81,7 @@ method {:timeLimitMultiplier 2} ReplicaNextMainProcessPacketX(r:ReplicaImpl)
   r.nextActionIndex := 1;
   ghost var scheduler := r.AbstractifyToLScheduler();
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -135,7 +135,7 @@ method ReplicaNextMainNoClock(r:ReplicaImpl)
 
   assert r.Valid();
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -145,7 +145,7 @@ method ReplicaNextMainNoClock(r:ReplicaImpl)
   r.nextActionIndex := nextActionIndex';
   ghost var scheduler := r.AbstractifyToLScheduler();
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -192,7 +192,7 @@ method ReplicaNextMainReadClock(r:ReplicaImpl)
 
   assert r.Valid();
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -202,7 +202,7 @@ method ReplicaNextMainReadClock(r:ReplicaImpl)
   r.nextActionIndex := nextActionIndex';
   ghost var scheduler := r.AbstractifyToLScheduler();
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();

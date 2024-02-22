@@ -32,7 +32,7 @@ datatype LExecutor = LExecutor(
   reply_cache:ReplyCache
   )
 
-predicate LExecutorInit(s:LExecutor, c:LReplicaConstants)
+ghost predicate LExecutorInit(s:LExecutor, c:LReplicaConstants)
 {
   && s.constants == c
   && s.app == AppInitialize()
@@ -42,14 +42,14 @@ predicate LExecutorInit(s:LExecutor, c:LReplicaConstants)
   && s.reply_cache == map[]
 }
 
-predicate LExecutorGetDecision(s:LExecutor, s':LExecutor, bal:Ballot, opn:OperationNumber, v:RequestBatch)
+ghost predicate LExecutorGetDecision(s:LExecutor, s':LExecutor, bal:Ballot, opn:OperationNumber, v:RequestBatch)
   requires opn == s.ops_complete
   requires s.next_op_to_execute.OutstandingOpUnknown?
 {
   s' == s.(next_op_to_execute := OutstandingOpKnown(v, bal))
 }
 
-function GetPacketsFromReplies(me:NodeIdentity, requests:seq<Request>, replies:seq<Reply>) : seq<RslPacket>
+ghost function GetPacketsFromReplies(me:NodeIdentity, requests:seq<Request>, replies:seq<Reply>) : seq<RslPacket>
   requires |requests| == |replies|
   requires forall r :: r in replies ==> r.Reply?
   ensures  forall p :: p in GetPacketsFromReplies(me, requests, replies) ==> p.src == me && p.msg.RslMessage_Reply?
@@ -95,7 +95,7 @@ lemma lemma_SpecificPacketInGetPacketsFromReplies(me:NodeIdentity, requests:seq<
   }
 }
     
-predicate LExecutorExecute(s:LExecutor, s':LExecutor, sent_packets:seq<RslPacket>)
+ghost predicate LExecutorExecute(s:LExecutor, s':LExecutor, sent_packets:seq<RslPacket>)
   requires s.next_op_to_execute.OutstandingOpKnown?
   requires LtUpperBound(s.ops_complete, s.constants.all.params.max_integer_val)
   requires LReplicaConstantsValid(s.constants)
@@ -116,7 +116,7 @@ predicate LExecutorExecute(s:LExecutor, s':LExecutor, sent_packets:seq<RslPacket
   && sent_packets == GetPacketsFromReplies(s.constants.all.config.replica_ids[s.constants.my_index], batch, replies)
 }
 
-predicate LExecutorProcessAppStateSupply(s:LExecutor, s':LExecutor, inp:RslPacket)
+ghost predicate LExecutorProcessAppStateSupply(s:LExecutor, s':LExecutor, inp:RslPacket)
   requires inp.msg.RslMessage_AppStateSupply?
   requires inp.src in s.constants.all.config.replica_ids && inp.msg.opn_state_supply > s.ops_complete
 {
@@ -127,7 +127,7 @@ predicate LExecutorProcessAppStateSupply(s:LExecutor, s':LExecutor, inp:RslPacke
            next_op_to_execute := OutstandingOpUnknown())
 }
 
-predicate LExecutorProcessAppStateRequest(s:LExecutor, s':LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LExecutorProcessAppStateRequest(s:LExecutor, s':LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
   requires inp.msg.RslMessage_AppStateRequest?
 {
   var m := inp.msg;
@@ -142,7 +142,7 @@ predicate LExecutorProcessAppStateRequest(s:LExecutor, s':LExecutor, inp:RslPack
     s' == s && sent_packets == []
 }
 
-predicate LExecutorProcessStartingPhase2(s:LExecutor, s':LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LExecutorProcessStartingPhase2(s:LExecutor, s':LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
   requires inp.msg.RslMessage_StartingPhase2?
 {
   if inp.src in s.constants.all.config.replica_ids && inp.msg.logTruncationPoint_2 > s.ops_complete then
@@ -152,7 +152,7 @@ predicate LExecutorProcessStartingPhase2(s:LExecutor, s':LExecutor, inp:RslPacke
     s' == s && sent_packets == []
 }
 
-predicate LExecutorProcessRequest(s:LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LExecutorProcessRequest(s:LExecutor, inp:RslPacket, sent_packets:seq<RslPacket>)
   requires inp.msg.RslMessage_Request?
   requires inp.src in s.reply_cache
   requires s.reply_cache[inp.src].Reply?

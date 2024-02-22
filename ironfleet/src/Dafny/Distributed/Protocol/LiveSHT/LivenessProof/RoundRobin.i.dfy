@@ -14,7 +14,7 @@ import opened LiveSHT__SHT_i
 import opened Temporal__Rules_i
 import opened Temporal__Temporal_s
 
-function{:opaque} MakeLSHTAction_ReceivePacket_Temporal(
+ghost function{:opaque} MakeLSHTAction_ReceivePacket_Temporal(
     b:Behavior<LSHT_State>,
     host_index:int
     ):temporal
@@ -41,7 +41,7 @@ function{:opaque} MakeLSHTAction_ReceivePacket_Temporal(
 }
 
 
-function{:opaque} MakeLSHTAction_ProcessReceivedPacket_Temporal(
+ghost function{:opaque} MakeLSHTAction_ProcessReceivedPacket_Temporal(
     b:Behavior<LSHT_State>,
     host_index:int
     ):temporal
@@ -67,7 +67,7 @@ function{:opaque} MakeLSHTAction_ProcessReceivedPacket_Temporal(
                       && LHost_ProcessReceivedPacket_Next(b[i].hosts[host_index].host, b[i+1].hosts[host_index].host, ios))
 }
 
-function{:opaque} MakeLSHTAction_NoReceive_Next_Wrapper_Temporal(
+ghost function{:opaque} MakeLSHTAction_NoReceive_Next_Wrapper_Temporal(
     b:Behavior<LSHT_State>,
     host_index:int
     ):temporal
@@ -93,7 +93,7 @@ function{:opaque} MakeLSHTAction_NoReceive_Next_Wrapper_Temporal(
                       && LHost_NoReceive_Next_Wrapper(b[i].hosts[host_index], b[i+1].hosts[host_index], ios))
 }
 
-function HostSchedule(b:Behavior<LSHT_State>, host_index:int):seq<temporal>
+ghost function HostSchedule(b:Behavior<LSHT_State>, host_index:int):seq<temporal>
     requires imaptotal(b);
 {
     [ MakeLSHTAction_ReceivePacket_Temporal(b, host_index),

@@ -10,7 +10,7 @@ import opened Temporal__Time_s
 import opened Collections__Maps2_s
 import opened Collections__Multisets_s
 
-function{:opaque} BehaviorToTimeMap<IdType, MessageType>(
+ghost function{:opaque} BehaviorToTimeMap<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>
   ):imap<int, int>
   requires imaptotal(b)
@@ -24,7 +24,7 @@ function{:opaque} BehaviorToTimeMap<IdType, MessageType>(
 // HOST QUEUES
 ///////////////////////////
 
-predicate HostQueue_PerformIos<IdType, MessageType>(
+ghost predicate HostQueue_PerformIos<IdType, MessageType>(
   hostQueue:seq<LPacket<IdType, MessageType>>,
   hostQueue':seq<LPacket<IdType, MessageType>>,
   ios:seq<LIoOp<IdType, MessageType>>
@@ -42,7 +42,7 @@ predicate HostQueue_PerformIos<IdType, MessageType>(
     hostQueue' == hostQueue
 }
 
-predicate HostQueues_Init<IdType, MessageType>(
+ghost predicate HostQueues_Init<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>
   )
 {
@@ -50,7 +50,7 @@ predicate HostQueues_Init<IdType, MessageType>(
   && e.time >= 0
 }
 
-predicate HostQueues_Next<IdType, MessageType>(
+ghost predicate HostQueues_Next<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   e':LEnvironment<IdType, MessageType>
   )
@@ -72,7 +72,7 @@ predicate HostQueues_Next<IdType, MessageType>(
     case LEnvStepStutter => e'.hostInfo == e.hostInfo
 }
 
-function{:opaque} HostQueuesNextTemporal<IdType, MessageType>(
+ghost function{:opaque} HostQueuesNextTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>
   ):temporal
   requires imaptotal(b)
@@ -81,7 +81,7 @@ function{:opaque} HostQueuesNextTemporal<IdType, MessageType>(
   stepmap(imap i :: HostQueues_Next(b[i], b[nextstep(i)]))
 }
 
-predicate HostQueuesLive<IdType, MessageType>(
+ghost predicate HostQueuesLive<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>
   )
   requires imaptotal(b)
@@ -94,7 +94,7 @@ predicate HostQueuesLive<IdType, MessageType>(
 // SYNCHRONOUS NETWORK
 ///////////////////////////
 
-function{:opaque} PacketDeliveredTemporal<IdType, MessageType>(
+ghost function{:opaque} PacketDeliveredTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   p:LPacket<IdType, MessageType>
   ):temporal
@@ -105,7 +105,7 @@ function{:opaque} PacketDeliveredTemporal<IdType, MessageType>(
   stepmap(imap i :: b[i].nextStep == LEnvStepDeliverPacket(p))
 }
 
-predicate PacketSentBetweenHosts<IdType, MessageType>(
+ghost predicate PacketSentBetweenHosts<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   p:LPacket<IdType, MessageType>,
   sources:set<IdType>,
@@ -118,7 +118,7 @@ predicate PacketSentBetweenHosts<IdType, MessageType>(
   && p.dst in destinations
 }
 
-predicate PacketsSynchronousForHosts<IdType, MessageType>(
+ghost predicate PacketsSynchronousForHosts<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   i:int,
   latency_bound:int,
@@ -132,7 +132,7 @@ predicate PacketsSynchronousForHosts<IdType, MessageType>(
     sat(i, next(eventuallynextwithin(PacketDeliveredTemporal(b, p), latency_bound, BehaviorToTimeMap(b))))
 }
 
-function{:opaque} PacketsSynchronousForHostsTemporal<IdType, MessageType>(
+ghost function{:opaque} PacketsSynchronousForHostsTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   latency_bound:int,
   sources:set<IdType>,
@@ -146,7 +146,7 @@ function{:opaque} PacketsSynchronousForHostsTemporal<IdType, MessageType>(
   stepmap(imap i :: PacketsSynchronousForHosts(b, i, latency_bound, sources, destinations))
 }
 
-predicate NetworkSynchronousForHosts<IdType, MessageType>(
+ghost predicate NetworkSynchronousForHosts<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   start_step:int,
   latency_bound:int,
@@ -162,7 +162,7 @@ predicate NetworkSynchronousForHosts<IdType, MessageType>(
 // TIME NEVER STOPS
 ///////////////////////////
 
-function{:opaque} TimeReachesTemporal<IdType, MessageType>(
+ghost function{:opaque} TimeReachesTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   t:int
   ):temporal
@@ -172,7 +172,7 @@ function{:opaque} TimeReachesTemporal<IdType, MessageType>(
   stepmap(imap i :: b[i].time >= t)
 }
 
-predicate NoZenoBehavior<IdType, MessageType>(
+ghost predicate NoZenoBehavior<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>
   )
   requires imaptotal(b)
@@ -184,7 +184,7 @@ predicate NoZenoBehavior<IdType, MessageType>(
 // CLOCK AMBIGUITY LIMITED
 //////////////////////////////
 
-predicate ClockAmbiguityLimitedForHostsInStep<IdType, MessageType>(
+ghost predicate ClockAmbiguityLimitedForHostsInStep<IdType, MessageType>(
   e:LEnvironment,
   max_clock_ambiguity:int,
   hosts:set<IdType>
@@ -194,7 +194,7 @@ predicate ClockAmbiguityLimitedForHostsInStep<IdType, MessageType>(
     (forall io :: io in e.nextStep.ios && io.LIoOpReadClock? ==> e.time - max_clock_ambiguity <= io.t <= e.time + max_clock_ambiguity)
 }
 
-function{:opaque} ClockAmbiguityLimitedForHostsTemporal<IdType, MessageType>(
+ghost function{:opaque} ClockAmbiguityLimitedForHostsTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   max_clock_ambiguity:int,
   hosts:set<IdType>
@@ -207,7 +207,7 @@ function{:opaque} ClockAmbiguityLimitedForHostsTemporal<IdType, MessageType>(
   stepmap(imap i :: ClockAmbiguityLimitedForHostsInStep(b[i], max_clock_ambiguity, hosts))
 }
 
-predicate ClockAmbiguityLimitedForHosts<IdType, MessageType>(
+ghost predicate ClockAmbiguityLimitedForHosts<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   start_step:int,
   max_clock_ambiguity:int,
@@ -222,7 +222,7 @@ predicate ClockAmbiguityLimitedForHosts<IdType, MessageType>(
 // RATE-LIMITED HOSTS
 //////////////////////////////
 
-function{:opaque} PacketDeliveredToHostTemporal<IdType, MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>, host:IdType):temporal
+ghost function{:opaque} PacketDeliveredToHostTemporal<IdType, MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>, host:IdType):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, PacketDeliveredToHostTemporal(b, host))} :: sat(i, PacketDeliveredToHostTemporal(b, host)) <==>
              b[i].nextStep.LEnvStepDeliverPacket? && b[i].nextStep.p.dst == host
@@ -230,7 +230,7 @@ function{:opaque} PacketDeliveredToHostTemporal<IdType, MessageType>(b:Behavior<
   stepmap(imap i :: b[i].nextStep.LEnvStepDeliverPacket? && b[i].nextStep.p.dst == host)
 }
 
-function{:opaque} NetworkDeliveryRateForHostBoundedSinceTemporal<IdType, MessageType>(
+ghost function{:opaque} NetworkDeliveryRateForHostBoundedSinceTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   i:int,
   burst_size:int,
@@ -244,7 +244,7 @@ function{:opaque} NetworkDeliveryRateForHostBoundedSinceTemporal<IdType, Message
   stepmap(imap j :: countWithin(i, j, PacketDeliveredToHostTemporal(b, host)) <= burst_size)
 }
 
-function{:opaque} NetworkDeliveryRateForHostBoundedTemporal<IdType, MessageType>(
+ghost function{:opaque} NetworkDeliveryRateForHostBoundedTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   burst_size:int,
   burst_period:int,
@@ -258,7 +258,7 @@ function{:opaque} NetworkDeliveryRateForHostBoundedTemporal<IdType, MessageType>
   stepmap(imap i :: sat(i, alwayswithin(NetworkDeliveryRateForHostBoundedSinceTemporal(b, i, burst_size, host), burst_period, BehaviorToTimeMap(b))))
 }
 
-predicate NetworkDeliveryRateBoundedForHosts<IdType, MessageType>(
+ghost predicate NetworkDeliveryRateBoundedForHosts<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   start_step:int,
   burst_size:int,

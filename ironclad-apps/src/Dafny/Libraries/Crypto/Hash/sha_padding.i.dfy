@@ -3,9 +3,9 @@ include "sha_common.i.dfy"
 include "../../Util/arrays_and_seqs.i.dfy"
 include "../../Util/integer_sequences_premium.i.dfy"
 
-static function {:opaque} Mul32_const(i:int):int { i * 32 }
-static function {:opaque} Div32_const(i:int):int { i / 32 }
-static function {:opaque} Mod32_const(i:int):int { i % 32 }
+static ghost function {:opaque} Mul32_const(i:int):int { i * 32 }
+static ghost function {:opaque} Div32_const(i:int):int { i / 32 }
+static ghost function {:opaque} Mod32_const(i:int):int { i % 32 }
 static lemma lemma_Mul32_const(i:int) ensures Mul32_const(i) == i * 32; { reveal_Mul32_const(); }
 static lemma lemma_Div32_const(i:int) ensures Div32_const(i) == i / 32; { reveal_Div32_const(); }
 static lemma lemma_Mod32_const(i:int) ensures Mod32_const(i) == i % 32; { reveal_Mod32_const(); }
@@ -14,7 +14,7 @@ static lemma lemma_Mod32_const(i:int) ensures Mod32_const(i) == i % 32; { reveal
 //- Padding message
 //-///////////////////////////////////////////////////
 
-static function method {:opaque} PaddedLength(message_len: int) : int
+static function {:opaque} PaddedLength(message_len: int) : int
 {
     message_len + 1 + NumPaddingZeroes(message_len) + 64
 }
@@ -118,7 +118,7 @@ static lemma{:dafnycc_conservative_seq_triggers} lemma_PadMessageForSHA_properti
     }
 }
 
-static function PadMessageForSHA_premium(m:seq<int>) : seq<int>
+static ghost function PadMessageForSHA_premium(m:seq<int>) : seq<int>
     requires IsBitSeq(m);
     requires |m| < power2(64);
     ensures IsBitSeq(PadMessageForSHA_premium(m));
@@ -307,7 +307,7 @@ static lemma lemma_64BitValueIsZerosThen32Bits(v: int)
     }
 }
 
-static function {:opaque} GetArrayBitOpaque(a: array<int>, b:int) : int
+static ghost function {:opaque} GetArrayBitOpaque(a: array<int>, b:int) : int
     requires IsWordArray(a);
     requires 0 <= b < Mul32_const(a.Length);
     ensures IsBit(GetArrayBitOpaque(a, b));

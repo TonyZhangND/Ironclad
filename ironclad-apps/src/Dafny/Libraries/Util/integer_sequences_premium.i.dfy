@@ -1,11 +1,11 @@
 include "../Math/power.i.dfy"
 include "integer_sequences.i.dfy"
 
-//- "Premium" versions of {:autoReq} spec functions, which include
+//- "Premium" versions of {:autoReq} spec ghost functions, which include
 //- explicit requires and appropriate ensures for composition with
-//- other functions.
+//- other ghost functions.
 
-static function BEDigitSeqToInt_premium(place_value:int, digits:seq<int>) : int
+static ghost function BEDigitSeqToInt_premium(place_value:int, digits:seq<int>) : int
     requires 1<place_value;
     requires IsDigitSeq(place_value, digits);
     ensures 0 <= BEDigitSeqToInt(place_value, digits) < power(place_value, |digits|);
@@ -14,19 +14,19 @@ static function BEDigitSeqToInt_premium(place_value:int, digits:seq<int>) : int
     BEDigitSeqToInt(place_value, digits)
 }
 
-static function BEBitSeqToInt_premium(bits:seq<int>) : int
+static ghost function BEBitSeqToInt_premium(bits:seq<int>) : int
     requires IsBitSeq(bits);
 {
     BEBitSeqToInt(bits)
 }
 
-static function BEByteSeqToInt_premium(bytes:seq<int>) : int
+static ghost function BEByteSeqToInt_premium(bytes:seq<int>) : int
     requires IsByteSeq(bytes);
 {
     BEByteSeqToInt(bytes)
 }
 
-static function BEWordSeqToInt_premium(words:seq<int>) : int
+static ghost function BEWordSeqToInt_premium(words:seq<int>) : int
     requires IsWordSeq(words);
     ensures 0<=BEWordSeqToInt(words);
 {
@@ -68,7 +68,7 @@ static lemma lemma_BEIntToDigitSeq_IsDigitSeq(place_value:int, min_places:int, v
     }
 }
 
-static function BEIntToDigitSeq_premium(place_value:int, min_places:int, v:int) : seq<int>
+static ghost function BEIntToDigitSeq_premium(place_value:int, min_places:int, v:int) : seq<int>
     requires 1<place_value;
     requires 0 <= v;
     ensures IsDigitSeq(place_value, BEIntToDigitSeq(place_value, min_places, v));
@@ -81,10 +81,10 @@ static function BEIntToDigitSeq_premium(place_value:int, min_places:int, v:int) 
 }
 
 //-////////////////////////////////////////////////////////////////////////////
-//- Generator functions (as opposed to recognizer predicates)
+//- Generator ghost functions (as opposed to recognizer ghost predicates)
 //-////////////////////////////////////////////////////////////////////////////
 
-static function BEIntToByteSeq_premium(x: int) : seq<int>
+static ghost function BEIntToByteSeq_premium(x: int) : seq<int>
     requires 0 <= x;
     ensures IsByteSeq(BEIntToByteSeq(x));
     ensures BEByteSeqToInt(BEIntToByteSeq(x)) == x;
@@ -96,7 +96,7 @@ static function BEIntToByteSeq_premium(x: int) : seq<int>
 
 //- Lost static tag because lemmas in seqs_transforms aren't static.
 
-static function BEWordToFourBytes_premium(x: int) : seq<int>
+static ghost function BEWordToFourBytes_premium(x: int) : seq<int>
     requires Word32(x);
     ensures IsByteSeq(BEWordToFourBytes(x));
 
@@ -119,7 +119,7 @@ static function BEWordToFourBytes_premium(x: int) : seq<int>
     BEWordToFourBytes(x)
 }
 
-static function BEWordToBitSeq_premium(x:int) : seq<int>
+static ghost function BEWordToBitSeq_premium(x:int) : seq<int>
     requires Word32(x);
     ensures IsBitSeq(BEWordToBitSeq(x));
     ensures |BEWordToBitSeq(x)| == 32;
@@ -142,7 +142,7 @@ static function BEWordToBitSeq_premium(x:int) : seq<int>
     BEWordToBitSeq(x)
 }
 
-static function BEWordSeqToBitSeq_premium(wordseq:seq<int>) : seq<int>
+static ghost function BEWordSeqToBitSeq_premium(wordseq:seq<int>) : seq<int>
     requires IsWordSeq(wordseq);
     ensures IsBitSeq(BEWordSeqToBitSeq(wordseq));
     ensures |BEWordSeqToBitSeq(wordseq)| == |wordseq|*32;
@@ -154,7 +154,7 @@ static function BEWordSeqToBitSeq_premium(wordseq:seq<int>) : seq<int>
     BEWordSeqToBitSeq(wordseq)
 }
 
-static function BEByteSeqToBitSeq_premium(byteseq:seq<int>) : seq<int>
+static ghost function BEByteSeqToBitSeq_premium(byteseq:seq<int>) : seq<int>
     requires IsByteSeq(byteseq);
     ensures IsBitSeq(BEByteSeqToBitSeq(byteseq));
     ensures |BEByteSeqToBitSeq(byteseq)| == |byteseq|*8;
@@ -165,7 +165,7 @@ static function BEByteSeqToBitSeq_premium(byteseq:seq<int>) : seq<int>
     BEByteSeqToBitSeq(byteseq)
 }
 
-static function BEWordSeqToByteSeq_premium(wordseq:seq<int>) : seq<int>
+static ghost function BEWordSeqToByteSeq_premium(wordseq:seq<int>) : seq<int>
     requires IsWordSeq(wordseq);
     ensures IsByteSeq(BEWordSeqToByteSeq(wordseq));
     ensures |BEWordSeqToByteSeq(wordseq)| == |wordseq|*4;

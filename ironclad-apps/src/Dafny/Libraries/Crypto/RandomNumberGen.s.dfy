@@ -11,7 +11,7 @@ include "RandomTracing.s.dfy"
 datatype SelectRandomRequest = SelectRandomRequest_c(
     l:int, h:int, h_bits:int);
 
-static predicate SelectRandomRequestValid(req:SelectRandomRequest)
+static ghost predicate SelectRandomRequestValid(req:SelectRandomRequest)
     
     
 {
@@ -25,7 +25,7 @@ datatype CandidateSeedWorksheetRow = CandidateSeedWorksheetRow_c(
     accepted:bool,
     randoms:seq<int>);
 
-static predicate CandidateSeedWorksheetRowValid(req:SelectRandomRequest, row:CandidateSeedWorksheetRow)
+static ghost predicate CandidateSeedWorksheetRowValid(req:SelectRandomRequest, row:CandidateSeedWorksheetRow)
 {
     //- consume exactly the required number of random bytes
     SelectRandomRequestValid(req)
@@ -41,11 +41,11 @@ datatype CandidateSeedWorksheet = CandidateSeedWorksheet_c(
     rows:seq<CandidateSeedWorksheetRow>,
     randoms:seq<int>);
 
-//- NB Every predicate of the form *ConsumesRandoms() has exactly the same
+//- NB Every ghost predicate of the form *ConsumesRandoms() has exactly the same
 //- body -- they're duplicated because they're talking about different
 //- row types, and those types aren't polymorphic.
 
-static function CandidateSeedWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheetRow>) : seq<int>
+static ghost function CandidateSeedWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheetRow>) : seq<int>
 {
     if (rows==[]) then
         []
@@ -53,7 +53,7 @@ static function CandidateSeedWorksheetConsumesRandoms(rows:seq<CandidateSeedWork
         CandidateSeedWorksheetConsumesRandoms(rows[..|rows|-1]) + rows[|rows|-1].randoms
 }
 
-static predicate CandidateSeedWorksheetValid(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet)
+static ghost predicate CandidateSeedWorksheetValid(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet)
 {
     //- there is at least one candidate
     0<|worksheet.rows|
@@ -66,7 +66,7 @@ static predicate CandidateSeedWorksheetValid(req:SelectRandomRequest, worksheet:
     && CandidateSeedWorksheetConsumesRandoms(worksheet.rows) == worksheet.randoms
 }
 
-static function CandidateSeedWorksheetOutput(worksheet:CandidateSeedWorksheet) : int
+static ghost function CandidateSeedWorksheetOutput(worksheet:CandidateSeedWorksheet) : int
     requires 0<|worksheet.rows|;
 {
     worksheet.rows[|worksheet.rows|-1].n

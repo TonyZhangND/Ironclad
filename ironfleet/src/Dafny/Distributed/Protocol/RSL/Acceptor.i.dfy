@@ -23,7 +23,7 @@ datatype LAcceptor = LAcceptor(
   log_truncation_point:OperationNumber
   )
 
-predicate IsLogTruncationPointValid(log_truncation_point:OperationNumber, last_checkpointed_operation:seq<OperationNumber>,
+ghost predicate IsLogTruncationPointValid(log_truncation_point:OperationNumber, last_checkpointed_operation:seq<OperationNumber>,
                                     config:LConfiguration)
 {
   IsNthHighestValueInSequence(log_truncation_point,
@@ -31,20 +31,20 @@ predicate IsLogTruncationPointValid(log_truncation_point:OperationNumber, last_c
                               LMinQuorumSize(config))
 }
 
-predicate RemoveVotesBeforeLogTruncationPoint(votes:Votes, votes':Votes, log_truncation_point:int)
+ghost predicate RemoveVotesBeforeLogTruncationPoint(votes:Votes, votes':Votes, log_truncation_point:int)
 {
   && (forall opn :: opn in votes' ==> opn in votes && votes'[opn] == votes[opn])
   && (forall opn :: opn < log_truncation_point ==> opn !in votes')
   && (forall opn :: opn >= log_truncation_point && opn in votes ==> opn in votes')
 }
 
-predicate LAddVoteAndRemoveOldOnes(votes:Votes, votes':Votes, new_opn:OperationNumber, new_vote:Vote, log_truncation_point:OperationNumber)
+ghost predicate LAddVoteAndRemoveOldOnes(votes:Votes, votes':Votes, new_opn:OperationNumber, new_vote:Vote, log_truncation_point:OperationNumber)
 {
   && (forall opn :: opn in votes' <==> opn >= log_truncation_point && (opn in votes || opn == new_opn))
   && (forall opn :: opn in votes' ==> votes'[opn] == (if opn == new_opn then new_vote else votes[opn]))
 }
 
-predicate LAcceptorInit(a:LAcceptor, c:LReplicaConstants)
+ghost predicate LAcceptorInit(a:LAcceptor, c:LReplicaConstants)
 {
   && a.constants == c
   && a.max_bal == Ballot(0,0)
@@ -55,7 +55,7 @@ predicate LAcceptorInit(a:LAcceptor, c:LReplicaConstants)
   && a.log_truncation_point == 0
 }
 
-predicate LAcceptorProcess1a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LAcceptorProcess1a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_packets:seq<RslPacket>)
   requires inp.msg.RslMessage_1a?
 {
   var m := inp.msg;
@@ -67,7 +67,7 @@ predicate LAcceptorProcess1a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_pack
     s' == s && sent_packets == []
 }
 
-predicate LAcceptorProcess2a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LAcceptorProcess2a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_packets:seq<RslPacket>)
   requires inp.msg.RslMessage_2a?
   requires inp.src in s.constants.all.config.replica_ids
   requires BalLeq(s.max_bal, inp.msg.bal_2a)
@@ -91,7 +91,7 @@ predicate LAcceptorProcess2a(s:LAcceptor, s':LAcceptor, inp:RslPacket, sent_pack
   && s'.last_checkpointed_operation == s.last_checkpointed_operation
 }
 
-predicate LAcceptorProcessHeartbeat(s:LAcceptor, s':LAcceptor, inp:RslPacket)
+ghost predicate LAcceptorProcessHeartbeat(s:LAcceptor, s':LAcceptor, inp:RslPacket)
   requires inp.msg.RslMessage_Heartbeat?
 {
   if inp.src in s.constants.all.config.replica_ids then
@@ -110,7 +110,7 @@ predicate LAcceptorProcessHeartbeat(s:LAcceptor, s':LAcceptor, inp:RslPacket)
     s' == s
 }
 
-predicate LAcceptorTruncateLog(s:LAcceptor, s':LAcceptor, opn:OperationNumber)
+ghost predicate LAcceptorTruncateLog(s:LAcceptor, s':LAcceptor, opn:OperationNumber)
 {
   if opn <= s.log_truncation_point then
     s' == s

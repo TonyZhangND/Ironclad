@@ -31,31 +31,31 @@ import opened Math__mul_nonlinear_i
 ////////////////////////////////////////////////////////////////////
 //    Grammars for the Paxos types
 ////////////////////////////////////////////////////////////////////
-function method EndPoint_grammar() : G { GByteArray }
-function method CRequest_grammar() : G { GTuple([EndPoint_grammar(), GUint64, GByteArray]) }
-function method CRequestBatch_grammar() : G { GArray(CRequest_grammar()) }
-function method CReply_grammar() : G { GTuple([EndPoint_grammar(), GUint64, GByteArray]) }
-function method CBallot_grammar() : G { GTuple([GUint64, GUint64]) }
-function method COperationNumber_grammar() : G { GUint64 }
-function method CVote_grammar() : G { GTuple([CBallot_grammar(), CRequestBatch_grammar()])} 
-function method CMap_grammar(key:G, val:G) : G { GArray(GTuple([key, val])) }
-function method CVotes_grammar() : G { GArray(GTuple([COperationNumber_grammar(), CVote_grammar()])) }
+function EndPoint_grammar() : G { GByteArray }
+function CRequest_grammar() : G { GTuple([EndPoint_grammar(), GUint64, GByteArray]) }
+function CRequestBatch_grammar() : G { GArray(CRequest_grammar()) }
+function CReply_grammar() : G { GTuple([EndPoint_grammar(), GUint64, GByteArray]) }
+function CBallot_grammar() : G { GTuple([GUint64, GUint64]) }
+function COperationNumber_grammar() : G { GUint64 }
+function CVote_grammar() : G { GTuple([CBallot_grammar(), CRequestBatch_grammar()])} 
+function CMap_grammar(key:G, val:G) : G { GArray(GTuple([key, val])) }
+function CVotes_grammar() : G { GArray(GTuple([COperationNumber_grammar(), CVote_grammar()])) }
 
 ////////////////////////////////////////////////////////////////////
 //    Grammars for the Paxos messages 
 ////////////////////////////////////////////////////////////////////
-function method CMessage_Request_grammar() : G { GTuple([GUint64, GByteArray]) }
-function method CMessage_1a_grammar() : G { CBallot_grammar() }
-function method CMessage_1b_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CVotes_grammar()]) }
-function method CMessage_2a_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CRequestBatch_grammar()]) }
-function method CMessage_2b_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CRequestBatch_grammar()]) }
-function method CMessage_Heartbeat_grammar() : G { GTuple([CBallot_grammar(), GUint64, COperationNumber_grammar()]) }
-function method CMessage_Reply_grammar() : G { GTuple( [GUint64, GByteArray] ) }
-function method CMessage_AppStateRequest_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar()]) }
-function method CMessage_AppStateSupply_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), GByteArray]) }
-function method CMessage_StartingPhase2_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar()]) }
+function CMessage_Request_grammar() : G { GTuple([GUint64, GByteArray]) }
+function CMessage_1a_grammar() : G { CBallot_grammar() }
+function CMessage_1b_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CVotes_grammar()]) }
+function CMessage_2a_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CRequestBatch_grammar()]) }
+function CMessage_2b_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), CRequestBatch_grammar()]) }
+function CMessage_Heartbeat_grammar() : G { GTuple([CBallot_grammar(), GUint64, COperationNumber_grammar()]) }
+function CMessage_Reply_grammar() : G { GTuple( [GUint64, GByteArray] ) }
+function CMessage_AppStateRequest_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar()]) }
+function CMessage_AppStateSupply_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar(), GByteArray]) }
+function CMessage_StartingPhase2_grammar() : G { GTuple([CBallot_grammar(), COperationNumber_grammar()]) }
 
-function method CMessage_grammar() : G { GTaggedUnion([
+function CMessage_grammar() : G { GTaggedUnion([
   CMessage_Request_grammar(),
   CMessage_1a_grammar(),
   CMessage_1b_grammar(),
@@ -68,7 +68,7 @@ function method CMessage_grammar() : G { GTaggedUnion([
   CMessage_StartingPhase2_grammar()
   ]) }
 
-predicate NetPacketBound(data:seq<byte>) 
+ghost predicate NetPacketBound(data:seq<byte>) 
 {
   |data| < MaxPacketSize()
 }
@@ -77,23 +77,23 @@ predicate NetPacketBound(data:seq<byte>)
 //    64-bit Limits
 ////////////////////////////////////////////////////////////////////
 
-predicate CRequestBatchIs64Bit(batch:CRequestBatch)
+ghost predicate CRequestBatchIs64Bit(batch:CRequestBatch)
 {
   |batch| < 0x1_0000_0000_0000_0000
 }
 
-predicate CVoteIs64Bit(vote:CVote)
+ghost predicate CVoteIs64Bit(vote:CVote)
 {
   CRequestBatchIs64Bit(vote.max_val)
 }
 
-predicate CVotesIs64Bit(votes:CVotes)
+ghost predicate CVotesIs64Bit(votes:CVotes)
 {
   && |votes.v| < 0x1_0000_0000_0000_0000
   && (forall opn :: opn in votes.v ==> CVoteIs64Bit(votes.v[opn]))
 }
 
-predicate CMessageIs64Bit(msg:CMessage)
+ghost predicate CMessageIs64Bit(msg:CMessage)
 {
   match msg
     case CMessage_Invalid => true
@@ -113,14 +113,14 @@ predicate CMessageIs64Bit(msg:CMessage)
 //    Parsing
 ////////////////////////////////////////////////////////////////////
 
-function method parse_EndPoint(val:V) : EndPoint
+function parse_EndPoint(val:V) : EndPoint
   requires ValInGrammar(val, EndPoint_grammar())
   ensures  EndPointIsAbstractable(parse_EndPoint(val))
 {
   EndPoint(val.b)
 }
 
-function method parse_Request(val:V) : CRequest
+function parse_Request(val:V) : CRequest
   requires ValInGrammar(val, CRequest_grammar())
   ensures  CRequestIsAbstractable(parse_Request(val))
 {
@@ -131,7 +131,7 @@ function method parse_Request(val:V) : CRequest
   CRequest(ep, val.t[1].u, val.t[2].b)
 }
 
-function parse_RequestBatch(val:V) : CRequestBatch
+ghost function parse_RequestBatch(val:V) : CRequestBatch
   requires ValInGrammar(val, CRequestBatch_grammar())
   ensures  |parse_RequestBatch(val)| == |val.a|
   ensures  forall i :: 0 <= i < |parse_RequestBatch(val)| ==> parse_RequestBatch(val)[i] == parse_Request(val.a[i])
@@ -193,7 +193,7 @@ method Parse_RequestBatch(val:V) returns (batch:CRequestBatch)
   batch := batchArr[..];
 }
 
-function method parse_Reply(val:V) : CReply
+function parse_Reply(val:V) : CReply
   requires ValInGrammar(val, CReply_grammar())
   ensures  CReplyIsAbstractable(parse_Reply(val))
 {
@@ -204,7 +204,7 @@ function method parse_Reply(val:V) : CReply
   CReply(ep, val.t[1].u, val.t[2].b)
 }
 
-function method parse_Ballot(val:V) : CBallot
+function parse_Ballot(val:V) : CBallot
   requires ValInGrammar(val, CBallot_grammar())
   ensures  CBallotIsAbstractable(parse_Ballot(val))
 {
@@ -213,14 +213,14 @@ function method parse_Ballot(val:V) : CBallot
   CBallot(val.t[0].u, val.t[1].u)
 }
 
-function method parse_OperationNumber(val:V) : COperationNumber
+function parse_OperationNumber(val:V) : COperationNumber
   requires ValInGrammar(val, COperationNumber_grammar())
   ensures  COperationNumberIsAbstractable(parse_OperationNumber(val))
 {
   COperationNumber(val.u)
 }
 
-function parse_Vote(val:V) : CVote
+ghost function parse_Vote(val:V) : CVote
   requires ValInGrammar(val, CVote_grammar())
   ensures  CVoteIsAbstractable(parse_Vote(val))
   ensures  ValidVal(val) ==> CVoteIs64Bit(parse_Vote(val))
@@ -241,7 +241,7 @@ method Parse_Vote(val:V) returns (vote:CVote)
 
 // Abandoned for now, since the marshalling side is all methods, so we can't easily make it higher order
 // 
-//function method parse_Map<KT, VT>(val:V, parse_key:V->KT, parse_val:V->VT, key_grammar:G, val_grammar:G) : map<KT, VT>
+//function parse_Map<KT, VT>(val:V, parse_key:V->KT, parse_val:V->VT, key_grammar:G, val_grammar:G) : map<KT, VT>
 //  requires ValInGrammar(val, CMap_grammar(key_grammar, val_grammar))
 //  requires forall v :: parse_key.requires(v) && parse_val.requires(v)
 //  reads parse_key.reads, parse_val.reads;
@@ -261,7 +261,7 @@ method Parse_Vote(val:V) returns (vote:CVote)
 //    m
 //}
 
-function parse_Votes(val:V) : CVotes
+ghost function parse_Votes(val:V) : CVotes
   requires ValInGrammar(val, CVotes_grammar())
   ensures  CVotesIsAbstractable(parse_Votes(val))
   ensures  |parse_Votes(val).v| <= |val.a|
@@ -318,7 +318,7 @@ method Parse_Votes(val:V) returns (votes:CVotes)
   }
 }
 
-function method parse_Message_Request(val:V) : CMessage
+function parse_Message_Request(val:V) : CMessage
   requires ValInGrammar(val, CMessage_Request_grammar())
   ensures  CMessageIsAbstractable(parse_Message_Request(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_Request(val))
@@ -328,7 +328,7 @@ function method parse_Message_Request(val:V) : CMessage
   CMessage_Request(val.t[0].u, val.t[1].b)
 }
 
-function method parse_Message_1a(val:V) : CMessage
+function parse_Message_1a(val:V) : CMessage
   requires ValInGrammar(val, CMessage_1a_grammar())
   ensures  CMessageIsAbstractable(parse_Message_1a(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_1a(val))
@@ -336,7 +336,7 @@ function method parse_Message_1a(val:V) : CMessage
   CMessage_1a(parse_Ballot(val))
 }
 
-function parse_Message_1b(val:V) : CMessage
+ghost function parse_Message_1b(val:V) : CMessage
   requires ValInGrammar(val, CMessage_1b_grammar())
   ensures  CMessageIsAbstractable(parse_Message_1b(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_1b(val))
@@ -355,7 +355,7 @@ method Parse_Message_1b(val:V) returns (msg:CMessage)
   msg := CMessage_1b(parse_Ballot(val.t[0]), parse_OperationNumber(val.t[1]), votes);
 }
 
-function parse_Message_2a(val:V) : CMessage
+ghost function parse_Message_2a(val:V) : CMessage
   requires ValInGrammar(val, CMessage_2a_grammar())
   ensures  CMessageIsAbstractable(parse_Message_2a(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_2a(val))
@@ -374,7 +374,7 @@ method Parse_Message_2a(val:V) returns (msg:CMessage)
   msg := CMessage_2a(parse_Ballot(val.t[0]), parse_OperationNumber(val.t[1]), batch);
 }
 
-function parse_Message_2b(val:V) : CMessage
+ghost function parse_Message_2b(val:V) : CMessage
   requires ValInGrammar(val, CMessage_2b_grammar())
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_2b(val))
 {
@@ -392,7 +392,7 @@ method Parse_Message_2b(val:V) returns (msg:CMessage)
   msg := CMessage_2b(parse_Ballot(val.t[0]), parse_OperationNumber(val.t[1]), batch);
 }
 
-function method parse_Message_Heartbeat(val:V) : CMessage
+function parse_Message_Heartbeat(val:V) : CMessage
   requires ValInGrammar(val, CMessage_Heartbeat_grammar())
   ensures  CMessageIsAbstractable(parse_Message_Heartbeat(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_Heartbeat(val))
@@ -401,7 +401,7 @@ function method parse_Message_Heartbeat(val:V) : CMessage
   CMessage_Heartbeat(parse_Ballot(val.t[0]), val.t[1].u != 0, parse_OperationNumber(val.t[2]))
 }
 
-function method parse_Message_Reply(val:V) : CMessage
+function parse_Message_Reply(val:V) : CMessage
   requires ValInGrammar(val, CMessage_Reply_grammar())
   ensures  CMessageIsAbstractable(parse_Message_Reply(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_Reply(val))
@@ -411,7 +411,7 @@ function method parse_Message_Reply(val:V) : CMessage
   CMessage_Reply(val.t[0].u, val.t[1].b)
 }
 
-function method parse_Message_AppStateRequest(val:V) : CMessage
+function parse_Message_AppStateRequest(val:V) : CMessage
   requires ValInGrammar(val, CMessage_AppStateRequest_grammar())
   ensures  CMessageIsAbstractable(parse_Message_AppStateRequest(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_AppStateRequest(val))
@@ -419,7 +419,7 @@ function method parse_Message_AppStateRequest(val:V) : CMessage
   CMessage_AppStateRequest(parse_Ballot(val.t[0]), parse_OperationNumber(val.t[1]))
 }
 
-function method parse_Message_AppStateSupply(val:V) : CMessage
+function parse_Message_AppStateSupply(val:V) : CMessage
   requires ValInGrammar(val, CMessage_AppStateSupply_grammar())
   ensures  CMessageIsAbstractable(parse_Message_AppStateSupply(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_AppStateSupply(val))
@@ -428,7 +428,7 @@ function method parse_Message_AppStateSupply(val:V) : CMessage
   CMessage_AppStateSupply(parse_Ballot(val.t[0]), parse_OperationNumber(val.t[1]), val.t[2].b)
 }
 
-function method parse_Message_StartingPhase2(val:V) : CMessage
+function parse_Message_StartingPhase2(val:V) : CMessage
   requires ValInGrammar(val, CMessage_StartingPhase2_grammar())
   ensures  CMessageIsAbstractable(parse_Message_StartingPhase2(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message_StartingPhase2(val))
@@ -437,7 +437,7 @@ function method parse_Message_StartingPhase2(val:V) : CMessage
 }
 
 
-function parse_Message(val:V) : CMessage
+ghost function parse_Message(val:V) : CMessage
   requires ValInGrammar(val, CMessage_grammar())
   ensures  CMessageIsAbstractable(parse_Message(val))
   ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message(val))
@@ -501,7 +501,7 @@ method Parse_Message(val:V) returns (msg:CMessage)
 	}
 }
 
-function PaxosDemarshallData(data:seq<byte>) : CMessage
+ghost function PaxosDemarshallData(data:seq<byte>) : CMessage
   ensures  CMessageIsAbstractable(PaxosDemarshallData(data))
 {
   if Demarshallable(data, CMessage_grammar()) then
@@ -536,19 +536,19 @@ method PaxosDemarshallDataMethod(data:array<byte>, msg_grammar:G) returns (msg:C
 //    Can a value be marshalled?
 ////////////////////////////////////////////////////////////////////
 
-function Marshallable_2a(msg:CMessage) : bool
+ghost function Marshallable_2a(msg:CMessage) : bool
 {
   && msg.CMessage_2a?
   && ValidRequestBatch(msg.val_2a)
 }
 
-function Marshallable_2b(msg:CMessage) : bool
+ghost function Marshallable_2b(msg:CMessage) : bool
 {
   && msg.CMessage_2b?
   && ValidRequestBatch(msg.val_2b)
 }
 
-function Marshallable(msg:CMessage) : bool
+ghost function Marshallable(msg:CMessage) : bool
 {
   && (!msg.CMessage_Invalid?)
   && (msg.CMessage_Request? ==> CAppRequestMarshallable(msg.val))
@@ -563,12 +563,12 @@ function Marshallable(msg:CMessage) : bool
   && (msg.CMessage_StartingPhase2? ==> true)
 }
 
-function CMessageIsValid(msg:CMessage) : bool
+ghost function CMessageIsValid(msg:CMessage) : bool
 {
   Marshallable(msg)
 }
 
-predicate CPacketsIsMarshallable(cps:set<CPacket>)
+ghost predicate CPacketsIsMarshallable(cps:set<CPacket>)
 {
   forall cp :: cp in cps ==> Marshallable(cp.msg)
 }
@@ -1420,10 +1420,10 @@ lemma lemma_MarshallableBound(c:CMessage, val:V)
 }
 
 ////////////////////////////////////////////////////////////////////////
-// These functions need to be here, rather than CMessageRefinements.i.dfy,
+// These ghost functions need to be here, rather than CMessageRefinements.i.dfy,
 // since they depend on PaxosDemarshallData
 ////////////////////////////////////////////////////////////////////////
-function AbstractifyBufferToRslPacket(src:EndPoint, dst:EndPoint, data:seq<byte>) : RslPacket
+ghost function AbstractifyBufferToRslPacket(src:EndPoint, dst:EndPoint, data:seq<byte>) : RslPacket
   requires EndPointIsValidPublicKey(src)
   requires EndPointIsValidPublicKey(dst)
 {
@@ -1432,7 +1432,7 @@ function AbstractifyBufferToRslPacket(src:EndPoint, dst:EndPoint, data:seq<byte>
           AbstractifyCMessageToRslMessage(PaxosDemarshallData(data)))
 }
 
-predicate BufferRefinementAgreesWithMessageRefinement(msg:CMessage, marshalled:seq<byte>)
+ghost predicate BufferRefinementAgreesWithMessageRefinement(msg:CMessage, marshalled:seq<byte>)
   requires CMessageIsAbstractable(msg)
   requires CMessageIsAbstractable(msg)
 {
@@ -1442,19 +1442,19 @@ predicate BufferRefinementAgreesWithMessageRefinement(msg:CMessage, marshalled:s
             == LPacket(AbstractifyEndPointToNodeIdentity(dst), AbstractifyEndPointToNodeIdentity(src), AbstractifyCMessageToRslMessage(msg)))
 }
 
-function AbstractifyNetPacketToRslPacket(net:NetPacket) : RslPacket
+ghost function AbstractifyNetPacketToRslPacket(net:NetPacket) : RslPacket
   requires NetPacketIsAbstractable(net)
 {
   AbstractifyBufferToRslPacket(net.src, net.dst, net.msg)
 }
 
-predicate NetPacketIsAbstractable(net:NetPacket)
+ghost predicate NetPacketIsAbstractable(net:NetPacket)
 {
   && EndPointIsValidPublicKey(net.src)
   && EndPointIsValidPublicKey(net.dst)
 }
 
-predicate NetPacketsIsAbstractable(netps:set<NetPacket>)
+ghost predicate NetPacketsIsAbstractable(netps:set<NetPacket>)
 {
   forall p :: p in netps ==> NetPacketIsAbstractable(p)
 }
@@ -1535,28 +1535,28 @@ method PaxosMarshall(msg:CMessage) returns (data:array<byte>)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Sendable predicates
+// Sendable ghost predicates
 
-predicate CPacketIsSendable(cpacket:CPacket)
+ghost predicate CPacketIsSendable(cpacket:CPacket)
 {
   && CMessageIsValid(cpacket.msg) 
   && CPacketIsAbstractable(cpacket)
   && EndPointIsValidPublicKey(cpacket.src)
 }
 
-predicate CPacketSetIsSendable(cps:set<CPacket>)
+ghost predicate CPacketSetIsSendable(cps:set<CPacket>)
 {
   forall p :: p in cps ==> CPacketIsSendable(p)
 }
 
-predicate CPacketSeqIsValid(cps:seq<CPacket>)
+ghost predicate CPacketSeqIsValid(cps:seq<CPacket>)
 {
   && CPacketSeqIsAbstractable(cps)
   && |cps| < 0xFFFF_FFFF_FFFF_FFFF
   && forall i :: 0<=i<|cps| ==> CPacketIsSendable(cps[i])
 }
 
-predicate CBroadcastIsValid(broadcast:CBroadcast) 
+ghost predicate CBroadcastIsValid(broadcast:CBroadcast) 
 {
   && CBroadcastIsAbstractable(broadcast)
   && (broadcast.CBroadcast? ==>
@@ -1564,7 +1564,7 @@ predicate CBroadcastIsValid(broadcast:CBroadcast)
       && 0 <= |broadcast.dsts| < 0xFFFF_FFFF_FFFF_FFFF)
 }
 
-predicate OutboundPacketsIsValid(out:OutboundPackets)
+ghost predicate OutboundPacketsIsValid(out:OutboundPackets)
 {
   match out
     case Broadcast(broadcast) => CBroadcastIsValid(broadcast)

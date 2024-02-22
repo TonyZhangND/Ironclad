@@ -7,7 +7,7 @@ include "Bitwise.i.dfy"
 
 
 
-predicate {:heap} ModestFatNatValue(X:array<int>)
+ghost predicate {:heap} ModestFatNatValue(X:array<int>)
     reads X;
 {
     WellformedFatNat(X)

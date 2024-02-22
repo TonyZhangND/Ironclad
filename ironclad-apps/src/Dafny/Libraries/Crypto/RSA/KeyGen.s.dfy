@@ -15,7 +15,7 @@ include "../RandomTracing.s.dfy"
 datatype CandidatePrimeWorksheet = CandidatePrimeWorksheet_c(
     candidate:int, raw:int, randoms:seq<int>);
 
-static predicate CandidatePrimeWorksheetValid(keybits:int, worksheet:CandidatePrimeWorksheet)
+static ghost predicate CandidatePrimeWorksheetValid(keybits:int, worksheet:CandidatePrimeWorksheet)
     requires 0<keybits;
 {
     IsByteSeq(worksheet.randoms)
@@ -31,7 +31,7 @@ datatype PrimeGenerationWorksheetRow = PrimeGenerationWorksheetRow_c(
     miller_rabin_worksheet:MillerRabinWorksheet,
     randoms:seq<int>);
 
-static predicate PrimeGenerationWorksheetRowValid(keybits:int, row:PrimeGenerationWorksheetRow)
+static ghost predicate PrimeGenerationWorksheetRowValid(keybits:int, row:PrimeGenerationWorksheetRow)
     requires 0<keybits;
 {
     CandidatePrimeWorksheetValid(keybits, row.candidate)
@@ -45,7 +45,7 @@ datatype PrimeGenerationWorksheet = PrimeGenerationWorksheet_c(
     rows:seq<PrimeGenerationWorksheetRow>,
     randoms:seq<int>);
 
-static function PrimeGenerationWorksheetConsumesRandoms(rows:seq<PrimeGenerationWorksheetRow>) : seq<int>
+static ghost function PrimeGenerationWorksheetConsumesRandoms(rows:seq<PrimeGenerationWorksheetRow>) : seq<int>
 {
     if (rows==[]) then
         []
@@ -53,7 +53,7 @@ static function PrimeGenerationWorksheetConsumesRandoms(rows:seq<PrimeGeneration
         PrimeGenerationWorksheetConsumesRandoms(rows[..|rows|-1]) + rows[|rows|-1].randoms
 }
 
-static predicate {:autoReq} PrimeGenerationWorksheetValid(keybits:int, worksheet:PrimeGenerationWorksheet)
+static ghost predicate {:autoReq} PrimeGenerationWorksheetValid(keybits:int, worksheet:PrimeGenerationWorksheet)
 {
     //- each row locally valid
     (forall i :: 0<=i<|worksheet.rows| ==> PrimeGenerationWorksheetRowValid(keybits, worksheet.rows[i]))
@@ -65,7 +65,7 @@ static predicate {:autoReq} PrimeGenerationWorksheetValid(keybits:int, worksheet
     && PrimeGenerationWorksheetConsumesRandoms(worksheet.rows) == worksheet.randoms
 }
 
-static function {:autoReq} PrimeGenerationOutput(worksheet:PrimeGenerationWorksheet) : int
+static ghost function {:autoReq} PrimeGenerationOutput(worksheet:PrimeGenerationWorksheet) : int
     requires 0<|worksheet.rows|;
 {
     worksheet.rows[|worksheet.rows|-1].candidate.candidate

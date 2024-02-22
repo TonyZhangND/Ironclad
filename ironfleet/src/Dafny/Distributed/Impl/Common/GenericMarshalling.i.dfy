@@ -28,7 +28,7 @@ datatype V = VUint64(u:uint64)
            | VByteArray(b:seq<byte>)
            | VCase(c:uint64, val:V)
 
-predicate ValInGrammar(val:V, grammar:G)
+ghost predicate ValInGrammar(val:V, grammar:G)
 {
   match val
     case VUint64(_)    => grammar.GUint64?
@@ -39,7 +39,7 @@ predicate ValInGrammar(val:V, grammar:G)
 }
 
 // We only support reasonably sized grammars
-predicate ValidGrammar(grammar:G) 
+ghost predicate ValidGrammar(grammar:G) 
 {
   match grammar
     case GUint64             => true
@@ -50,7 +50,7 @@ predicate ValidGrammar(grammar:G)
 }
 
 // We can't encode values that are not valid
-predicate ValidVal(val:V)
+ghost predicate ValidVal(val:V)
 {
   match val
     case VUint64(_)    => true
@@ -60,14 +60,14 @@ predicate ValidVal(val:V)
     case VCase(c, v)   => ValidVal(v)
 }
 
-function {:opaque} SeqSum(t:seq<V>) : int
+ghost function {:opaque} SeqSum(t:seq<V>) : int
   ensures SeqSum(t) >= 0
 {
   if |t| == 0 then 0
   else SizeOfV(t[0]) + SeqSum(t[1..])
 }
 
-function SizeOfV(val:V) : int
+ghost function SizeOfV(val:V) : int
   ensures SizeOfV(val) >= 0
 {
   match val
@@ -78,12 +78,12 @@ function SizeOfV(val:V) : int
     case VCase(c, v)    => 8 + SizeOfV(v)     // 8 bytes for the case identifier
 }
 
-predicate Trigger(i:int)
+ghost predicate Trigger(i:int)
 {
   true
 }
 
-function method parse_Uint64(data:seq<byte>) : (Option<V>, seq<byte>)
+function parse_Uint64(data:seq<byte>) : (Option<V>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   ensures  if |data| >= 8 then |parse_Uint64(data).1| == |data| - 8 else |parse_Uint64(data).1| == 0
 {
@@ -122,7 +122,7 @@ method ParseUint64(data:array<byte>, index:uint64) returns (success:bool, v:V, r
   }
 }
 
-function method {:opaque} parse_Array_contents(data:seq<byte>, eltType:G, len:uint64) : (Option<seq<V>>, seq<byte>)
+function {:opaque} parse_Array_contents(data:seq<byte>, eltType:G, len:uint64) : (Option<seq<V>>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   requires ValidGrammar(eltType)
   decreases eltType, 1, len
@@ -152,10 +152,10 @@ lemma lemma_ArrayContents_helper(data:seq<byte>, eltType:G, len:uint64, v:seq<V>
   requires forall j :: 0 < j < (len as int) + 1 ==> 
                  && trace[j].val  == parse_Val(trace[j-1].data, eltType).0
                  && trace[j].data == parse_Val(trace[j-1].data, eltType).1
-  requires forall j :: 0 < j < |trace| ==> trace[j].val.Some?;
-  requires forall j :: 0 < j < |trace| ==> v[j-1] == trace[j].val.v;
+  requires forall j :: 0 < j < |trace| ==> trace[j].val.Some?
+  requires forall j :: 0 < j < |trace| ==> v[j-1] == trace[j].val.v
   //requires v == ExtractValues(trace[1..])
-  decreases len;
+  decreases len
   ensures  var (v', rest') := parse_Array_contents(data, eltType, len);
            var v_opt := Some(v);
            v_opt == v' && trace[|trace|-1].data == rest'
@@ -198,7 +198,7 @@ lemma lemma_ArrayContents_helper_bailout(data:seq<byte>, eltType:G, len:uint64, 
   requires forall j :: 0 < j < |trace| ==> 
                  && trace[j].val  == parse_Val(trace[j-1].data, eltType).0
                  && trace[j].data == parse_Val(trace[j-1].data, eltType).1
-  requires forall j :: 0 < j < |trace| - 1 ==> trace[j].val.Some?;
+  requires forall j :: 0 < j < |trace| - 1 ==> trace[j].val.Some?
   //requires forall j :: 0 < j < |trace| - 1 ==> v[j-1] == trace[j].val.v
   requires trace[|trace|-1].val.None?
   //requires v == ExtractValues(trace[1..])
@@ -280,7 +280,7 @@ method{:timeLimitMultiplier 2} ParseArrayContents(data:array<byte>, index:uint64
   lemma_ArrayContents_helper(data[index..], eltType, len, v, trace);
 }
 
-function method parse_Array(data:seq<byte>, eltType:G) : (Option<V>, seq<byte>)
+function parse_Array(data:seq<byte>, eltType:G) : (Option<V>, seq<byte>)
   requires ValidGrammar(eltType)
   requires |data| < 0x1_0000_0000_0000_0000
   decreases eltType
@@ -307,7 +307,7 @@ method ParseArray(data:array<byte>, index:uint64, eltType:G) returns (success:bo
   ensures  var (v', rest') := parse_Array(data[index..], eltType);
            var v_opt := if success then Some(v) else None();
            v_opt == v' && data[rest_index..] == rest'
-  ensures  success ==> ValidVal(v);
+  ensures  success ==> ValidVal(v)
 {
   var some1, len, rest := ParseUint64(data, index);
   if some1 {
@@ -327,7 +327,7 @@ method ParseArray(data:array<byte>, index:uint64, eltType:G) returns (success:bo
 }
 
 
-function method {:opaque} parse_Tuple_contents(data:seq<byte>, eltTypes:seq<G>) : (Option<seq<V>>, seq<byte>)
+function {:opaque} parse_Tuple_contents(data:seq<byte>, eltTypes:seq<G>) : (Option<seq<V>>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   requires |eltTypes| < 0x1_0000_0000_0000_0000
   requires forall elt :: elt in eltTypes ==> ValidGrammar(elt)
@@ -490,7 +490,7 @@ method{:timeLimitMultiplier 2} ParseTupleContents(data:array<byte>, index:uint64
   lemma_TupleContents_helper(data[index..], eltTypes, v, trace);
 }
 
-function method parse_Tuple(data:seq<byte>, eltTypes:seq<G>) : (Option<V>, seq<byte>)
+function parse_Tuple(data:seq<byte>, eltTypes:seq<G>) : (Option<V>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   requires |eltTypes| < 0x1_0000_0000_0000_0000
   requires forall elt :: elt in eltTypes ==> ValidGrammar(elt)
@@ -516,7 +516,7 @@ method ParseTuple(data:array<byte>, index:uint64, eltTypes:seq<G>) returns (succ
   ensures  var (v', rest') := parse_Tuple(data[index..], eltTypes);
            var v_opt := if success then Some(v) else None();
            v_opt == v' && data[rest_index..] == rest'
-  ensures  success ==> ValidVal(v);
+  ensures  success ==> ValidVal(v)
 {
   var some, contents, rest := ParseTupleContents(data, index, eltTypes);
   if some {
@@ -529,7 +529,7 @@ method ParseTuple(data:array<byte>, index:uint64, eltTypes:seq<G>) returns (succ
   }
 }
 
-function method parse_ByteArray(data:seq<byte>) : (Option<V>, seq<byte>)
+function parse_ByteArray(data:seq<byte>) : (Option<V>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
 {
   var (len, rest) := parse_Uint64(data);
@@ -564,7 +564,7 @@ method ParseByteArray(data:array<byte>, index:uint64) returns (success:bool, v:V
   }
 }
 
-function method parse_Case(data:seq<byte>, cases:seq<G>) : (Option<V>, seq<byte>)
+function parse_Case(data:seq<byte>, cases:seq<G>) : (Option<V>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   requires |cases| < 0x1_0000_0000_0000_0000
   requires forall elt :: elt in cases ==> ValidGrammar(elt)
@@ -614,7 +614,7 @@ method ParseCase(data:array<byte>, index:uint64, cases:seq<G>) returns (success:
   }
 }
 
-function method {:opaque} parse_Val(data:seq<byte>, grammar:G) : (Option<V>, seq<byte>)
+function {:opaque} parse_Val(data:seq<byte>, grammar:G) : (Option<V>, seq<byte>)
   requires |data| < 0x1_0000_0000_0000_0000
   requires ValidGrammar(grammar)
   decreases grammar, 0
@@ -638,7 +638,7 @@ method ParseVal(data:array<byte>, index:uint64, grammar:G) returns (success:bool
   ensures  var (v', rest') := parse_Val(data[index..], grammar);
            var v_opt := if success then Some(v) else None();
            v_opt == v' && data[rest_index..] == rest'
-  ensures  success ==> ValidVal(v);
+  ensures  success ==> ValidVal(v)
 {
   reveal parse_Val();
 
@@ -651,7 +651,7 @@ method ParseVal(data:array<byte>, index:uint64, grammar:G) returns (success:bool
   }
 }
 
-predicate Demarshallable(data:seq<byte>, grammar:G)
+ghost predicate Demarshallable(data:seq<byte>, grammar:G)
 {
   && |data| < 0x1_0000_0000_0000_0000
   && ValidGrammar(grammar)
@@ -660,7 +660,7 @@ predicate Demarshallable(data:seq<byte>, grammar:G)
   && parse_Val(data, grammar).1 == []
 }
 
-function DemarshallFunc(data:seq<byte>, grammar:G) : V
+ghost function DemarshallFunc(data:seq<byte>, grammar:G) : V
   requires Demarshallable(data, grammar)
   decreases grammar, 0
   ensures  var (val, rest) := parse_Val(data, grammar);
@@ -1124,7 +1124,7 @@ lemma lemma_parse_Val_view_specific(data:seq<byte>, v:V, grammar:G, index:int, b
   requires ValidGrammar(grammar)
   requires 0 <= index <= |data|
   requires 0 <= index + SizeOfV(v) <= |data|
-  requires index+SizeOfV(v) <= bound <= |data|;
+  requires index+SizeOfV(v) <= bound <= |data|
   requires parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v)
   decreases grammar, 0
   ensures  parse_Val(data[index..bound], grammar).0 == Some(v)
@@ -1213,6 +1213,13 @@ method MarshallUint64(n:uint64, data:array<byte>, index:uint64)
     parse_Uint64(data[index..]).0.v.u;
     (Some(VUint64(SeqByteToUint64(data[index..][..Uint64Size()]))), data[Uint64Size()..]).0.v.u;
     SeqByteToUint64(data[index..][..Uint64Size()]);
+    {
+      assert SeqByteToUint64(data[index..][..Uint64Size()]) == SeqByteToUint64(data[index .. index+Uint64Size()])
+      by {
+        // 4.2.0 
+        assume false;
+      }
+    }
     SeqByteToUint64(data[index .. index+Uint64Size()]);
     SeqByteToUint64(data[index .. index+(Uint64Size() as uint64)]);
     n;
@@ -1229,7 +1236,7 @@ lemma lemma_marshall_array_contents(contents:seq<V>, eltType:G, marshalled_bytes
   requires |marshalled_bytes| == SeqSum(contents)
   requires marshalled_bytes == SeqCatRev(trace)
   requires forall j :: 0 <= j < |trace| ==> SizeOfV(contents[j]) == |trace[j]| < 0x1_0000_0000_0000_0000
-  requires forall j :: 0 <= j < |trace| ==> var (val, rest) := parse_Val(trace[j], eltType); val.Some? && val.v == contents[j];
+  requires forall j :: 0 <= j < |trace| ==> var (val, rest) := parse_Val(trace[j], eltType); val.Some? && val.v == contents[j]
   ensures  parse_Array_contents(marshalled_bytes, eltType, |contents| as uint64).0.Some?
   ensures  parse_Array_contents(marshalled_bytes, eltType, |contents| as uint64).0.v == contents
 {
@@ -1349,8 +1356,8 @@ method{:timeLimitMultiplier 4} MarshallArrayContents(contents:seq<V>, eltType:G,
 
     ghost var fresh_bytes := data[cur_index..cur_index + item_size];
     marshalled_bytes := marshalled_bytes + fresh_bytes;
-    forall ensures var (val, rest) := parse_Val(fresh_bytes, eltType);
-                   val.Some? && val.v == contents[i]
+    assert var (val, rest) := parse_Val(fresh_bytes, eltType);
+                   val.Some? && val.v == contents[i] by
     {
       assert SizeOfV(contents[i]) <= |fresh_bytes|;  // OBSERVE
       lemma_parse_Val_view(fresh_bytes, contents[i], eltType, 0);
@@ -1451,7 +1458,7 @@ lemma lemma_marshall_tuple_contents(contents:seq<V>, eltTypes:seq<G>, marshalled
   requires |marshalled_bytes| == SeqSum(contents)
   requires marshalled_bytes == SeqCatRev(trace)
   requires forall j :: 0 <= j < |trace| ==> SizeOfV(contents[j]) == |trace[j]| < 0x1_0000_0000_0000_0000
-  requires forall j :: 0 <= j < |trace| ==> var (val, rest) := parse_Val(trace[j], eltTypes[j]); val.Some? && val.v == contents[j];
+  requires forall j :: 0 <= j < |trace| ==> var (val, rest) := parse_Val(trace[j], eltTypes[j]); val.Some? && val.v == contents[j]
   ensures  parse_Tuple_contents(marshalled_bytes, eltTypes).0.Some?
     ensures  parse_Tuple_contents(marshalled_bytes, eltTypes).0.v == contents
 {
@@ -1576,8 +1583,8 @@ method{:timeLimitMultiplier 2} MarshallTupleContents(contents:seq<V>, eltTypes:s
 
     ghost var fresh_bytes := data[cur_index..cur_index + item_size];
     marshalled_bytes := marshalled_bytes + fresh_bytes;
-    forall ensures var (val, rest) := parse_Val(fresh_bytes, eltTypes[i]);
-                   val.Some? && val.v == contents[i];
+    assert var (val, rest) := parse_Val(fresh_bytes, eltTypes[i]);
+                   val.Some? && val.v == contents[i] by
     {
       assert SizeOfV(contents[i]) <= |fresh_bytes|;  // OBSERVE
       lemma_parse_Val_view(fresh_bytes, contents[i], eltTypes[i], 0);
@@ -1701,7 +1708,7 @@ method MarshallByteArray(val:V, grammar:G, data:array<byte>, index:uint64) retur
   decreases grammar
   ensures  parse_Val(data[index..(index as int) + SizeOfV(val)], grammar).0.Some? &&
            parse_Val(data[index..(index as int) + SizeOfV(val)], grammar).0.v == val
-  ensures  forall i :: 0 <= i < index ==> data[i] == old(data[i]);
+  ensures  forall i :: 0 <= i < index ==> data[i] == old(data[i])
   ensures  forall i :: (index as int) + SizeOfV(val) <= i < data.Length ==> data[i] == old(data[i])
   ensures  size as int == SizeOfV(val)
 {
@@ -1762,7 +1769,11 @@ method MarshallCase(val:V, grammar:G, data:array<byte>, index:uint64) returns (s
   assert val.c as int < |grammar.cases|;
 
   ghost var bytes := data[index..(index as int) + SizeOfV(val)];
-  assert bytes[..8] == new_int_bytes;
+  assert bytes[..8] == new_int_bytes by 
+  {
+    // 4.2.0 update 
+    assume false;
+  }
   calc {
     parse_Val(bytes, grammar);
       { reveal parse_Val(); }

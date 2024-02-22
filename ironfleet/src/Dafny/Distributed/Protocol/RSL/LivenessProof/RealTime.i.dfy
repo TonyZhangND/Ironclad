@@ -35,7 +35,7 @@ lemma lemma_TimeAdvancesBetween(b:Behavior<RslState>, asp:AssumptionParameters, 
   }
 }
 
-predicate TimeMonotonicFromInvariant(b:Behavior<RslState>, asp:AssumptionParameters, i:int)
+ghost predicate TimeMonotonicFromInvariant(b:Behavior<RslState>, asp:AssumptionParameters, i:int)
   requires imaptotal(b)
   requires imaptotal(PaxosTimeMap(b))
 {

@@ -26,14 +26,14 @@ module Host_i refines Host_s {
     type HostState = CScheduler
     type ConcreteConfiguration = Config
 
-    predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+    ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
     {
       && host_state.node_impl.Valid() 
       && host_state.node_impl.Env() == env
       && host_state.node == AbstractifyCNode(host_state.node_impl.node)
     }
 
-    predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
+    ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
     {
       && host_state.node_impl.Valid()
       && host_state.node_impl.node.config == config
@@ -43,23 +43,23 @@ module Host_i refines Host_s {
                  config)
     }
 
-    predicate {:opaque} HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate {:opaque} HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
       && NodeNext(host_state.node, host_state'.node, AbstractifyRawLogToIos(ios))
       && OnlySentMarshallableData(ios)
     }
 
-    predicate ConcreteConfigInit(config:ConcreteConfiguration)
+    ghost predicate ConcreteConfigInit(config:ConcreteConfiguration)
     {
       ValidConfig(config)
     }
 
-    function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
+    ghost function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
     {
       MapSeqToSet(config, x=>x)
     }
 
-    function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
+    ghost function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
     {
       lock_config_parsing(args)
     }
@@ -89,7 +89,7 @@ module Host_i refines Host_s {
         host_state := CScheduler(AbstractifyCNode(node_impl.node), node_impl);
     }
     
-    predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
+    ghost predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
     {
         forall e :: (e in recvs  ==> e.LIoOpReceive?) 
                  && (e in clocks ==> e.LIoOpReadClock? || e.LIoOpTimeoutReceive?) 
@@ -119,7 +119,7 @@ module Host_i refines Host_s {
         }
     }
 
-    predicate NetEventsReductionCompatible(events:seq<NetEvent>)
+    ghost predicate NetEventsReductionCompatible(events:seq<NetEvent>)
     {
         forall i :: 0 <= i < |events| - 1 ==> events[i].LIoOpReceive? || events[i+1].LIoOpSend?
     }

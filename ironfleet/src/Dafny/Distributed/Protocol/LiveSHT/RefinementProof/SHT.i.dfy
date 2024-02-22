@@ -17,14 +17,14 @@ datatype LSHT_State = LSHT_State(
     hosts:seq<LScheduler>
 )
 
-predicate LSHT_MapsComplete(s:LSHT_State)
+ghost predicate LSHT_MapsComplete(s:LSHT_State)
 {
         |s.config.hostIds| == |s.hosts|
      && WFSHTConfiguration(s.config) 
      && (forall i :: 0 <= i < |s.config.hostIds| ==> s.hosts[i].host.me == s.config.hostIds[i])
 }
 
-predicate LSHT_Init(config:SHTConfiguration, s:LSHT_State) 
+ghost predicate LSHT_Init(config:SHTConfiguration, s:LSHT_State) 
 {
         LSHT_MapsComplete(s)
     && s.config == config
@@ -32,7 +32,7 @@ predicate LSHT_Init(config:SHTConfiguration, s:LSHT_State)
     && (forall i :: 0 <= i < |s.config.hostIds| ==> LScheduler_Init(s.hosts[i], s.config.hostIds[i], s.config.rootIdentity, s.config.hostIds, s.config.params))
 }
 
-predicate LSHT_NextOneHost(s:LSHT_State, s':LSHT_State, idx:int, ios:seq<LSHTIo>)
+ghost predicate LSHT_NextOneHost(s:LSHT_State, s':LSHT_State, idx:int, ios:seq<LSHTIo>)
 {
        LSHT_MapsComplete(s)
     && LSHT_MapsComplete(s')
@@ -44,7 +44,7 @@ predicate LSHT_NextOneHost(s:LSHT_State, s':LSHT_State, idx:int, ios:seq<LSHTIo>
     && s'.hosts == s.hosts[idx := s'.hosts[idx]]
 }
 
-predicate LSHT_NextEnvironment(s:LSHT_State, s':LSHT_State)
+ghost predicate LSHT_NextEnvironment(s:LSHT_State, s':LSHT_State)
 {
        !s.environment.nextStep.LEnvStepHostIos?
     && LEnvironment_Next(s.environment, s'.environment)
@@ -52,7 +52,7 @@ predicate LSHT_NextEnvironment(s:LSHT_State, s':LSHT_State)
     && s'.hosts == s.hosts
 }
 
-predicate LSHT_NextExternal(s:LSHT_State, s':LSHT_State, eid:NodeIdentity, ios:seq<LSHTIo>)
+ghost predicate LSHT_NextExternal(s:LSHT_State, s':LSHT_State, eid:NodeIdentity, ios:seq<LSHTIo>)
 {
        LSHT_MapsComplete(s)
     && LSHT_MapsComplete(s')
@@ -63,7 +63,7 @@ predicate LSHT_NextExternal(s:LSHT_State, s':LSHT_State, eid:NodeIdentity, ios:s
     && s'.hosts == s.hosts
 }
 
-predicate LSHT_Next(s:LSHT_State, s':LSHT_State)
+ghost predicate LSHT_Next(s:LSHT_State, s':LSHT_State)
 {
        (exists idx, ios :: LSHT_NextOneHost(s, s', idx, ios))
     || (exists idx, ios :: LSHT_NextExternal(s, s', idx, ios))

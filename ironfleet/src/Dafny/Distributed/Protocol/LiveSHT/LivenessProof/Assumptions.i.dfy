@@ -26,7 +26,7 @@ datatype AssumptionParameters = AssumptionParameters(c:SHTConfiguration)
 // HELPERS
 ///////////////////////
 
-function{:opaque} RestrictBehaviorToEnvironment(
+ghost function{:opaque} RestrictBehaviorToEnvironment(
     b:Behavior<LSHT_State>
     ):Behavior<LEnvironment<NodeIdentity, LSHTMessage>>
     requires imaptotal(b);
@@ -36,7 +36,7 @@ function{:opaque} RestrictBehaviorToEnvironment(
     imap i :: b[i].environment
 }
 
-predicate IsValidBehaviorPrefix(
+ghost predicate IsValidBehaviorPrefix(
     b:Behavior<LSHT_State>,
     c:SHTConfiguration,
     i:int
@@ -47,7 +47,7 @@ predicate IsValidBehaviorPrefix(
     && (forall j {:trigger LSHT_Next(b[j], b[j+1])} :: 0 <= j < i ==> LSHT_Next(b[j], b[j+1]))
 }
 
-predicate IsValidBehavior(
+ghost predicate IsValidBehavior(
     b:Behavior<LSHT_State>,
     c:SHTConfiguration
     )
@@ -57,7 +57,7 @@ predicate IsValidBehavior(
     && (forall i {:trigger LSHT_Next(b[i], b[i+1])} :: i >= 0 ==> LSHT_Next(b[i], b[i+1]))
 }
 
-predicate LSHTHostTakesAction(
+ghost predicate LSHTHostTakesAction(
     ps:LSHT_State,
     ps':LSHT_State,
     host_index:int
@@ -71,7 +71,7 @@ predicate LSHTHostTakesAction(
        && LScheduler_Next(ps.hosts[host_index], ps'.hosts[host_index], ios)
 }
 
-function{:opaque} LSHTHostTakesActionTemporal(
+ghost function{:opaque} LSHTHostTakesActionTemporal(
     b:Behavior<LSHT_State>,
     host_index:int
     ):temporal
@@ -82,7 +82,7 @@ function{:opaque} LSHTHostTakesActionTemporal(
     stepmap(imap i :: LSHTHostTakesAction(b[i], b[i+1], host_index))
 }
 
-function AllShardPacketsSent(packets:set<LSHTPacket>):set<LSHTPacket>
+ghost function AllShardPacketsSent(packets:set<LSHTPacket>):set<LSHTPacket>
 {
     set p | p in packets && p.msg.SingleMessage? && p.msg.m.Shard?
 }
@@ -91,7 +91,7 @@ function AllShardPacketsSent(packets:set<LSHTPacket>):set<LSHTPacket>
 // ASSUMPTIONS
 ///////////////////////
 
-function{:opaque} PacketSentBetweenHostsTemporal<IdType, MessageType>(
+ghost function{:opaque} PacketSentBetweenHostsTemporal<IdType, MessageType>(
     b:Behavior<LEnvironment<IdType, MessageType>>,
     p:LPacket<IdType, MessageType>,
     sources:set<IdType>,
@@ -105,12 +105,12 @@ function{:opaque} PacketSentBetweenHostsTemporal<IdType, MessageType>(
     stepmap(imap i :: PacketSentBetweenHosts(b[i], p, sources, destinations))
 }
 
-function SeqToSet<X>(xs:seq<X>) : set<X>
+ghost function SeqToSet<X>(xs:seq<X>) : set<X>
 {
     set x | x in xs
 }
 
-predicate NetworkWeaklyFair<IdType(!new), MessageType(!new)>(
+ghost predicate NetworkWeaklyFair<IdType(!new), MessageType(!new)>(
     b:Behavior<LEnvironment<IdType, MessageType>>,
     hosts:seq<IdType>
     )
@@ -125,7 +125,7 @@ predicate NetworkWeaklyFair<IdType(!new), MessageType(!new)>(
 // TOP-LEVEL ASSUMPTIONS
 ///////////////////////////
 
-predicate LivenessAssumptions(
+ghost predicate LivenessAssumptions(
     b:Behavior<LSHT_State>,
     asp:AssumptionParameters
     )

@@ -14,7 +14,7 @@ import opened Temporal__Temporal_s
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate PacketProcessedViaIos(
+ghost predicate PacketProcessedViaIos(
   ps:RslState,
   ps':RslState,
   p:RslPacket,
@@ -31,7 +31,7 @@ predicate PacketProcessedViaIos(
   && LReplicaNextProcessPacket(ps.replicas[idx].replica, ps'.replicas[idx].replica, ios)
 }
 
-predicate PacketProcessedDuringAction(
+ghost predicate PacketProcessedDuringAction(
   ps:RslState,
   p:RslPacket
   )
@@ -39,7 +39,7 @@ predicate PacketProcessedDuringAction(
   ps.environment.nextStep.LEnvStepHostIos? && LIoOpReceive(p) in ps.environment.nextStep.ios
 }
 
-function{:opaque} PacketProcessedTemporal(
+ghost function{:opaque} PacketProcessedTemporal(
   b:Behavior<RslState>,
   p:RslPacket
   ):temporal
@@ -50,7 +50,7 @@ function{:opaque} PacketProcessedTemporal(
   stepmap(imap i :: PacketProcessedDuringAction(b[i], p))
 }
 
-predicate PacketSentDuringAction(
+ghost predicate PacketSentDuringAction(
   ps:RslState,
   p:RslPacket
   )
@@ -58,7 +58,7 @@ predicate PacketSentDuringAction(
   ps.environment.nextStep.LEnvStepHostIos? && LIoOpSend(p) in ps.environment.nextStep.ios
 }
 
-function{:opaque} PacketSentTemporal(
+ghost function{:opaque} PacketSentTemporal(
   b:Behavior<RslState>,
   p:RslPacket
   ):temporal

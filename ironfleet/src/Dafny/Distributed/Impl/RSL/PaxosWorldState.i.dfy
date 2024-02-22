@@ -10,14 +10,14 @@ import opened Native__NativeTypes_s
 
 datatype ActionStatus = Ok | Ignore | Fail
 
-function method f_max_uint64() : uint64
+function f_max_uint64() : uint64
 {
   0xffff_ffff_ffff_ffff
 }
 
 datatype PaxosWorldState = PaxosWorldState(good:bool, config:CPaxosConfiguration)
 
-predicate PaxosWorldIsValid(world:PaxosWorldState)
+ghost predicate PaxosWorldIsValid(world:PaxosWorldState)
 {
   && world.good
   && CPaxosConfigurationIsValid(world.config)

@@ -28,12 +28,12 @@ import opened Collections__Maps2_s
 import opened Temporal__Temporal_s
 import opened AppStateMachine_s
 
-function GetServerAddresses(ps:RslState):set<NodeIdentity>
+ghost function GetServerAddresses(ps:RslState):set<NodeIdentity>
 {
   MapSeqToSet(ps.constants.config.replica_ids, x=>x)
 }
 
-function ProduceIntermediateAbstractState(server_addresses:set<NodeIdentity>, batches:seq<RequestBatch>, reqs_in_last_batch:int)
+ghost function ProduceIntermediateAbstractState(server_addresses:set<NodeIdentity>, batches:seq<RequestBatch>, reqs_in_last_batch:int)
   :RSLSystemState
   requires |batches| > 0
   requires 0 <= reqs_in_last_batch <= |last(batches)|
@@ -45,7 +45,7 @@ function ProduceIntermediateAbstractState(server_addresses:set<NodeIdentity>, ba
   RSLSystemState(server_addresses, appStatesDuringBatch[reqs_in_last_batch], requests, replies)
 }
 
-function ProduceAbstractState(server_addresses:set<NodeIdentity>, batches:seq<RequestBatch>):RSLSystemState
+ghost function ProduceAbstractState(server_addresses:set<NodeIdentity>, batches:seq<RequestBatch>):RSLSystemState
 {
   var requests := set batch_num, req_num | 0 <= batch_num < |batches| && 0 <= req_num < |batches[batch_num]| :: batches[batch_num][req_num];
   var replies := set batch_num, req_num | 0 <= batch_num < |batches| && 0 <= req_num < |batches[batch_num]|
@@ -53,7 +53,7 @@ function ProduceAbstractState(server_addresses:set<NodeIdentity>, batches:seq<Re
   RSLSystemState(server_addresses, GetAppStateFromRequestBatches(batches), requests, replies)
 }
 
-predicate SystemRefinementRelation(ps:RslState, rs:RSLSystemState)
+ghost predicate SystemRefinementRelation(ps:RslState, rs:RSLSystemState)
 {
   exists qs :: IsMaximalQuorumOf2bsSequence(ps, qs) && rs == ProduceAbstractState(GetServerAddresses(ps), GetSequenceOfRequestBatches(qs))
 }
@@ -208,7 +208,7 @@ lemma lemma_LastProduceIntermediateAbstractStateProducesAbstractState(
   assert rs'.replies == rs.replies;
 }
 
-function {:opaque} ConvertBehaviorSeqToImap<T>(s:seq<T>):imap<int, T>
+ghost function {:opaque} ConvertBehaviorSeqToImap<T>(s:seq<T>):imap<int, T>
   requires |s| > 0
   ensures  imaptotal(ConvertBehaviorSeqToImap(s))
   ensures  forall i :: 0 <= i < |s| ==> ConvertBehaviorSeqToImap(s)[i] == s[i]
@@ -216,7 +216,7 @@ function {:opaque} ConvertBehaviorSeqToImap<T>(s:seq<T>):imap<int, T>
   imap i {:trigger s[i]} :: if i < 0 then s[0] else if 0 <= i < |s| then s[i] else last(s)
 }
 
-predicate RslSystemBehaviorRefinementCorrectImap(
+ghost predicate RslSystemBehaviorRefinementCorrectImap(
   b:Behavior<RslState>,
   prefix_len:int,
   high_level_behavior:seq<RSLSystemState>

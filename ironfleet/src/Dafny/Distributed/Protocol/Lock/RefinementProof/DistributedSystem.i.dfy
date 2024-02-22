@@ -23,7 +23,7 @@ module DistributedSystem_i {
         servers:map<EndPoint,Node>
         )
 
-    predicate LS_Init(s:LS_State, config:Config)
+    ghost predicate LS_Init(s:LS_State, config:Config)
     {
            LEnvironment_Init(s.environment)
         && |config| > 0
@@ -32,7 +32,7 @@ module DistributedSystem_i {
         && (forall index :: 0 <= index < |config| ==> NodeInit(s.servers[config[index]], index, config))
     }
     
-    predicate LS_NextOneServer(s:LS_State, s':LS_State, id:EndPoint, ios:seq<LockIo>)
+    ghost predicate LS_NextOneServer(s:LS_State, s':LS_State, id:EndPoint, ios:seq<LockIo>)
         requires id in s.servers;
     {
            id in s'.servers
@@ -40,12 +40,12 @@ module DistributedSystem_i {
         && s'.servers == s.servers[id := s'.servers[id]]
     }
 
-    predicate NodeAcquiresLock(e:EndPoint, s:LS_State, s':LS_State)
+    ghost predicate NodeAcquiresLock(e:EndPoint, s:LS_State, s':LS_State)
     {
         e in s.servers && e in s'.servers && !s.servers[e].held && s'.servers[e].held
     }
 
-    predicate LS_Next(s:LS_State, s':LS_State)
+    ghost predicate LS_Next(s:LS_State, s':LS_State)
     {
            LEnvironment_Next(s.environment, s'.environment)
         && if s.environment.nextStep.LEnvStepHostIos? && s.environment.nextStep.actor in s.servers then
@@ -66,7 +66,7 @@ module DistributedSystem_i {
         history:seq<EndPoint>
     )
 
-    predicate GLS_Init(s:GLS_State, config:Config)
+    ghost predicate GLS_Init(s:GLS_State, config:Config)
     {
            LS_Init(s.ls, config)
         && s.history == [config[0]]
@@ -78,7 +78,7 @@ module DistributedSystem_i {
     // (as computed in NodeGrant), is appended to the history
     /////////////////////////////////////////////////////////
 
-    predicate GLS_Next(s:GLS_State, s':GLS_State)
+    ghost predicate GLS_Next(s:GLS_State, s':GLS_State)
     {
            LS_Next(s.ls, s'.ls)
         && (if    s.ls.environment.nextStep.LEnvStepHostIos? && s.ls.environment.nextStep.actor in s.ls.servers

@@ -30,7 +30,7 @@ import opened Concrete_NodeIdentity_i
 import opened Logic__Option_i
 import opened Environment_s
 
-function MapSentPacketToIos(sent_packet:Option<CPacket>) : seq<RslIo>
+ghost function MapSentPacketToIos(sent_packet:Option<CPacket>) : seq<RslIo>
   requires OutboundPacketsIsValid(OutboundPacket(sent_packet))
 {
   match sent_packet {
@@ -39,7 +39,7 @@ function MapSentPacketToIos(sent_packet:Option<CPacket>) : seq<RslIo>
   }
 }
     
-function {:opaque} MapSentPacketSeqToIos(sent_packets:seq<CPacket>) : seq<RslIo>
+ghost function {:opaque} MapSentPacketSeqToIos(sent_packets:seq<CPacket>) : seq<RslIo>
   requires OutboundPacketsIsValid(PacketSequence(sent_packets))
   requires OutboundPacketsIsAbstractable(PacketSequence(sent_packets))
   ensures |MapSentPacketSeqToIos(sent_packets)| == |sent_packets|
@@ -100,7 +100,7 @@ lemma {:timeLimitMultiplier 3} lemma_MapSentPacketSeqToIosExtractSentPacketsFrom
   assert AbstractifyOutboundCPacketsToSeqOfRslPackets(sent_packets) == ExtractSentPacketsFromIos(ios);
 }
 
-function {:opaque} BuildBroadcastIos(src:NodeIdentity, dsts:seq<NodeIdentity>, msg:RslMessage) : seq<RslIo>
+ghost function {:opaque} BuildBroadcastIos(src:NodeIdentity, dsts:seq<NodeIdentity>, msg:RslMessage) : seq<RslIo>
   ensures |BuildBroadcastIos(src, dsts, msg)| == |dsts|
   ensures forall i :: 0<=i<|dsts| ==> BuildBroadcastIos(src, dsts, msg)[i] == LIoOpSend(LPacket(dsts[i], src, msg))
 {
@@ -108,7 +108,7 @@ function {:opaque} BuildBroadcastIos(src:NodeIdentity, dsts:seq<NodeIdentity>, m
   else [ LIoOpSend(LPacket(dsts[0], src, msg)) ] + BuildBroadcastIos(src, dsts[1..], msg)
 }
 
-function MapBroadcastToIos(broadcast:CBroadcast) : seq<RslIo>
+ghost function MapBroadcastToIos(broadcast:CBroadcast) : seq<RslIo>
   requires CBroadcastIsAbstractable(broadcast)
 {
   match broadcast
@@ -118,7 +118,7 @@ function MapBroadcastToIos(broadcast:CBroadcast) : seq<RslIo>
     case CBroadcastNop => []
 }
 
-predicate LReplica_Next_ReadClockAndProcessPacket_preconditions(ios:seq<RslIo>)
+ghost predicate LReplica_Next_ReadClockAndProcessPacket_preconditions(ios:seq<RslIo>)
 {
   && |ios| >= 1
   && ios[0].LIoOpReceive?
@@ -249,7 +249,7 @@ lemma lemma_ExtractSentPacketsFromIosDoesNotMindSomeClutter(ios_head:seq<RslIo>,
   }
 }
 
-predicate NoClockMessage(msg:CMessage)
+ghost predicate NoClockMessage(msg:CMessage)
 {
   || msg.CMessage_Request?
   || msg.CMessage_1a?

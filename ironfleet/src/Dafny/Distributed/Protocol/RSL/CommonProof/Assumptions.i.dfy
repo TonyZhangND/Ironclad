@@ -10,7 +10,7 @@ import opened Concrete_NodeIdentity_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-function{:opaque} RestrictBehaviorToEnvironment(
+ghost function{:opaque} RestrictBehaviorToEnvironment(
   b:Behavior<RslState>
   ):Behavior<LEnvironment<NodeIdentity, RslMessage>>
   requires imaptotal(b)
@@ -20,7 +20,7 @@ function{:opaque} RestrictBehaviorToEnvironment(
   imap i :: b[i].environment
 }
 
-predicate IsValidBehaviorPrefix(
+ghost predicate IsValidBehaviorPrefix(
   b:Behavior<RslState>,
   c:LConstants,
   i:int
@@ -31,7 +31,7 @@ predicate IsValidBehaviorPrefix(
   && (forall j {:trigger RslNext(b[j], b[j+1])} :: 0 <= j < i ==> RslNext(b[j], b[j+1]))
 }
 
-predicate IsValidBehavior(
+ghost predicate IsValidBehavior(
   b:Behavior<RslState>,
   c:LConstants
   )

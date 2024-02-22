@@ -17,7 +17,7 @@ include "../../IO/pci.i.dfy"
 //-
 //- - We don't support VLAN mode.
 //- - We don't prefetch or write-back transmit descriptors.
-//- - We leave the transmit absolute delay function (see 13.4.44) disabled.
+//- - We leave the transmit absolute delay ghost function (see 13.4.44) disabled.
 //- - We don't support large segment offload.
 //- - We use the "legacy" format of transmit/receive descriptors.
 //-
@@ -30,36 +30,36 @@ include "../../IO/pci.i.dfy"
 //-
 
 //- General Registers:
-function method{:dafnycc_inline} register_ctrl(addr:int):int                { addr + 0x0000 }
-function method{:dafnycc_inline} register_status(addr:int):int              { addr + 0x0008 }
-function method{:dafnycc_inline} register_ctrl_ext(addr:int):int            { addr + 0x0018 }
-function method{:dafnycc_inline} register_fcal(addr:int):int                { addr + 0x0028 }
-function method{:dafnycc_inline} register_fcah(addr:int):int                { addr + 0x002c }
-function method{:dafnycc_inline} register_fct(addr:int):int                 { addr + 0x0030 }
-function method{:dafnycc_inline} register_fcttv(addr:int):int               { addr + 0x0170 }
+function{:dafnycc_inline} register_ctrl(addr:int):int                { addr + 0x0000 }
+function{:dafnycc_inline} register_status(addr:int):int              { addr + 0x0008 }
+function{:dafnycc_inline} register_ctrl_ext(addr:int):int            { addr + 0x0018 }
+function{:dafnycc_inline} register_fcal(addr:int):int                { addr + 0x0028 }
+function{:dafnycc_inline} register_fcah(addr:int):int                { addr + 0x002c }
+function{:dafnycc_inline} register_fct(addr:int):int                 { addr + 0x0030 }
+function{:dafnycc_inline} register_fcttv(addr:int):int               { addr + 0x0170 }
 
 //- Receive Registers:
-function method{:dafnycc_inline} register_rx_ctrl(addr:int):int             { addr + 0x0100 }
-function method{:dafnycc_inline} register_rx_desc_base_lo(addr:int):int     { addr + 0x2800 }
-function method{:dafnycc_inline} register_rx_desc_base_hi(addr:int):int     { addr + 0x2804 }
-function method{:dafnycc_inline} register_rx_desc_length(addr:int):int      { addr + 0x2808 }
-function method{:dafnycc_inline} register_rx_desc_head(addr:int):int        { addr + 0x2810 }
-function method{:dafnycc_inline} register_rx_desc_tail(addr:int):int        { addr + 0x2818 }
-function method{:dafnycc_inline} register_rx_delay_timer(addr:int):int      { addr + 0x2820 }
-function method{:dafnycc_inline} register_rx_int_abs_timer(addr:int):int    { addr + 0x282c }
-function method{:dafnycc_inline} register_rx_cksum_ctrl(addr:int):int       { addr + 0x5000 }
-function method{:dafnycc_inline} register_rx_mcast_table(addr:int):int      { addr + 0x5200 }
-function method{:dafnycc_inline} register_rx_addrN_lo(addr:int):int         { addr + 0x5400 }
-function method{:dafnycc_inline} register_rx_addrN_hi(addr:int):int         { addr + 0x5404 }
+function{:dafnycc_inline} register_rx_ctrl(addr:int):int             { addr + 0x0100 }
+function{:dafnycc_inline} register_rx_desc_base_lo(addr:int):int     { addr + 0x2800 }
+function{:dafnycc_inline} register_rx_desc_base_hi(addr:int):int     { addr + 0x2804 }
+function{:dafnycc_inline} register_rx_desc_length(addr:int):int      { addr + 0x2808 }
+function{:dafnycc_inline} register_rx_desc_head(addr:int):int        { addr + 0x2810 }
+function{:dafnycc_inline} register_rx_desc_tail(addr:int):int        { addr + 0x2818 }
+function{:dafnycc_inline} register_rx_delay_timer(addr:int):int      { addr + 0x2820 }
+function{:dafnycc_inline} register_rx_int_abs_timer(addr:int):int    { addr + 0x282c }
+function{:dafnycc_inline} register_rx_cksum_ctrl(addr:int):int       { addr + 0x5000 }
+function{:dafnycc_inline} register_rx_mcast_table(addr:int):int      { addr + 0x5200 }
+function{:dafnycc_inline} register_rx_addrN_lo(addr:int):int         { addr + 0x5400 }
+function{:dafnycc_inline} register_rx_addrN_hi(addr:int):int         { addr + 0x5404 }
 
 //- Transmit Registers:
-function method{:dafnycc_inline} register_tx_ctrl(addr:int):int             { addr + 0x0400 }
-function method{:dafnycc_inline} register_tx_ipg(addr:int):int              { addr + 0x0410 }
-function method{:dafnycc_inline} register_tx_desc_base_lo(addr:int):int     { addr + 0x3800 }
-function method{:dafnycc_inline} register_tx_desc_base_hi(addr:int):int     { addr + 0x3804 }
-function method{:dafnycc_inline} register_tx_desc_length(addr:int):int      { addr + 0x3808 }
-function method{:dafnycc_inline} register_tx_desc_head(addr:int):int        { addr + 0x3810 }
-function method{:dafnycc_inline} register_tx_desc_tail(addr:int):int        { addr + 0x3818 }
+function{:dafnycc_inline} register_tx_ctrl(addr:int):int             { addr + 0x0400 }
+function{:dafnycc_inline} register_tx_ipg(addr:int):int              { addr + 0x0410 }
+function{:dafnycc_inline} register_tx_desc_base_lo(addr:int):int     { addr + 0x3800 }
+function{:dafnycc_inline} register_tx_desc_base_hi(addr:int):int     { addr + 0x3804 }
+function{:dafnycc_inline} register_tx_desc_length(addr:int):int      { addr + 0x3808 }
+function{:dafnycc_inline} register_tx_desc_head(addr:int):int        { addr + 0x3810 }
+function{:dafnycc_inline} register_tx_desc_tail(addr:int):int        { addr + 0x3818 }
 
 //-
 //- Register-related Constants:
@@ -68,45 +68,45 @@ function method{:dafnycc_inline} register_tx_desc_tail(addr:int):int        { ad
 
 //- Device Control Register (register_ctrl).  See Section 13.4.1.
 //- Device Reset Bit:
-function method{:dafnycc_inline} ctrl_reset():int { 0x04000000 } //- i.e. Bit 26.
+function{:dafnycc_inline} ctrl_reset():int { 0x04000000 } //- i.e. Bit 26.
 //- PHY Reset Bit:
-function method{:dafnycc_inline} ctrl_phy_reset():int { 0x80000000 } //- i.e. Bit 31.
+function{:dafnycc_inline} ctrl_phy_reset():int { 0x80000000 } //- i.e. Bit 31.
 
 //- Receive Control Register (register_rx_ctrl).  See Section 13.4.22.
 //- Receiver Enable Bit:
-function method{:dafnycc_inline} ctrl_rx_enable():int { 2 } //- i.e. Bit 1.
+function{:dafnycc_inline} ctrl_rx_enable():int { 2 } //- i.e. Bit 1.
 
 
 //- Transmit Control Register (register_tx_ctrl).  See Section 13.4.33.
 //- Transmit Enable Bit:
-function method{:dafnycc_inline} ctrl_tx_enable():int { 2 } //- i.e. Bit 1.
+function{:dafnycc_inline} ctrl_tx_enable():int { 2 } //- i.e. Bit 1.
 //- Pad Short Packets Bit:
-function method{:dafnycc_inline} tx_pad_short_packets():int { 8 } //- i.e. Bit 3.
+function{:dafnycc_inline} tx_pad_short_packets():int { 8 } //- i.e. Bit 3.
 
 //- Transmit Inter-Packet Gap Register (register_tx_ipg).  See Section 13.4.34.
 //- Default Value:
-function method{:dafnycc_inline} tx_ipg_default():int { 10 }
+function{:dafnycc_inline} tx_ipg_default():int { 10 }
 
 //- Receive Delay Timer (register_rx_delay_timer).  See Section 13.4.30.
 
 //- Default Value:
-function method{:dafnycc_inline} rxdelaytimers_rx_delay_timer():int { 100 }  //- ~100us.
+function{:dafnycc_inline} rxdelaytimers_rx_delay_timer():int { 100 }  //- ~100us.
 
 //- Receive Interrupt Absolute Delay Timer(register_rx_int_abs_timer).  See Section 13.4.31.
 //- Default Value:
 
-function method{:dafnycc_inline} rxdelaytimers_rx_absolute_timer():int { 1000 } //- ~1000us.
+function{:dafnycc_inline} rxdelaytimers_rx_absolute_timer():int { 1000 } //- ~1000us.
 
 //-
 //- Ring Buffer Configuration Values.
 //-
-function method{:dafnycc_inline} bytes_per_descriptor():int { 16 }
-function method{:dafnycc_inline} num_descriptors():int { 512 }
-//-function method{:dafnycc_inline} total_desc_bytes():int { num_descriptors() * bytes_per_descriptor() }
-function method{:dafnycc_inline} total_desc_bytes():int { 512 * bytes_per_descriptor() }
-function method{:dafnycc_inline} bytes_per_buffer():int { 2 * 1024 }
-//-function method{:dafnycc_inline} total_buffer_bytes():int { num_descriptors() * bytes_per_buffer() }
-function method{:dafnycc_inline} total_buffer_bytes():int { 512 * bytes_per_buffer() }
+function{:dafnycc_inline} bytes_per_descriptor():int { 16 }
+function{:dafnycc_inline} num_descriptors():int { 512 }
+//-function{:dafnycc_inline} total_desc_bytes():int { num_descriptors() * bytes_per_descriptor() }
+function{:dafnycc_inline} total_desc_bytes():int { 512 * bytes_per_descriptor() }
+function{:dafnycc_inline} bytes_per_buffer():int { 2 * 1024 }
+//-function{:dafnycc_inline} total_buffer_bytes():int { num_descriptors() * bytes_per_buffer() }
+function{:dafnycc_inline} total_buffer_bytes():int { 512 * bytes_per_buffer() }
 
 //-
 //- Hard code the MAC address to 90:e2:ba:4f:0c:5b.
@@ -114,7 +114,7 @@ function method{:dafnycc_inline} total_buffer_bytes():int { 512 * bytes_per_buff
 
 
 //-
-function method my_ethernet_addr() : ethernet_addr
+function my_ethernet_addr() : ethernet_addr
 {
     ethernet_addr_builder( [ 0x90, 0xe2, 0xba, 0x4f, 0x0c, 0x5b] )  
 //-    ethernet_addr_builder( [ 0x00, 0x1b, 0x21, 0x31, 0x8e, 0xd9] )
@@ -125,7 +125,7 @@ function method my_ethernet_addr() : ethernet_addr
 //- Define what an "ethernet_addr" is.
 //-
 datatype ethernet_addr = ethernet_addr_builder(bytes:seq<int>);
-function valid_ethernet_addr(addr:ethernet_addr) : bool
+ghost function valid_ethernet_addr(addr:ethernet_addr) : bool
 {
     IsByteSeqOfLen(addr.bytes, 6)
 }
@@ -138,7 +138,7 @@ datatype rx_ring_buffer = rx_ring_buffer_build(rb:ring_buffer);
 datatype tx_ring_buffer = tx_ring_buffer_build(rb:ring_buffer);
 datatype ring_buffer = ring_buffer_build(base:int, size:int, head:int, tail:int, id:int, reg_addr:int);
 
-function valid_ring_buffer(rb:ring_buffer):bool
+ghost function valid_ring_buffer(rb:ring_buffer):bool
     requires num_descriptors() == 512;
 {
     mod16(rb.base) == 0 && rb.base >= 0 &&
@@ -154,7 +154,7 @@ function valid_ring_buffer(rb:ring_buffer):bool
     IsValidPciId(rb.id) && PciMemSize(rb.id) >= 128 * 1024 
 }
 
-function valid_network_state(state:network_state):bool
+ghost function valid_network_state(state:network_state):bool
 {
     valid_ring_buffer(state.rx_rb.rb) && valid_ring_buffer(state.tx_rb.rb) 
 }

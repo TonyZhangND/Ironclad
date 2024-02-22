@@ -212,7 +212,7 @@ ghost method Seq_Index_Update<A>()
     }
 }
 
-function{:private} Seq_Equal_Trigger(i:int):bool { true }
+ghost function{:private} Seq_Equal_Trigger(i:int):bool { true }
 
 ghost method Seq_Equal_EquivRec<A>(s0:Seq<A>, s1:Seq<A>, n:int)
     requires Seq_Length(s0) == Seq_Length(s1);
@@ -360,25 +360,25 @@ ghost method Seq_Drop_Index<A>()
     }
 }
 
-function{:private} Seq_FromArrayRange(a:INTERNAL_ArrayElems, j:int, k:int):Seq<int>
+ghost function{:private} Seq_FromArrayRange(a:INTERNAL_ArrayElems, j:int, k:int):Seq<int>
     decreases k - j;
 {
     if j < k then Seq_Cons(INTERNAL_array_elems_index(a, j), Seq_FromArrayRange(a, j + 1, k)) else Seq_Nil()
 }
 
-function{:private}{:opaque} Seq_FromArrayElems(a:INTERNAL_ArrayElems, len:int):Seq<int>
+ghost function{:private}{:opaque} Seq_FromArrayElems(a:INTERNAL_ArrayElems, len:int):Seq<int>
 {
     Seq_FromArrayRange(a, 0, len)
 }
 
 //- declared public so that old(a[..]) == a[..] is more evident across calls that don't modify a
-function Seq_FromArray(a:array<int>):Seq<int>
+ghost function Seq_FromArray(a:array<int>):Seq<int>
 {
     Seq_FromArrayElems(INTERNAL_array_elems(a), a.Length)
 }
 
-function{:private} Seq_FromArrayRange_INTERNAL_HEAP(heap:INTERNAL_AbsMem, a:array<int>, j:int, k:int):Seq<int>
-function{:private} Seq_FromArray_INTERNAL_HEAP(heap:INTERNAL_AbsMem, a:array<int>):Seq<int>
+ghost function{:private} Seq_FromArrayRange_INTERNAL_HEAP(heap:INTERNAL_AbsMem, a:array<int>, j:int, k:int):Seq<int>
+ghost function{:private} Seq_FromArray_INTERNAL_HEAP(heap:INTERNAL_AbsMem, a:array<int>):Seq<int>
 
 ghost method Seq_FromArray_LengthRec(a:INTERNAL_ArrayElems, j:int, k:int)
     ensures  Seq_Length(Seq_FromArrayRange(a, j, k)) == if j <= k then k - j else 0;

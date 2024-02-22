@@ -182,7 +182,7 @@ lemma lemma_AddingSourceToSequenceAddsToSet(source:EndPoint, sseq1:seq<EndPoint>
   }
 }
 
-predicate Eq_LLearner(x:LLearner, y:LLearner)
+ghost predicate Eq_LLearner(x:LLearner, y:LLearner)
 {
   && x.constants == y.constants
   && x.max_ballot_seen == y.max_ballot_seen

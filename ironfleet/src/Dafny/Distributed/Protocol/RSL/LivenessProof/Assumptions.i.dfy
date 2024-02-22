@@ -40,12 +40,12 @@ datatype AssumptionParameters = AssumptionParameters(
 // HELPERS
 ///////////////////////
 
-function SetOfReplicaIndicesToSetOfHosts(s:set<int>, ids:seq<NodeIdentity>):set<NodeIdentity>
+ghost function SetOfReplicaIndicesToSetOfHosts(s:set<int>, ids:seq<NodeIdentity>):set<NodeIdentity>
 {
   set idx | idx in s && 0 <= idx < |ids| :: ids[idx]
 }
 
-predicate RslSchedulerActionOccursForReplica(
+ghost predicate RslSchedulerActionOccursForReplica(
   ps:RslState,
   ps':RslState,
   replica_index:int
@@ -57,19 +57,19 @@ predicate RslSchedulerActionOccursForReplica(
     && LSchedulerNext(ps.replicas[replica_index], ps'.replicas[replica_index], ios)
 }
 
-function{:opaque} MakeRslActionTemporalFromSchedulerFunction(
+ghost function{:opaque} MakeRslActionTemporalFromSchedulerghost function(
   b:Behavior<RslState>,
   replica_index:int
   ):temporal
   requires imaptotal(b)
-  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromSchedulerFunction(b, replica_index))} ::
-               sat(i, MakeRslActionTemporalFromSchedulerFunction(b, replica_index)) <==>
+  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromSchedulerghost function(b, replica_index))} ::
+               sat(i, MakeRslActionTemporalFromSchedulerghost function(b, replica_index)) <==>
                RslSchedulerActionOccursForReplica(b[i], b[nextstep(i)], replica_index)
 {
   stepmap(imap i :: RslSchedulerActionOccursForReplica(b[i], b[nextstep(i)], replica_index))
 }
 
-function{:opaque} PaxosTimeMap(b:Behavior<RslState>):imap<int, int>
+ghost function{:opaque} PaxosTimeMap(b:Behavior<RslState>):imap<int, int>
   requires imaptotal(b)
   ensures  imaptotal(PaxosTimeMap(b))
   ensures  forall i {:trigger PaxosTimeMap(b)[i]} :: PaxosTimeMap(b)[i] == b[i].environment.time
@@ -77,7 +77,7 @@ function{:opaque} PaxosTimeMap(b:Behavior<RslState>):imap<int, int>
   imap i :: b[i].environment.time
 }
 
-predicate ClientSendsRequestToReplica(ps:RslState, request:Request, replica:NodeIdentity)
+ghost predicate ClientSendsRequestToReplica(ps:RslState, request:Request, replica:NodeIdentity)
   requires request.Request?
 {
   && ps.environment.nextStep.LEnvStepHostIos?
@@ -85,7 +85,7 @@ predicate ClientSendsRequestToReplica(ps:RslState, request:Request, replica:Node
   && LIoOpSend(LPacket(replica, request.client, RslMessage_Request(request.seqno, request.request))) in ps.environment.nextStep.ios
 }
 
-function{:opaque} ClientSendsRequestToReplicaTemporal(
+ghost function{:opaque} ClientSendsRequestToReplicaTemporal(
   b:Behavior<RslState>,
   request:Request,
   replica:NodeIdentity
@@ -99,14 +99,14 @@ function{:opaque} ClientSendsRequestToReplicaTemporal(
   stepmap(imap i :: ClientSendsRequestToReplica(b[i], request, replica))
 }
 
-predicate ClientNeverSentHigherSequenceNumberRequest(ps:RslState, request:Request)
+ghost predicate ClientNeverSentHigherSequenceNumberRequest(ps:RslState, request:Request)
   requires request.Request?
 {
   forall p :: p in ps.environment.sentPackets && p.src == request.client && p.msg.RslMessage_Request? ==>
         p.msg.seqno_req < request.seqno || (p.msg.seqno_req == request.seqno && p.msg.val == request.request)
 }
 
-function{:opaque} ClientNeverSentHigherSequenceNumberRequestTemporal(
+ghost function{:opaque} ClientNeverSentHigherSequenceNumberRequestTemporal(
   b:Behavior<RslState>,
   asp:AssumptionParameters
   ):temporal
@@ -123,18 +123,18 @@ function{:opaque} ClientNeverSentHigherSequenceNumberRequestTemporal(
 // ASSUMPTIONS
 ///////////////////////
 
-predicate HostExecutesPeriodically(
+ghost predicate HostExecutesPeriodically(
   b:Behavior<RslState>,
   asp:AssumptionParameters,
   replica_index:int
   )
   requires imaptotal(b)
 {
-  var scheduler_action := MakeRslActionTemporalFromSchedulerFunction(b, replica_index);
+  var scheduler_action := MakeRslActionTemporalFromSchedulerghost function(b, replica_index);
   sat(asp.synchrony_start, always(eventuallynextwithin(scheduler_action, asp.host_period, PaxosTimeMap(b))))
 }
 
-predicate PersistentClientSendsRequestPeriodically(
+ghost predicate PersistentClientSendsRequestPeriodically(
   b:Behavior<RslState>,
   asp:AssumptionParameters,
   replica_index:int
@@ -147,7 +147,7 @@ predicate PersistentClientSendsRequestPeriodically(
   sat(asp.synchrony_start, always(eventuallynextwithin(client_send, asp.persistent_period, PaxosTimeMap(b))))
 }
 
-predicate ReplyDeliveredDuringStep(ps:RslState, req:Request)
+ghost predicate ReplyDeliveredDuringStep(ps:RslState, req:Request)
 {
   && req.Request?
   && ps.environment.nextStep.LEnvStepDeliverPacket?
@@ -158,7 +158,7 @@ predicate ReplyDeliveredDuringStep(ps:RslState, req:Request)
     && p.msg.seqno_reply == req.seqno
 }
 
-function{:opaque} ReplyDeliveredTemporal(b:Behavior<RslState>, req:Request):temporal
+ghost function{:opaque} ReplyDeliveredTemporal(b:Behavior<RslState>, req:Request):temporal
   requires imaptotal(b)
   ensures forall i {:trigger sat(i, ReplyDeliveredTemporal(b, req))} ::
               sat(i, ReplyDeliveredTemporal(b, req)) <==> ReplyDeliveredDuringStep(b[i], req)
@@ -166,7 +166,7 @@ function{:opaque} ReplyDeliveredTemporal(b:Behavior<RslState>, req:Request):temp
   stepmap(imap i :: ReplyDeliveredDuringStep(b[i], req))
 }
 
-predicate OverflowProtectionNotUsedForReplica(ps:RslState, replica_index:int, params:LParameters, max_clock_ambiguity:int)
+ghost predicate OverflowProtectionNotUsedForReplica(ps:RslState, replica_index:int, params:LParameters, max_clock_ambiguity:int)
   requires 0 <= replica_index < |ps.replicas|
 {
   var s := ps.replicas[replica_index].replica;
@@ -181,12 +181,12 @@ predicate OverflowProtectionNotUsedForReplica(ps:RslState, replica_index:int, pa
   && LtUpperBound(|s.proposer.election_state.requests_received_this_epoch|, params.max_integer_val)
 }
 
-predicate OverflowProtectionNotUsed(ps:RslState, params:LParameters, max_clock_ambiguity:int)
+ghost predicate OverflowProtectionNotUsed(ps:RslState, params:LParameters, max_clock_ambiguity:int)
 {
   forall replica_index :: 0 <= replica_index < |ps.replicas| ==> OverflowProtectionNotUsedForReplica(ps, replica_index, params, max_clock_ambiguity)
 }
 
-function{:opaque} OverflowProtectionNotUsedTemporal(b:Behavior<RslState>, params:LParameters, max_clock_ambiguity:int):temporal
+ghost function{:opaque} OverflowProtectionNotUsedTemporal(b:Behavior<RslState>, params:LParameters, max_clock_ambiguity:int):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, OverflowProtectionNotUsedTemporal(b, params, max_clock_ambiguity))} ::
            sat(i, OverflowProtectionNotUsedTemporal(b, params, max_clock_ambiguity))
@@ -199,7 +199,7 @@ function{:opaque} OverflowProtectionNotUsedTemporal(b:Behavior<RslState>, params
 // TOP-LEVEL ASSUMPTIONS
 ///////////////////////////
 
-predicate LivenessAssumptions(
+ghost predicate LivenessAssumptions(
   b:Behavior<RslState>,
   asp:AssumptionParameters
   )

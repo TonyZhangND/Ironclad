@@ -25,18 +25,18 @@ import opened SHT__Host_i
 import opened SHT__Delegations_i
 import opened SHT__SingleDelivery_i
 
-predicate HashtableNext(h:Hashtable, h':Hashtable)
+ghost predicate HashtableNext(h:Hashtable, h':Hashtable)
 {
        (exists k, ov :: Set(h, h', k, ov))
     || (exists k, ov :: Get(h, h', k, ov))
 }
 
-predicate HashtableStutter(h:Hashtable, h':Hashtable)
+ghost predicate HashtableStutter(h:Hashtable, h':Hashtable)
 {
     h'==h
 }
 
-predicate ServiceStutter(s:ServiceState', s':ServiceState')
+ghost predicate ServiceStutter(s:ServiceState', s':ServiceState')
 {
     s' == s
 }
@@ -95,7 +95,7 @@ lemma HostClaimsKey_forces_FindHostHashTable(s:SHT_State, k:Key) returns (id:Nod
     id :| id in AllHostIdentities(s) && HostClaimsKey(s.hosts[id], k);
 }
 
-predicate HashtableIsNormalized(h:Hashtable)
+ghost predicate HashtableIsNormalized(h:Hashtable)
 {
     forall k
         {:trigger k in h} {:trigger h[k]}
@@ -103,7 +103,7 @@ predicate HashtableIsNormalized(h:Hashtable)
 }
 
 
-predicate HashTablesAgreeUpToNormalization(h1:Hashtable, h2:Hashtable)
+ghost predicate HashTablesAgreeUpToNormalization(h1:Hashtable, h2:Hashtable)
 {
     forall k
         /* Magical triggers from Chris */
@@ -129,7 +129,7 @@ lemma HashtableAgreement(h1:Hashtable, h2:Hashtable)
     }
 }
 
-predicate InvRefinementNormalized(s:SHT_State)
+ghost predicate InvRefinementNormalized(s:SHT_State)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -137,7 +137,7 @@ predicate InvRefinementNormalized(s:SHT_State)
     HashtableIsNormalized(Refinement(s).ht)
 }
 
-predicate {:opaque} HiddenInvRefinementNormalized(s:SHT_State)
+ghost predicate {:opaque} HiddenInvRefinementNormalized(s:SHT_State)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -145,7 +145,7 @@ predicate {:opaque} HiddenInvRefinementNormalized(s:SHT_State)
     InvRefinementNormalized(s)
 }
 
-function NormalizedReplace(h:Hashtable, k:Key, ov:OptionalValue) : Hashtable
+ghost function NormalizedReplace(h:Hashtable, k:Key, ov:OptionalValue) : Hashtable
 {
     if ov.ValuePresent? then
         h[k := ov.v]
@@ -248,7 +248,7 @@ lemma SetPreservesRefinement_koNotk(s:SHT_State, s':SHT_State, id:NodeIdentity, 
 }
 
 
-predicate NoNewDelegationMessages(s:SHT_State, s':SHT_State)
+ghost predicate NoNewDelegationMessages(s:SHT_State, s':SHT_State)
     requires MapComplete(s);
     requires MapComplete(s');
     requires PacketsHaveSaneHeaders(s);
@@ -258,7 +258,7 @@ predicate NoNewDelegationMessages(s:SHT_State, s':SHT_State)
         ==> (pkt in s.network <==> pkt in s'.network)
 }
 
-predicate InvBasics(s:SHT_State)
+ghost predicate InvBasics(s:SHT_State)
 {
        MapComplete(s)
     && PacketsHaveSaneHeaders(s)
@@ -377,14 +377,14 @@ lemma NondelegatingReadonlyStepPreservesRefinement(s:SHT_State, s':SHT_State, id
     }*/
 }
 
-predicate {:opaque} HiddenSHT_Next_and_SHT_NextPred(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
+ghost predicate {:opaque} HiddenSHT_Next_and_SHT_NextPred(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
     requires MapComplete(s);
     requires MapComplete(s');
 {
     SHT_Next(s, s') && SHT_NextPred(s, s', id, recv, out)
 }
 
-function {:opaque} HiddenRefinement(s:SHT_State) : Hashtable
+ghost function {:opaque} HiddenRefinement(s:SHT_State) : Hashtable
     requires InvBasics(s);
 {
     Refinement(s).ht
@@ -487,7 +487,7 @@ lemma SetPreservesRefinement_InFlight(s:SHT_State, s':SHT_State, id:NodeIdentity
     assert HashtableLookup(NormalizedReplace(R,k,v), ko) == HashtableLookup(R,ko);
 }
 
-predicate FooFHT1(s:SHT_State, k:Key)
+ghost predicate FooFHT1(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -495,7 +495,7 @@ predicate FooFHT1(s:SHT_State, k:Key)
     exists pkt :: InFlightPacketClaimsKey(s,pkt,k)
 }
 
-predicate FooFHT2(s:SHT_State, k:Key)
+ghost predicate FooFHT2(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -505,7 +505,7 @@ predicate FooFHT2(s:SHT_State, k:Key)
         :: id in AllHostIdentities(s) && HostClaimsKey(s.hosts[id], k)
 }
 
-function FooFHT3(s:SHT_State, k:Key) : Hashtable
+ghost function FooFHT3(s:SHT_State, k:Key) : Hashtable
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -519,7 +519,7 @@ function FooFHT3(s:SHT_State, k:Key) : Hashtable
         s.hosts[id].h
 }
 
-function FooFindHashTable(s:SHT_State, k:Key) : Hashtable
+ghost function FooFindHashTable(s:SHT_State, k:Key) : Hashtable
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -836,7 +836,7 @@ lemma SetPreservesRefinement_main(s:SHT_State, s':SHT_State, id:NodeIdentity, re
             // The inner forall creates trigger trouble, but the lemma call
             // satisfies it before the triggers run away. The outer forall
             // hides the crazily-triggered forall, exposing only the nice
-            // symbolic predicate term.
+            // symbolic ghost predicate term.
             forall () ensures HashTablesAgreeUpToNormalization(R', NRR);
                 ensures HashtableIsNormalized(R');
             {
@@ -1964,7 +1964,7 @@ lemma NextRefinesService(s:SHT_State, s':SHT_State)
     }
 }
 /*
-predicate RequestImpliesPacket(s:SHT_State)
+ghost predicate RequestImpliesPacket(s:SHT_State)
 {
     forall id :: id in AllHostIdentities(s) ==> 
 }

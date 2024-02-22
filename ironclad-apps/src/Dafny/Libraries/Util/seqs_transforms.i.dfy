@@ -1318,7 +1318,7 @@ static lemma BEByteSeqToWordSeq_base4(bs:seq<int>, ws:seq<int>)
     }
 }
 
-static predicate BEByteSeqToWordSeq_base_props(bs:seq<int>, ws:seq<int>, padbytes:seq<int>)
+static ghost predicate BEByteSeqToWordSeq_base_props(bs:seq<int>, ws:seq<int>, padbytes:seq<int>)
     requires IsByteSeq(bs);
 {
     IsWordSeq(ws)
@@ -1609,7 +1609,7 @@ static lemma lemma_BEByteSeqToInt_BEWordSeqToInt_concatenation(bsa:seq<int>, bsb
     }
 }
 
-static predicate BEByteSeqToWordSeq_loop_invariants(
+static ghost predicate BEByteSeqToWordSeq_loop_invariants(
     bs:seq<int>, ptr:int, ws:seq<int>)
     requires IsByteSeq(bs);
     requires |bs|>0;
@@ -2008,7 +2008,7 @@ static method BEWordSeqToByteSeq_recursive(ws:seq<int>) returns (bs:seq<int>)
     lemma_BEIntToByteSeq_BEWordSeqToInt(bs, ws);
 }
 
-static predicate BEWordSeqToByteSeq_iterative_loop_invariant(ws:seq<int>, bs:seq<int>, ptr:int)
+static ghost predicate BEWordSeqToByteSeq_iterative_loop_invariant(ws:seq<int>, bs:seq<int>, ptr:int)
     requires IsWordSeq(ws);
 {
     0 <= ptr <= |ws|
@@ -2017,7 +2017,7 @@ static predicate BEWordSeqToByteSeq_iterative_loop_invariant(ws:seq<int>, bs:seq
     && BEByteSeqToInt(bs) == BEWordSeqToInt(ws[ptr..])
 }
 
-static function method SplitOneWord(i:int) : seq<int>
+static function SplitOneWord(i:int) : seq<int>
     requires Word32(i);
 {
     [ i / 16777216, (i / 65536) % 256, (i / 256) % 256, i % 256 ]
@@ -2408,7 +2408,7 @@ static lemma lemma_BEIntToDigitSeqProducesRightSizedDigits(place_value:int, min_
 }
 
 
-static function BEByteSeqToWordSeq(bs:seq<int>) : seq<int>
+static ghost function BEByteSeqToWordSeq(bs:seq<int>) : seq<int>
     requires IsByteSeq(bs);
     requires |bs|%4==0;
 //-    ensures IsWordSeq(BEByteSeqToWordSeq(bs));
@@ -2417,7 +2417,7 @@ static function BEByteSeqToWordSeq(bs:seq<int>) : seq<int>
     BEIntToDigitSeq(power2(32), |bs|/4, BEDigitSeqToInt(power2(8), bs))
 }
 
-static function TailPad4(bs:seq<int>) : seq<int>
+static ghost function TailPad4(bs:seq<int>) : seq<int>
 {
     bs+RepeatDigit(0, ((|bs|+3)/4)*4-|bs|)
 }

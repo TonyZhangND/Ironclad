@@ -4,13 +4,13 @@ include "Word32.i.dfy"
 datatype BigNat = BigNat_ctor(
     words : seq<int>);
 
-static function WellformedBigNat(b:BigNat) : bool
+static ghost function WellformedBigNat(b:BigNat) : bool
 {
     (forall i :: 0 <= i < |b.words| ==> b.words[i]>=0 && Word32(b.words[i]))
     && (|b.words|==0 || b.words[|b.words|-1] > 0)
 }
 
-static function {:opaque} I(b:BigNat) : nat
+static ghost function {:opaque} I(b:BigNat) : nat
     decreases |b.words|;
     requires WellformedBigNat(b);
 {
@@ -21,14 +21,14 @@ static function {:opaque} I(b:BigNat) : nat
         I(BigNat_ctor(b.words[1..])) * Width()+b.words[0]
 }
 
-static function method lo(a:BigNat) : nat
+static function lo(a:BigNat) : nat
     requires WellformedBigNat(a);
     ensures Word32(lo(a));
 {
     if (|a.words|==0) then 0 else a.words[0]
 }
 
-static function method hi(a:BigNat) : BigNat
+static function hi(a:BigNat) : BigNat
     requires WellformedBigNat(a);
     ensures WellformedBigNat(hi(a));
 {
@@ -121,7 +121,7 @@ static lemma lemma_I_value_implies_length(a:BigNat)
     }
 }
 
-static function method nonzero(a:BigNat) : bool
+static function nonzero(a:BigNat) : bool
     requires WellformedBigNat(a);
     ensures nonzero(a) <==> I(a)!=0;
 {
@@ -130,7 +130,7 @@ static function method nonzero(a:BigNat) : bool
     |a.words|>0
 }
 
-static function method zero(a:BigNat) : bool
+static function zero(a:BigNat) : bool
     requires WellformedBigNat(a);
     ensures zero(a) <==> I(a)==0;
 {
@@ -139,7 +139,7 @@ static function method zero(a:BigNat) : bool
     |a.words|==0
 }
 
-static function method BigNatZero() : BigNat
+static function BigNatZero() : BigNat
     ensures WellformedBigNat(BigNatZero());
     ensures zero(BigNatZero());
     ensures zero(BigNatZero()) <==> I(BigNatZero())==0;

@@ -19,7 +19,7 @@ import opened SHT__SingleDelivery_i
 import opened SHT__SingleMessage_i
 import opened Temporal__Temporal_s
 
-predicate SendSingleValid<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, sm:SingleMessage, params:Parameters)
+ghost predicate SendSingleValid<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, sm:SingleMessage, params:Parameters)
 {
        sm.SingleMessage?
     && SendSingleMessage<MT>(s, s', sm.m, sm, params, true)

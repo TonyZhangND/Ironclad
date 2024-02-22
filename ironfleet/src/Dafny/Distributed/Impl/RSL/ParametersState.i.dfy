@@ -16,7 +16,7 @@ datatype ParametersState = ParametersState(
   max_batch_size:uint64,
   max_batch_delay:uint64)
 
-function AbstractifyParametersStateToLParameters(params:ParametersState) : LParameters
+ghost function AbstractifyParametersStateToLParameters(params:ParametersState) : LParameters
 {
   LParameters(params.max_log_length as int,
               params.baseline_view_timeout_period as int,
@@ -26,7 +26,7 @@ function AbstractifyParametersStateToLParameters(params:ParametersState) : LPara
               params.max_batch_delay as int)
 }
 
-function method StaticParams() : ParametersState
+function StaticParams() : ParametersState
 {
   ParametersState(7,  // max log length
                   1000, // baseline view timeout period (1000 ms = 1 sec)
@@ -36,7 +36,7 @@ function method StaticParams() : ParametersState
                   10) // max_batch_delay (10 ms)
 }
 
-predicate WFParametersState(params:ParametersState)
+ghost predicate WFParametersState(params:ParametersState)
 {
   && params.max_integer_val > params.max_log_length > 0
   && params.max_integer_val > params.max_batch_delay

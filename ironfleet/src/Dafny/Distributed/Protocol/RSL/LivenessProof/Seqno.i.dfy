@@ -39,37 +39,37 @@ import opened EnvironmentSynchrony_s
 // INVARIANTS
 /////////////////////
 
-predicate SequenceNumberRequestInv(req':Request, req:Request)
+ghost predicate SequenceNumberRequestInv(req':Request, req:Request)
   requires req.Request?
 {
   req'.Request? && req'.client == req.client ==> (req'.seqno < req.seqno) || (req'.seqno == req.seqno && req'.request == req.request)
 }
 
-predicate SequenceNumberBatchInv(batch:RequestBatch, req:Request)
+ghost predicate SequenceNumberBatchInv(batch:RequestBatch, req:Request)
   requires req.Request?
 {
   forall req' :: req' in batch ==> SequenceNumberRequestInv(req', req)
 }
 
-predicate SequenceNumberVotesInv(votes:Votes, req:Request)
+ghost predicate SequenceNumberVotesInv(votes:Votes, req:Request)
   requires req.Request?
 {
   forall op :: op in votes ==> SequenceNumberBatchInv(votes[op].max_val, req)
 }
 
-predicate SequenceNumberLearnerStateInv(s:LearnerState, req:Request)
+ghost predicate SequenceNumberLearnerStateInv(s:LearnerState, req:Request)
   requires req.Request?
 {
   forall op :: op in s ==> SequenceNumberBatchInv(s[op].candidate_learned_value, req)
 }
 
-predicate SequenceNumberReplyCacheInv(reply_cache:ReplyCache, req:Request)
+ghost predicate SequenceNumberReplyCacheInv(reply_cache:ReplyCache, req:Request)
   requires req.Request?
 {
   req.client in reply_cache && reply_cache[req.client].Reply? ==> reply_cache[req.client].seqno <= req.seqno
 }
 
-predicate SequenceNumberPacketInv(p:RslPacket, req:Request)
+ghost predicate SequenceNumberPacketInv(p:RslPacket, req:Request)
   requires req.Request?
 {
   && (p.msg.RslMessage_Request? ==> SequenceNumberRequestInv(Request(p.src, p.msg.seqno_req, p.msg.val), req))
@@ -78,7 +78,7 @@ predicate SequenceNumberPacketInv(p:RslPacket, req:Request)
   && (p.msg.RslMessage_2b? ==> SequenceNumberBatchInv(p.msg.val_2b, req))
 }
 
-predicate SequenceNumberReplicaInv(s:LReplica, req:Request)
+ghost predicate SequenceNumberReplicaInv(s:LReplica, req:Request)
   requires req.Request?
 {
   && (forall r :: r in s.proposer.request_queue ==> SequenceNumberRequestInv(r, req))
@@ -91,7 +91,7 @@ predicate SequenceNumberReplicaInv(s:LReplica, req:Request)
   && SequenceNumberReplyCacheInv(s.executor.reply_cache, req)
 }
 
-predicate SequenceNumberStateInv(ps:RslState, req:Request)
+ghost predicate SequenceNumberStateInv(ps:RslState, req:Request)
   requires req.Request?
 {
   && (forall p :: p in ps.environment.sentPackets && p.src in ps.constants.config.replica_ids ==> SequenceNumberPacketInv(p, req))

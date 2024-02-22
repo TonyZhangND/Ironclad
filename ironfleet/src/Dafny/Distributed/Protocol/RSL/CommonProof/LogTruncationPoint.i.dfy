@@ -21,7 +21,7 @@ import opened Temporal__Temporal_s
 import opened Collections__CountMatches_i
 import opened Collections__Sets_i
 
-predicate QuorumIsWitnessForLogTruncationPoint(
+ghost predicate QuorumIsWitnessForLogTruncationPoint(
   ps:RslState,
   q:set<int>,
   log_truncation_point:int
@@ -31,7 +31,7 @@ predicate QuorumIsWitnessForLogTruncationPoint(
   && forall idx :: idx in q ==> 0 <= idx < |ps.replicas| && ps.replicas[idx].replica.executor.ops_complete >= log_truncation_point    
 }
 
-predicate LogTruncationPointInfoValid(
+ghost predicate LogTruncationPointInfoValid(
   ps:RslState,
   log_truncation_point:int
   )
@@ -39,7 +39,7 @@ predicate LogTruncationPointInfoValid(
   exists q:set<int> :: QuorumIsWitnessForLogTruncationPoint(ps, q, log_truncation_point)
 }
 
-predicate LogTruncationPointInfoInPacketValid(
+ghost predicate LogTruncationPointInfoInPacketValid(
   ps:RslState,
   p:RslPacket
   )
@@ -48,7 +48,7 @@ predicate LogTruncationPointInfoInPacketValid(
   && (p.msg.RslMessage_2a? ==> LogTruncationPointInfoValid(ps, p.msg.opn_2a - ps.constants.params.max_log_length + 1))
 }
 
-predicate LogTruncationPointInvariant(
+ghost predicate LogTruncationPointInvariant(
   ps:RslState
   )
 {

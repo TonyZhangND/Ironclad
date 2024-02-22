@@ -306,7 +306,7 @@ lemma {:timeLimitMultiplier 2} lemma_mod_neg_neg(x:int, d:int)
   requires d > 0
   ensures x%d == (x*(1-d))%d
 {
-  forall ensures (x - x * d) % d == x % d
+  assert (x - x * d) % d == x % d by
   {
     lemma_mod_auto(d);
     var f := i => (x - i * d) % d == x % d;

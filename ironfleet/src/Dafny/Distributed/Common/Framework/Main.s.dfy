@@ -7,8 +7,8 @@ abstract module Main_s
 {
 import opened Native__Io_s
 import opened Native__NativeTypes_s
-import opened DS_s : DistributedSystem_s
-import opened AS_s : AbstractService_s
+import opened DS_s = DistributedSystem_s
+import opened AS_s = AbstractService_s
 import opened Collections__Seqs_s
 
 method IronfleetMain(ghost env:HostEnvironment, netc:NetClient, args:seq<seq<byte>>)

@@ -28,7 +28,7 @@ datatype ServiceState' = ServiceState'(
 
 type ServiceState = ServiceState'
 
-predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
+ghost predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
 {
        s.serverAddresses == serverAddresses
     && SpecInit(s.ht)
@@ -36,12 +36,12 @@ predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
     && s.replies == {}
 }
 
-/*predicate Service_Next_ServerReceivesRequest(s:ServiceState, s':ServiceState, req:AppRequest)
+/*ghost predicate Service_Next_ServerReceivesRequest(s:ServiceState, s':ServiceState, req:AppRequest)
 {
     s'.requests == s.requests + { req }
 }*/
 
-predicate Service_Next_ServerExecutesRequest(s:ServiceState, s':ServiceState, req:AppRequest, rep:AppReply)
+ghost predicate Service_Next_ServerExecutesRequest(s:ServiceState, s':ServiceState, req:AppRequest, rep:AppReply)
 {
        s'.serverAddresses == s.serverAddresses
     && s'.requests == s.requests + { req }
@@ -49,13 +49,13 @@ predicate Service_Next_ServerExecutesRequest(s:ServiceState, s':ServiceState, re
     && (req.AppSetRequest? ==> Set(s.ht, s'.ht, req.s_k, req.ov) && s'.replies == s.replies + { rep } && req.s_k == rep.k && req.ov == rep.ov)
 }
 
-predicate Service_Next(s:ServiceState, s':ServiceState)
+ghost predicate Service_Next(s:ServiceState, s':ServiceState)
 {
     exists request, reply :: Service_Next_ServerExecutesRequest(s, s', request, reply)
     //|| exists request :: Service_Next_ServerReceivesRequest(s, s', request)
 }
 
-function MarshallServiceGetRequest(app:AppRequest, reserved:seq<byte>) : seq<byte>
+ghost function MarshallServiceGetRequest(app:AppRequest, reserved:seq<byte>) : seq<byte>
     requires app.AppGetRequest?
 {
     if 0 <= app.g_seqno < 0x1_0000_0000_0000_0000 && |reserved| < 0x10_0000 then
@@ -69,7 +69,7 @@ function MarshallServiceGetRequest(app:AppRequest, reserved:seq<byte>) : seq<byt
         [ 1 ]
 }
 
-function MarshallServiceSetRequest(app:AppRequest, reserved:seq<byte>) : seq<byte>
+ghost function MarshallServiceSetRequest(app:AppRequest, reserved:seq<byte>) : seq<byte>
     requires app.AppSetRequest?
 {    
     if 0 <= app.s_seqno < 0x1_0000_0000_0000_0000 && |reserved| < 0x10_0000 then
@@ -88,7 +88,7 @@ function MarshallServiceSetRequest(app:AppRequest, reserved:seq<byte>) : seq<byt
         [ 1 ]
 }
 
-function MarshallServiceReply(app:AppReply, reserved:seq<byte>) : seq<byte>
+ghost function MarshallServiceReply(app:AppReply, reserved:seq<byte>) : seq<byte>
 {
     if 0 <= app.seqno < 0x1_0000_0000_0000_0000 && |reserved| < 0x10_0000 then
         [ 0, 0, 0, 0, 0, 0, 0, 0] // CSingleMessage_grammar magic number        
@@ -106,7 +106,7 @@ function MarshallServiceReply(app:AppReply, reserved:seq<byte>) : seq<byte>
         [ 1 ]
 }
 
-predicate Service_Correspondence(concretePkts:set<LPacket<EndPoint, seq<byte>>>, serviceState:ServiceState) 
+ghost predicate Service_Correspondence(concretePkts:set<LPacket<EndPoint, seq<byte>>>, serviceState:ServiceState) 
 {
        (forall p, reply, reserved_bytes :: 
                     p in concretePkts 

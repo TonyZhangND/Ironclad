@@ -2,7 +2,7 @@ include "BigNatPartial.i.dfy"
 
 
 //-///////////////////////////////////////////
-//- local (legacy) names for some mul functions.
+//- local (legacy) names for some mul ghost functions.
 
 static lemma lemma_mul_annihilate(x:int)
     ensures x * 0 == 0 * x == 0;
@@ -471,7 +471,7 @@ static method BigNatGt(A:BigNat, B:BigNat) returns (r:bool)
 }
 
 
-static function method TestEqSmallLiteralBigNat_def(x:nat, X: BigNat) : bool
+static function TestEqSmallLiteralBigNat_def(x:nat, X: BigNat) : bool
     requires x < Width();
     requires WellformedBigNat(X);
 {
@@ -526,7 +526,7 @@ static lemma lemma_TestEqSmallLiteralBigNat(x:nat, X: BigNat)
     }
 }
 
-static function method TestEqSmallLiteralBigNat(x:nat, X: BigNat) : bool
+static function TestEqSmallLiteralBigNat(x:nat, X: BigNat) : bool
     requires x < Width();
     requires WellformedBigNat(X);
     ensures x==I(X) <==> TestEqSmallLiteralBigNat(x,X);

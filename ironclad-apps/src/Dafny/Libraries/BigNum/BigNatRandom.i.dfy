@@ -6,7 +6,7 @@ include "BigNatBitwise.i.dfy"
 include "../../Drivers/TPM/tpm-wrapper.i.dfy"
 
 
-static predicate CandidateSeedWorksheetValid_precondition(worksheet:CandidateSeedWorksheet)
+static ghost predicate CandidateSeedWorksheetValid_precondition(worksheet:CandidateSeedWorksheet)
 {
     0 < |worksheet.rows|
 }
@@ -162,7 +162,7 @@ method BigNatRandomPower2(c:nat) returns (R:BigNat, ghost randoms:seq<int>)
     assert I(R) < power2(c);
 }
 
-static predicate CandidateSeedWorksheetValid_incremental(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet, last_succeeds:bool)
+static ghost predicate CandidateSeedWorksheetValid_incremental(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet, last_succeeds:bool)
 {
     (forall i :: 0<=i<|worksheet.rows| ==> CandidateSeedWorksheetRowValid(req, worksheet.rows[i]))
     //- all but last row fail

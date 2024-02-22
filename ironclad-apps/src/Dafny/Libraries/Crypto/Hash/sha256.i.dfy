@@ -11,14 +11,14 @@ include "sha256opt2.i.dfy"
 include "sha256common.i.dfy"
 include "../../../Drivers/CPU/assembly_premium.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_K_SHA256(t: int) : int
-static function method{:CompiledSpec} CompiledSpec_InitialH_SHA256(j: int) : int
+static function{:CompiledSpec} CompiledSpec_K_SHA256(t: int) : int
+static function{:CompiledSpec} CompiledSpec_InitialH_SHA256(j: int) : int
 
 //-///////////////////////////////////////////////////
-//- Utility functions for AtoH
+//- Utility ghost functions for AtoH
 //-///////////////////////////////////////////////////
 
-static function ConvertAtoHToSeq_premium(v:atoh_Type) : seq<int>
+static ghost function ConvertAtoHToSeq_premium(v:atoh_Type) : seq<int>
     requires Word32AtoH(v);
     ensures IsWordSeqOfLen(ConvertAtoHToSeq_premium(v), 8);
     ensures ConvertAtoHToSeq_premium(v) == ConvertAtoHToSeq(v);
@@ -64,7 +64,7 @@ static lemma PartialSHA256TraceIsCorrectImpliesTraceIsCorrect(z:SHA256Trace)
 //-///////////////////////////////////////////////////
 
 
-static predicate IsSHA256DoneComputingWs(z:SHA256Trace, s:SHA256_state, currentBlock:int)
+static ghost predicate IsSHA256DoneComputingWs(z:SHA256Trace, s:SHA256_state, currentBlock:int)
     requires 0 <= currentBlock;
 {
     AreSHA256TraceAndStateOK(z, s) &&
@@ -776,7 +776,7 @@ static method {:timeLimitMultiplier 5} {:dafnycc_conservative_seq_triggers} SHA2
     lemma_mod_words(bits, words);
 
     hash := ComputeSHA256AfterPadding_optimized(M, words, messageBits);
-    lemma_SHA256IsAFunction(old(BEWordSeqToBitSeq_premium(M[..])[..bits]), hash);
+    lemma_SHA256IsAghost function(old(BEWordSeqToBitSeq_premium(M[..])[..bits]), hash);
 }
 
 
@@ -790,7 +790,7 @@ static method SHA256_impl_Bytes(messageBytes:seq<int>) returns (hash:seq<int>)
 {
     var M, bits := CreateArrayForSHA(messageBytes);
     hash := SHA256_impl_ArrayInPlace(M, bits);
-    lemma_SHA256IsAFunction(BEByteSeqToBitSeq_premium(messageBytes), hash);
+    lemma_SHA256IsAghost function(BEByteSeqToBitSeq_premium(messageBytes), hash);
 }
 
 static method SHA256_impl_Bytes_arrays_original(messageBytes:array<int>) returns (hash:array<int>)
@@ -831,7 +831,7 @@ static method SHA256_impl_Bytes_arrays_original(messageBytes:array<int>) returns
     assert IsSHA256(messageBits, hash_seq);
     lemma_SHA_impl_Bytes_arrays_bitmangle(old(messageBytes), messageBytes_seq, messageBits, Minput_seq, bits);
     assert IsSHA256(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
-    lemma_SHA256IsAFunction(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
+    lemma_SHA256IsAghost function(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
 }
 
 
@@ -873,7 +873,7 @@ static method SHA256_impl_Words_arrays_original(messageWords:array<int>) returns
     assert IsSHA256(messageBits, hash_seq);
     lemma_SHA_impl_Words_arrays_bitmangle(old(messageWords), messageWords_seq, messageBits, Minput_seq, bits);
     assert IsSHA256(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
-    lemma_SHA256IsAFunction(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
+    lemma_SHA256IsAghost function(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
 }
 
 
@@ -915,7 +915,7 @@ static method SHA256_impl_Bytes_arrays(messageBytes:array<int>) returns (hash:ar
     assert IsSHA256(messageBits, hash_seq);
     lemma_SHA_impl_Bytes_arrays_bitmangle(old(messageBytes), messageBytes_seq, messageBits, Minput_seq, bits);
     assert IsSHA256(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
-    lemma_SHA256IsAFunction(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
+    lemma_SHA256IsAghost function(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
 }
 
 
@@ -957,5 +957,5 @@ static method SHA256_impl_Words_arrays(messageWords:array<int>) returns (hash:ar
     assert IsSHA256(messageBits, hash_seq);
     lemma_SHA_impl_Words_arrays_bitmangle(old(messageWords), messageWords_seq, messageBits, Minput_seq, bits);
     assert IsSHA256(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
-    lemma_SHA256IsAFunction(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
+    lemma_SHA256IsAghost function(BEWordSeqToBitSeq_premium(messageWords_seq), hash_seq);
 }

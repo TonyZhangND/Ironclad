@@ -1,30 +1,30 @@
 include "OAEP.s.dfy"
 
 //-////////////////////////////////////////////////////////////////////////
-//- High-level functions for external use
+//- High-level ghost functions for external use
 //-////////////////////////////////////////////////////////////////////////
 
-static predicate {:autoReq} PSSSignatureRelation(key:RSAKeyPairSpec, M:seq<int>, S:seq<int>, old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate {:autoReq} PSSSignatureRelation(key:RSAKeyPairSpec, M:seq<int>, S:seq<int>, old_TPM:TPM_struct, new_TPM:TPM_struct)
 {
     new_TPM.random_index - old_TPM.random_index == sLen() &&
     S == RSASSA_PSS_SIGN(key, M, TPM_random_bytes(old_TPM.random_index, new_TPM.random_index))
 }
 
-static predicate {:autoReq} PSSVerificationRelation(pubkey:RSAPubKeySpec, M:seq<int>, S:seq<int>, verification_result:bool)
+static ghost predicate {:autoReq} PSSVerificationRelation(pubkey:RSAPubKeySpec, M:seq<int>, S:seq<int>, verification_result:bool)
 {
     RSASSA_PSS_VERIFY(pubkey, M, S) == verification_result
 }
 
 //-////////////////////////////////////////////////////////////////////////
-//- Helper functions
+//- Helper ghost functions
 //-////////////////////////////////////////////////////////////////////////
 
-static function CountBits(x:nat) : int
+static ghost function CountBits(x:nat) : int
 {
     if x == 0 then 0 else 1 + CountBits(x/2)
 }
 
-static function ClearMSBs(s:seq<int>, numZeroBits:int) : seq<int>
+static ghost function ClearMSBs(s:seq<int>, numZeroBits:int) : seq<int>
     requires 0 <= numZeroBits <= 8;
 {
     if s == [] then
@@ -37,7 +37,7 @@ static function ClearMSBs(s:seq<int>, numZeroBits:int) : seq<int>
 //- RSAVP1 as defined in RFC 3447 section 5.2
 //-////////////////////////////////////////////////////////////////////////
 
-static function RSAVP1(pubkey:RSAPubKeySpec, s:int) : int
+static ghost function RSAVP1(pubkey:RSAPubKeySpec, s:int) : int
     requires WellformedRSAPubKeySpec(pubkey);
     requires 0 <= s < pubkey.n;
 {
@@ -48,7 +48,7 @@ static function RSAVP1(pubkey:RSAPubKeySpec, s:int) : int
 //- RSASSA-PSS-SIGN as defined in RFC 3447 section 8.1.1
 //-////////////////////////////////////////////////////////////////////////
 
-static function {:autoReq} RSASSA_PSS_SIGN(key:RSAKeyPairSpec, M:seq<int>, salt:seq<int>) : seq<int>
+static ghost function {:autoReq} RSASSA_PSS_SIGN(key:RSAKeyPairSpec, M:seq<int>, salt:seq<int>) : seq<int>
     requires WellformedRSAKeyPairSpec(key);
     requires IsByteSeq(M);
     requires IsByteSeqOfLen(salt, sLen());
@@ -65,7 +65,7 @@ static function {:autoReq} RSASSA_PSS_SIGN(key:RSAKeyPairSpec, M:seq<int>, salt:
 //- RSASSA-RSS-VERIFY as defined in RFC 3447 section 8.1.2
 //-////////////////////////////////////////////////////////////////////////
 
-static predicate {:autoReq} RSASSA_PSS_VERIFY(pubkey:RSAPubKeySpec, M:seq<int>, S:seq<int>)
+static ghost predicate {:autoReq} RSASSA_PSS_VERIFY(pubkey:RSAPubKeySpec, M:seq<int>, S:seq<int>)
     requires WellformedRSAPubKeySpec(pubkey);
     requires IsByteSeq(M);
     requires IsByteSeq(S);
@@ -86,7 +86,7 @@ static predicate {:autoReq} RSASSA_PSS_VERIFY(pubkey:RSAPubKeySpec, M:seq<int>, 
 //- EMSA-PSS-ENCODE as defined in RFC 3447 section 9.1.1
 //-////////////////////////////////////////////////////////////////////////
 
-static function {:autoReq} EMSA_PSS_ENCODE(M:seq<int>, emBits:int, salt:seq<int>) : seq<int>
+static ghost function {:autoReq} EMSA_PSS_ENCODE(M:seq<int>, emBits:int, salt:seq<int>) : seq<int>
     requires IsByteSeq(M);
     requires |M| * 8 >= emBits;
     requires IsByteSeqOfLen(salt, sLen());
@@ -111,7 +111,7 @@ static function {:autoReq} EMSA_PSS_ENCODE(M:seq<int>, emBits:int, salt:seq<int>
 //- EMSA-PSS-VERIFY as defined in RFC 3447 section 9.1.2
 //-////////////////////////////////////////////////////////////////////////
 
-static predicate {:autoReq} EMSA_PSS_VERIFY(M:seq<int>, EM:seq<int>, emBits:int)
+static ghost predicate {:autoReq} EMSA_PSS_VERIFY(M:seq<int>, EM:seq<int>, emBits:int)
     requires IsByteSeq(EM);
     requires IsByteSeq(M);
 {

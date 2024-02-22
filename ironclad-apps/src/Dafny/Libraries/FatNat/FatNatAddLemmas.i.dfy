@@ -2,7 +2,7 @@ include "FatNatCommon.i.dfy"
 include "../BigNum/BigNatX86Shim.i.dfy"
 include "../../Drivers/CPU/assembly.i.dfy"
 
-predicate HappyDigit(s:seq<int>, si:int, i:int)
+ghost predicate HappyDigit(s:seq<int>, si:int, i:int)
     requires 0 <= si;
     requires si+8 <= |s|;
     requires 0 <= i < 8;

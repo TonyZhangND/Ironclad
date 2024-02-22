@@ -5,24 +5,24 @@ include "../../Util/integer_sequences_premium.i.dfy"
 include "sha_padding.i.dfy"
 include "sha_common.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_K_SHA1(n: int) : int
-static function method{:CompiledSpec} CompiledSpec_InitialH_SHA1(index: int) : int
+static function{:CompiledSpec} CompiledSpec_K_SHA1(n: int) : int
+static function{:CompiledSpec} CompiledSpec_InitialH_SHA1(index: int) : int
 
 //-///////////////////////////////////////////////////
-//- Utility functions for AtoE
+//- Utility ghost functions for AtoE
 //-///////////////////////////////////////////////////
 
-static predicate Word32AtoE(v:atoe_Type)
+static ghost predicate Word32AtoE(v:atoe_Type)
 {
     Word32(v.a) && Word32(v.b) && Word32(v.c) && Word32(v.d) && Word32(v.e)
 }
 
-static predicate IsAtoEWordSeq(vs:seq<atoe_Type>)
+static ghost predicate IsAtoEWordSeq(vs:seq<atoe_Type>)
 {
     forall i :: 0 <= i < |vs| ==> Word32AtoE(vs[i])
 }
 
-static function ConvertAtoEToSeq_premium(v:atoe_Type) : seq<int>
+static ghost function ConvertAtoEToSeq_premium(v:atoe_Type) : seq<int>
     requires Word32AtoE(v);
     ensures IsWordSeqOfLen(ConvertAtoEToSeq_premium(v), 5);
     ensures ConvertAtoEToSeq_premium(v) == ConvertAtoEToSeq(v);
@@ -30,7 +30,7 @@ static function ConvertAtoEToSeq_premium(v:atoe_Type) : seq<int>
     ConvertAtoEToSeq(v)
 }
 
-static predicate{:opaque} TheAtoEsAreOK(z:SHA1Trace, blk: int, t: int)
+static ghost predicate{:opaque} TheAtoEsAreOK(z:SHA1Trace, blk: int, t: int)
     requires 0 <= t <= 79;
     requires 0 <= blk;
     requires |z.atoe| > blk;
@@ -118,7 +118,7 @@ static method InitK_SHA1(Ks: array<int>)
 //- Partial SHA1 traces
 //-///////////////////////////////////////////////////
 
-static predicate PartialSHA1TraceHasCorrectHs(z:SHA1Trace)
+static ghost predicate PartialSHA1TraceHasCorrectHs(z:SHA1Trace)
 {
     |z.H| > 0 &&
     |z.H| <= |z.atoe|+1 &&
@@ -129,7 +129,7 @@ static predicate PartialSHA1TraceHasCorrectHs(z:SHA1Trace)
         forall j :: 0 <= j < 5 ==> z.H[blk+1][j] == Add32(ConvertAtoEToSeq(z.atoe[blk][80])[j], z.H[blk][j]))
 }
 
-static predicate PartialSHA1TraceHasCorrectWs(z:SHA1Trace)
+static ghost predicate PartialSHA1TraceHasCorrectWs(z:SHA1Trace)
 {
     |z.W| <= |z.M| &&
     forall blk :: 0 <= blk < |z.W| ==>
@@ -142,7 +142,7 @@ static predicate PartialSHA1TraceHasCorrectWs(z:SHA1Trace)
                                1))
 }
 
-static predicate PartialSHA1TraceHasCorrectatoesWf(z:SHA1Trace)
+static ghost predicate PartialSHA1TraceHasCorrectatoesWf(z:SHA1Trace)
 {
     |z.atoe| <= |z.H| &&
     |z.atoe| <= |z.W| &&
@@ -154,7 +154,7 @@ static predicate PartialSHA1TraceHasCorrectatoesWf(z:SHA1Trace)
         (|z.atoe[blk]| > 0 ==> IsWordSeqOfLen(z.H[blk], 5) && ConvertAtoEToSeq(z.atoe[blk][0]) == z.H[blk])
 }
 
-static predicate{:opaque} PartialSHA1TraceHasCorrectatoesOpaque(z:SHA1Trace)
+static ghost predicate{:opaque} PartialSHA1TraceHasCorrectatoesOpaque(z:SHA1Trace)
 {
     |z.atoe| <= |z.H| &&
     |z.atoe| <= |z.W| &&
@@ -177,12 +177,12 @@ static predicate{:opaque} PartialSHA1TraceHasCorrectatoesOpaque(z:SHA1Trace)
             z.atoe[blk][t+1].a == T
 }
 
-static predicate PartialSHA1TraceHasCorrectatoes(z:SHA1Trace)
+static ghost predicate PartialSHA1TraceHasCorrectatoes(z:SHA1Trace)
 {
     PartialSHA1TraceHasCorrectatoesWf(z) && PartialSHA1TraceHasCorrectatoesOpaque(z)
 }
 
-static predicate PartialSHA1TraceIsCorrect(z:SHA1Trace)
+static ghost predicate PartialSHA1TraceIsCorrect(z:SHA1Trace)
 {
     PartialSHA1TraceHasCorrectWs(z) && PartialSHA1TraceHasCorrectHs(z) && PartialSHA1TraceHasCorrectatoes(z)
 }
@@ -201,7 +201,7 @@ static lemma PartialSHA1TraceIsCorrectImpliesTraceIsCorrect(z:SHA1Trace)
 
 datatype SHA1_state = SHA1_state_c(M:seq<int>, H:seq<int>, W:seq<int>, Ks:seq<int>, atoe:atoe_Type, num_blocks:int);
 
-static function SHA1_vars_to_state(M:array<int>, words:int, H:array<int>, W:array<int>, Ks:array<int>, atoe:atoe_Type, num_blocks:int)
+static ghost function SHA1_vars_to_state(M:array<int>, words:int, H:array<int>, W:array<int>, Ks:array<int>, atoe:atoe_Type, num_blocks:int)
                                   : SHA1_state
     requires M != null && H != null && W != null && Ks != null;
     requires 0 <= words <= M.Length;
@@ -210,7 +210,7 @@ static function SHA1_vars_to_state(M:array<int>, words:int, H:array<int>, W:arra
     SHA1_state_c(M[..words], H[..], W[..], Ks[..], atoe, num_blocks)
 }
 
-static predicate AreSHA1TraceAndStateOK(z:SHA1Trace, s:SHA1_state)
+static ghost predicate AreSHA1TraceAndStateOK(z:SHA1Trace, s:SHA1_state)
 {
     PartialSHA1TraceIsCorrect(z) &&
     IsWordSeq(s.M) &&
@@ -222,7 +222,7 @@ static predicate AreSHA1TraceAndStateOK(z:SHA1Trace, s:SHA1_state)
     (forall t :: 0 <= t <= 79 ==> s.Ks[t] == K_SHA1(t))
 }
 
-static predicate IsSHA1ReadyForBlock(z:SHA1Trace, s:SHA1_state, nextBlock:int)
+static ghost predicate IsSHA1ReadyForBlock(z:SHA1Trace, s:SHA1_state, nextBlock:int)
     requires 0 <= nextBlock;
 {
     AreSHA1TraceAndStateOK(z, s) &&
@@ -233,7 +233,7 @@ static predicate IsSHA1ReadyForBlock(z:SHA1Trace, s:SHA1_state, nextBlock:int)
     s.H == z.H[nextBlock]
 }
 
-static predicate IsSHA1DoneComputingWs(z:SHA1Trace, s:SHA1_state, currentBlock:int)
+static ghost predicate IsSHA1DoneComputingWs(z:SHA1Trace, s:SHA1_state, currentBlock:int)
     requires 0 <= currentBlock;
 {
     AreSHA1TraceAndStateOK(z, s) &&
@@ -245,7 +245,7 @@ static predicate IsSHA1DoneComputingWs(z:SHA1Trace, s:SHA1_state, currentBlock:i
     s.W == z.W[currentBlock]
 }
 
-static predicate IsSHA1ReadyForStep(z:SHA1Trace, s:SHA1_state, currentBlock:int, nextStep:int)
+static ghost predicate IsSHA1ReadyForStep(z:SHA1Trace, s:SHA1_state, currentBlock:int, nextStep:int)
     requires 0 <= currentBlock;
     requires 0 <= nextStep <= 80;
 {
@@ -1022,7 +1022,7 @@ static method{:dafnycc_conservative_seq_triggers} SHA1_impl_ArrayInPlace(M:array
     lemma_mod_words(bits, words);
 
     hash := ComputeSHA1AfterPadding(M, words, messageBits);
-    lemma_SHA1IsAFunction(old(BEWordSeqToBitSeq_premium(M[..])[..bits]), hash);
+    lemma_SHA1IsAghost function(old(BEWordSeqToBitSeq_premium(M[..])[..bits]), hash);
 }
 
 static method SHA1_impl_Bytes(messageBytes:seq<int>) returns (hash:seq<int>)
@@ -1035,7 +1035,7 @@ static method SHA1_impl_Bytes(messageBytes:seq<int>) returns (hash:seq<int>)
 {
     var M, bits := CreateArrayForSHA(messageBytes);
     hash := SHA1_impl_ArrayInPlace(M, bits);
-    lemma_SHA1IsAFunction(BEByteSeqToBitSeq_premium(messageBytes), hash);
+    lemma_SHA1IsAghost function(BEByteSeqToBitSeq_premium(messageBytes), hash);
 }
 
 static method SHA1_impl_Bytes_arrays(messageBytes:array<int>) returns (hash:array<int>)
@@ -1085,6 +1085,6 @@ static method SHA1_impl_Bytes_arrays(messageBytes:array<int>) returns (hash:arra
 
     lemma_SHA_impl_Bytes_arrays_bitmangle(old(messageBytes), messageBytes_seq, messageBits, Minput_seq, bits);
     assert IsSHA1(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
-    lemma_SHA1IsAFunction(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
+    lemma_SHA1IsAghost function(BEByteSeqToBitSeq_premium(messageBytes_seq), hash_seq);
 }
     

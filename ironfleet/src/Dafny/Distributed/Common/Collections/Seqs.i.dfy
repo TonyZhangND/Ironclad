@@ -4,11 +4,11 @@ module Collections__Seqs_i {
 import opened Collections__Seqs_s 
 
 lemma SeqAdditionIsAssociative<T>(a:seq<T>, b:seq<T>, c:seq<T>)
-  ensures a+(b+c) == (a+b)+c;
+  ensures a+(b+c) == (a+b)+c
 {
 }
 
-predicate ItemAtPositionInSeq<T>(s:seq<T>, v:T, idx:int)
+ghost predicate ItemAtPositionInSeq<T>(s:seq<T>, v:T, idx:int)
 {
   0 <= idx < |s| && s[idx] == v
 }
@@ -21,7 +21,7 @@ lemma Lemma_ItemInSeqAtASomePosition<T>(s:seq<T>, v:T)
   assert ItemAtPositionInSeq(s, v, idx);
 }
 
-function FindIndexInSeq<T>(s:seq<T>, v:T):int
+ghost function FindIndexInSeq<T>(s:seq<T>, v:T):int
   ensures var idx := FindIndexInSeq(s, v);
           if idx >= 0 then
             idx < |s| && s[idx] == v
@@ -51,13 +51,13 @@ lemma Lemma_IdenticalSingletonSequencesHaveIdenticalElement<T>(x:T, y:T)
 //////////////////////////////////////////////////////////
 //  Combining sequences of sequences
 //////////////////////////////////////////////////////////
-function SeqCat<T>(seqs:seq<seq<T>>) : seq<T>
+ghost function SeqCat<T>(seqs:seq<seq<T>>) : seq<T>
 {
   if |seqs| == 0 then []
   else seqs[0] + SeqCat(seqs[1..])
 }
 
-function SeqCatRev<T>(seqs:seq<seq<T>>) : seq<T>
+ghost function SeqCatRev<T>(seqs:seq<seq<T>>) : seq<T>
 {
   if |seqs| == 0 then []
   else SeqCatRev(all_but_last(seqs)) + last(seqs)

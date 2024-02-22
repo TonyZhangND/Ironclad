@@ -10,20 +10,20 @@ import opened Native__NativeTypes_s
 type HostState
 type ConcreteConfiguration
 
-predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
+ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
   reads *
-predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
-  reads *
-
-predicate ConcreteConfigInit(config:ConcreteConfiguration)
-function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
-
-predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+ghost predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
   reads *
 
-function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
+ghost predicate ConcreteConfigInit(config:ConcreteConfiguration)
+ghost function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
 
-predicate ArbitraryObject(o:object) { true }
+ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+  reads *
+
+ghost function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
+
+ghost predicate ArbitraryObject(o:object) { true }
 
 method HostInitImpl(ghost env:HostEnvironment, netc:NetClient, args:seq<seq<byte>>) returns (
   ok:bool,

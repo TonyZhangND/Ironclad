@@ -28,13 +28,13 @@ import opened Temporal__Rules_i
 import opened Temporal__Temporal_s
 import opened Temporal__WF1_i
 
-predicate SHTPacketSent(ss:LSHT_State, p:LSHTPacket)
+ghost predicate SHTPacketSent(ss:LSHT_State, p:LSHTPacket)
 {
        ss.environment.nextStep.LEnvStepHostIos?
     && LIoOpSend(p) in ss.environment.nextStep.ios
 }
 
-function{:opaque} SHTPacketSentTemporal(b:Behavior<LSHT_State>, p:LSHTPacket):temporal
+ghost function{:opaque} SHTPacketSentTemporal(b:Behavior<LSHT_State>, p:LSHTPacket):temporal
     requires imaptotal(b);
     ensures  forall i{:trigger sat(i, SHTPacketSentTemporal(b, p))} ::
              sat(i, SHTPacketSentTemporal(b, p)) <==> SHTPacketSent(b[i], p);
@@ -42,7 +42,7 @@ function{:opaque} SHTPacketSentTemporal(b:Behavior<LSHT_State>, p:LSHTPacket):te
     stepmap(imap i :: SHTPacketSent(b[i], p))
 }
 
-predicate IsDelegateStep(
+ghost predicate IsDelegateStep(
     ps:LSHT_State,
     ps':LSHT_State,
     idx:int
@@ -62,7 +62,7 @@ predicate IsDelegateStep(
     && ps'.hosts[idx].host.receivedPacket.None?
 }
 
-predicate IsShardStepOfHost(
+ghost predicate IsShardStepOfHost(
     ps:LSHT_State,
     ps':LSHT_State,
     idx:int
@@ -81,7 +81,7 @@ predicate IsShardStepOfHost(
     && ps'.hosts[idx].host.receivedPacket.None?
 }
 
-predicate IsShardStepOfOtherHost(
+ghost predicate IsShardStepOfOtherHost(
     ps:LSHT_State,
     ps':LSHT_State,
     idx:int
@@ -90,7 +90,7 @@ predicate IsShardStepOfOtherHost(
     exists other_idx :: other_idx != idx && IsShardStepOfHost(ps, ps', other_idx)
 }
 
-function AllDelegatePacketsToHost(b:Behavior<LSHT_State>, i:int, dst:NodeIdentity):set<LSHTPacket>
+ghost function AllDelegatePacketsToHost(b:Behavior<LSHT_State>, i:int, dst:NodeIdentity):set<LSHTPacket>
     requires imaptotal(b);
 {
     set p | p in b[i].environment.sentPackets && p.src in b[i].config.hostIds && p.msg.SingleMessage? && p.msg.m.Delegate? && p.dst == dst

@@ -20,21 +20,21 @@ import opened SHT__Delegations_i
 // These welformedness conditions are needed to define the refinement
 // mapping, so they get floated up here 
 
-function AllHostIdentities(s:SHT_State) : seq<NodeIdentity>
+ghost function AllHostIdentities(s:SHT_State) : seq<NodeIdentity>
     requires SHT_MapsComplete(s);
     ensures forall id :: id in AllHostIdentities(s) ==> id in s.hosts;
 {
     s.config.hostIds
 }
 
-predicate MapComplete(s:SHT_State)
+ghost predicate MapComplete(s:SHT_State)
 {
        SHT_MapsComplete(s)
     && (forall id :: id in AllHostIdentities(s)
             ==> DelegationMapComplete(s.hosts[id].delegationMap))
 }
 
-predicate AllDelegationsToKnownHosts(s:SHT_State)
+ghost predicate AllDelegationsToKnownHosts(s:SHT_State)
     requires MapComplete(s);
 {
     forall id,k :: id in AllHostIdentities(s)
@@ -44,13 +44,13 @@ predicate AllDelegationsToKnownHosts(s:SHT_State)
 //////////////////////////////////////////////////////////////////////////////
 // Unacked list
 
-predicate NoAcksInUnAckedLists(acct:SingleDeliveryAcct)
+ghost predicate NoAcksInUnAckedLists(acct:SingleDeliveryAcct)
 {
     forall id, i :: var unAcked := AckStateLookup(id, acct.sendState).unAcked;
               0 <= i < |unAcked| ==> unAcked[i].SingleMessage?
 }
 
-predicate UnAckedListsSequential(acct:SingleDeliveryAcct)
+ghost predicate UnAckedListsSequential(acct:SingleDeliveryAcct)
     requires NoAcksInUnAckedLists(acct);
 {
     forall id, i, j :: var unAcked := AckStateLookup(id, acct.sendState).unAcked;
@@ -58,21 +58,21 @@ predicate UnAckedListsSequential(acct:SingleDeliveryAcct)
                  ==> unAcked[i].seqno + 1 == unAcked[j].seqno
 }
 
-predicate UnAckedDstsConsistent(acct:SingleDeliveryAcct)
+ghost predicate UnAckedDstsConsistent(acct:SingleDeliveryAcct)
     requires NoAcksInUnAckedLists(acct);
 {
     forall id, i :: var unAcked := AckStateLookup(id, acct.sendState).unAcked;
               0 <= i < |unAcked| ==> unAcked[i].dst == id
 }
 
-predicate UnAckedListExceedsNumPacketsAcked(acct:SingleDeliveryAcct)
+ghost predicate UnAckedListExceedsNumPacketsAcked(acct:SingleDeliveryAcct)
     requires NoAcksInUnAckedLists(acct);
 {
     forall id :: var ackState := AckStateLookup(id, acct.sendState);
         |ackState.unAcked| > 0 ==> ackState.unAcked[0].seqno == ackState.numPacketsAcked + 1
 }
 
-predicate {:opaque} UnAckedListInNetwork(s:SHT_State)
+ghost predicate {:opaque} UnAckedListInNetwork(s:SHT_State)
     requires MapComplete(s);
 {
     forall id,msg,dst {:trigger msg in AckStateLookup(dst, s.hosts[id].sd.sendState).unAcked } :: 
@@ -83,7 +83,7 @@ predicate {:opaque} UnAckedListInNetwork(s:SHT_State)
      ==> Packet(msg.dst, s.hosts[id].me, msg) in s.network
 }
 
-predicate UnAckedListProperties(acct:SingleDeliveryAcct)
+ghost predicate UnAckedListProperties(acct:SingleDeliveryAcct)
 {
        NoAcksInUnAckedLists(acct)
     && UnAckedListsSequential(acct)
@@ -91,7 +91,7 @@ predicate UnAckedListProperties(acct:SingleDeliveryAcct)
     && UnAckedDstsConsistent(acct)
 }
 
-predicate AckListsInv(s:SHT_State)
+ghost predicate AckListsInv(s:SHT_State)
     requires MapComplete(s);
 {
         UnAckedListInNetwork(s)
@@ -99,7 +99,7 @@ predicate AckListsInv(s:SHT_State)
 }
 
 /*
-predicate NoAcksInUnAckedLists(s:SHT_State)
+ghost predicate NoAcksInUnAckedLists(s:SHT_State)
     requires MapComplete(s);
 {
    forall id, id' :: id in AllHostIdentities() && id' in AllHostIdentities() 
@@ -107,7 +107,7 @@ predicate NoAcksInUnAckedLists(s:SHT_State)
            forall i :: 0 <= i < |unAcked| ==> unAcked[i].SingleMessage?)
 }
 
-predicate UnAckedListsSequential(s:SHT_State)
+ghost predicate UnAckedListsSequential(s:SHT_State)
     requires MapComplete(s);
     requires NoAcksInUnAckedLists(s);
 {
@@ -117,7 +117,7 @@ predicate UnAckedListsSequential(s:SHT_State)
                 ==> unAcked[i].seqno + 1 == unAcked[j].seqno)
 }
 
-predicate UnAckedListExceedsNumPacketsAcked(s:SHT_State)
+ghost predicate UnAckedListExceedsNumPacketsAcked(s:SHT_State)
     requires MapComplete(s);
     requires NoAcksInUnAckedLists(s);
 {
@@ -130,19 +130,19 @@ predicate UnAckedListExceedsNumPacketsAcked(s:SHT_State)
 //////////////////////////////////////////////////////////////////////////////
 // Hosts claim keys
 
-predicate DelegationPacket(p:Option<Packet>)
+ghost predicate DelegationPacket(p:Option<Packet>)
 {
     p.Some? && p.v.msg.SingleMessage? && p.v.msg.m.Delegate?
 }
 
-predicate BufferedPacketClaimsKey(s:Host, k:Key)
+ghost predicate BufferedPacketClaimsKey(s:Host, k:Key)
 {
     DelegationPacket(s.receivedPacket) && KeyRangeContains(s.receivedPacket.v.msg.m.range, KeyPlus(k))
  && s.receivedPacket.v.src in s.constants.hostIds
  && s.receivedPacket.v.dst in s.constants.hostIds
 }
 
-predicate HostClaimsKey(s:Host, k:Key)
+ghost predicate HostClaimsKey(s:Host, k:Key)
     requires DelegationMapComplete(s.delegationMap);
 {
     // My map tells me I own the key
@@ -154,7 +154,7 @@ predicate HostClaimsKey(s:Host, k:Key)
 //////////////////////////////////////////////////////////////////////////////
 // Packets claim keys
 
-predicate PacketsHaveSaneHeaders(s:SHT_State)
+ghost predicate PacketsHaveSaneHeaders(s:SHT_State)
     requires MapComplete(s);
 {
     true
@@ -163,7 +163,7 @@ predicate PacketsHaveSaneHeaders(s:SHT_State)
 //        ==> pkt.src in AllHostIdentities(s) && pkt.dst in AllHostIdentities(s)
 }
 
-predicate PacketInFlight(s:SHT_State, pkt:Packet)
+ghost predicate PacketInFlight(s:SHT_State, pkt:Packet)
     requires MapComplete(s);
 {
        pkt in s.network 
@@ -172,7 +172,7 @@ predicate PacketInFlight(s:SHT_State, pkt:Packet)
     && MessageNotReceived(s.hosts[pkt.dst].sd, pkt.src, pkt.msg)
 }
 
-predicate InFlightPacketClaimsKey(s:SHT_State, pkt:Packet, k:Key)
+ghost predicate InFlightPacketClaimsKey(s:SHT_State, pkt:Packet, k:Key)
     requires MapComplete(s);
 {
        pkt.msg.SingleMessage?
@@ -182,7 +182,7 @@ predicate InFlightPacketClaimsKey(s:SHT_State, pkt:Packet, k:Key)
 }
 
 // TODO Explicitly name these CHOOSE invocations to work around Dafny bug
-function ThePacketThatClaimsKey(s:SHT_State, k:Key) : Packet
+ghost function ThePacketThatClaimsKey(s:SHT_State, k:Key) : Packet
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires exists pkt :: InFlightPacketClaimsKey(s,pkt,k);
@@ -192,7 +192,7 @@ function ThePacketThatClaimsKey(s:SHT_State, k:Key) : Packet
     var pkt :| InFlightPacketClaimsKey(s,pkt,k); pkt
 }
 
-function TheHostThatClaimsKey(s:SHT_State, k:Key) : NodeIdentity
+ghost function TheHostThatClaimsKey(s:SHT_State, k:Key) : NodeIdentity
     requires MapComplete(s);
     requires AllDelegationsToKnownHosts(s);
     requires exists id {:trigger HostClaimsKey(s.hosts[id], k)} :: id in AllHostIdentities(s) && HostClaimsKey(s.hosts[id], k);
@@ -200,7 +200,7 @@ function TheHostThatClaimsKey(s:SHT_State, k:Key) : NodeIdentity
     var id :| id in AllHostIdentities(s) && HostClaimsKey(s.hosts[id], k); id
 }
 
-function FindHostHashTable(s:SHT_State, k:Key) : Hashtable
+ghost function FindHostHashTable(s:SHT_State, k:Key) : Hashtable
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -215,7 +215,7 @@ function FindHostHashTable(s:SHT_State, k:Key) : Hashtable
         s.hosts[id].h
 }
 
-function FindHashTable(s:SHT_State, k:Key) : Hashtable
+ghost function FindHashTable(s:SHT_State, k:Key) : Hashtable
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);

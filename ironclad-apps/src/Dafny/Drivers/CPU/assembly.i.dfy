@@ -14,17 +14,17 @@ include "../../Libraries/Util/relational.s.dfy"
 //-  versions in assembly_premium.dfy
 //-//////////////////////////////////////////////////////
 
-static function {:imported} IntBit(index:int, val:int):bool
+static ghost function {:imported} IntBit(index:int, val:int):bool
 static lemma{:decl} lemma_IntBit(index:int, val:int)
     ensures word32(val) && 0 <= index < 32 ==> 
             IntBit(index, val) == if (index < 31) then IntBit(index + 1, val / 2) else val % 2 != 0;
 
 //- Undefined.  Mapped to Boogie's word32
-static function{:imported} word32(x:int):bool
+static ghost function{:imported} word32(x:int):bool
 static lemma{:decl} lemma_word32(x:int)
     ensures word32(x) <==> 0 <= x < 0x100000000;
 
-static function{:imported} mod0x100000000(x:int):int
+static ghost function{:imported} mod0x100000000(x:int):int
 static lemma{:decl} lemma_mod0x100000000(x:int)
     ensures mod0x100000000(x) == x % 0x100000000;
 
@@ -37,19 +37,19 @@ static method{:decl}{:dafnycc_heap_unmodified}{:instruction "inout@EDX", "inout@
     ensures  d == x / y;
     ensures  m == x % y;
 
-static function method{:imported}{:instruction "inout", "in"} asm_Add(x:int, y:int):int
+static function{:imported}{:instruction "inout", "in"} asm_Add(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_Add(x, y));
     ensures asm_Add(x, y) == mod0x100000000(x + y);
 
-static function method{:imported}{:instruction "inout", "in"} asm_Sub(x:int, y:int):int
+static function{:imported}{:instruction "inout", "in"} asm_Sub(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_Sub(x, y));
     ensures asm_Sub(x, y) == mod0x100000000(x - y);
 
-static function method{:imported} asm_Mul(x:int, y:int):int
+static function{:imported} asm_Mul(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_Mul(x, y));
@@ -63,66 +63,66 @@ static method{:imported}{:instruction "out@EDX", "inout@EAX", "in"}{:strict_oper
     ensures lo == mod0x100000000(x * y);
     ensures hi == (x * y) / 0x100000000;
 
-static function method{:imported} asm_Div(x:int, y:int):int
+static function{:imported} asm_Div(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     requires y > 0;
     ensures word32(asm_Div(x, y));
     ensures asm_Div(x, y) == mod0x100000000(x / y);
 
-static function method{:imported} asm_Mod(x:int, y:int):int
+static function{:imported} asm_Mod(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     requires y > 0;
     ensures word32(asm_Mod(x, y));
     ensures asm_Mod(x, y) == x % y;
 
-static function method{:imported}{:instruction "inout", "in@ECX"} asm_LeftShift(x:int, amount:int):int
+static function{:imported}{:instruction "inout", "in@ECX"} asm_LeftShift(x:int, amount:int):int
     requires word32(x);
     requires 0 <= amount < 32;
     ensures word32(asm_LeftShift(x, amount));
     ensures forall i {:trigger IntBit(i, asm_LeftShift(x, amount))} :: 32 - amount <= i < 32 ==>  IntBit(i, asm_LeftShift(x, amount)) == false;
     ensures forall i {:trigger IntBit(i, asm_LeftShift(x, amount))} :: 0 <= i < 32 - amount ==> IntBit(i, asm_LeftShift(x, amount)) == IntBit(i + amount, x);
 
-static function method{:imported}{:instruction "inout", "in@ECX"} asm_RightShift(x:int, amount:int):int
+static function{:imported}{:instruction "inout", "in@ECX"} asm_RightShift(x:int, amount:int):int
     requires word32(x);
     requires 0 <= amount < 32;
     ensures word32(asm_RightShift(x, amount));
     ensures forall i {:trigger IntBit(i, asm_RightShift(x, amount))} :: 0 <= i < amount ==> IntBit(i, asm_RightShift(x, amount)) == false;            
     ensures forall i {:trigger IntBit(i, asm_RightShift(x, amount))} :: amount <= i < 32 ==> IntBit(i, asm_RightShift(x, amount)) == IntBit(i - amount, x);            
 
-static function method{:imported}{:instruction "inout", "in@ECX"} asm_RotateLeft(x:int, amount:int):int
+static function{:imported}{:instruction "inout", "in@ECX"} asm_RotateLeft(x:int, amount:int):int
     requires word32(x);
     requires 0 <= amount < 32;
     ensures word32(asm_RotateLeft(x, amount));
     ensures forall i {:trigger IntBit(i, asm_RotateLeft(x, amount))} :: 0 <= i < 32 - amount ==> IntBit(i, asm_RotateLeft(x, amount)) == IntBit(i + amount, x);
     ensures forall i {:trigger IntBit(i, asm_RotateLeft(x, amount))} :: 32 - amount <= i < 32 ==> IntBit(i, asm_RotateLeft(x, amount)) == IntBit(i - (32 - amount), x);         
 
-static function method{:imported}{:instruction "inout", "in@ECX"} asm_RotateRight(x:int, amount:int):int
+static function{:imported}{:instruction "inout", "in@ECX"} asm_RotateRight(x:int, amount:int):int
     requires word32(x);
     requires 0 <= amount < 32;
     ensures word32(asm_RotateRight(x, amount));
     ensures forall i {:trigger IntBit(i, asm_RotateRight(x, amount))} :: 0 <= i < amount ==>  IntBit(i, asm_RotateRight(x, amount)) == IntBit((32 - amount)+i, x);
     ensures forall i {:trigger IntBit(i, asm_RotateRight(x, amount))} :: amount <= i < 32 ==> IntBit(i, asm_RotateRight(x, amount)) == IntBit(i - amount, x);
 
-static function method{:imported}{:instruction "inout"} asm_BitwiseNot(x:int):int
+static function{:imported}{:instruction "inout"} asm_BitwiseNot(x:int):int
     requires word32(x);
     ensures word32(asm_BitwiseNot(x));
     ensures forall i {:trigger IntBit(i, asm_BitwiseNot(x))} :: 0 <= i < 32 ==> IntBit(i, asm_BitwiseNot(x)) == !IntBit(i, x);
 
-static function method{:imported}{:instruction "inout", "in"} asm_BitwiseAnd(x:int, y:int):int
+static function{:imported}{:instruction "inout", "in"} asm_BitwiseAnd(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_BitwiseAnd(x, y));
     ensures forall i {:trigger IntBit(i, asm_BitwiseAnd(x, y))} :: 0 <= i < 32 ==> IntBit(i, asm_BitwiseAnd(x, y)) == (IntBit(i, x) && IntBit(i, y));
 
-static function method{:imported}{:instruction "inout", "in"} asm_BitwiseOr(x:int, y:int):int
+static function{:imported}{:instruction "inout", "in"} asm_BitwiseOr(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_BitwiseOr(x, y));
     ensures forall i {:trigger IntBit(i, asm_BitwiseOr(x, y))} :: 0 <= i < 32 ==> IntBit(i, asm_BitwiseOr(x, y)) == (IntBit(i, x) || IntBit(i, y));
 
-static function method{:imported}{:instruction "inout", "in"} asm_BitwiseXor(x:int, y:int):int
+static function{:imported}{:instruction "inout", "in"} asm_BitwiseXor(x:int, y:int):int
     requires word32(x);
     requires word32(y);
     ensures word32(asm_BitwiseXor(x, y));

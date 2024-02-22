@@ -54,7 +54,7 @@ method {:dafnycc_conservative_seq_triggers} DigestedSign_internal(key:RSAKeyPair
     signature := DigestedSignSecondPart(key, message, digested_message);
 }
 
-predicate {:heap} DigestedSignSecondPartRequirements(key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>)
+ghost predicate {:heap} DigestedSignSecondPartRequirements(key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>)
     reads key.pub.n;
     reads key.pub.e;
     reads key.d;
@@ -114,7 +114,7 @@ method {:dafnycc_conservative_seq_triggers} DigestedSignSecondPart(key:RSAKeyPai
     signature := DigestedSignThirdPart(key, message, digested_message, messageN, padded_msg);
 }
 
-predicate {:heap} DigestedSignThirdPartRequirements (key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>,
+ghost predicate {:heap} DigestedSignThirdPartRequirements (key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>,
                                                      messageN:seq<int>, padded_msg:seq<int>)
     reads key.pub.n;
     reads key.pub.e;
@@ -172,7 +172,7 @@ method {:dafnycc_conservative_seq_triggers} DigestedSignThirdPart(key:RSAKeyPair
     signature := DigestedSignFourthPart(key, message, digested_message, messageN[..], padded_msg, signatureN[..], short_signature);
 }
 
-predicate {:heap} DigestedSignFourthPartRequirements (key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>,
+ghost predicate {:heap} DigestedSignFourthPartRequirements (key:RSAKeyPairImpl_internal, message:seq<int>, digested_message:seq<int>,
                                                       messageN:seq<int>, padded_msg:seq<int>, signatureN:seq<int>,
                                                       short_signature:seq<int>)
     reads key.pub.n;

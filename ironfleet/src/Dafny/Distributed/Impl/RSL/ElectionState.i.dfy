@@ -47,12 +47,12 @@ datatype CElectionState = CElectionState(
   // Duplicates the sequence above for faster lookups
   )
 
-predicate ElectionRequestQueueValid(queue:seq<CRequest>) 
+ghost predicate ElectionRequestQueueValid(queue:seq<CRequest>) 
 {
   forall i :: 0 <= i < |queue| ==> ValidRequest(queue[i])
 }
 
-predicate CElectionStateIsAbstractable(election:CElectionState)
+ghost predicate CElectionStateIsAbstractable(election:CElectionState)
 {
   && ReplicaConstantsStateIsAbstractable(election.constants)
   && CBallotIsAbstractable(election.current_view)
@@ -61,7 +61,7 @@ predicate CElectionStateIsAbstractable(election:CElectionState)
   && CRequestsSeqIsAbstractable(election.requests_received_prev_epochs)
 }
 
-function AbstractifyCElectionStateToElectionState(election:CElectionState) : ElectionState
+ghost function AbstractifyCElectionStateToElectionState(election:CElectionState) : ElectionState
   requires CElectionStateIsAbstractable(election)
 {
   ElectionState(AbstractifyReplicaConstantsStateToLReplicaConstants(election.constants),
@@ -73,24 +73,24 @@ function AbstractifyCElectionStateToElectionState(election:CElectionState) : Ele
                 AbstractifyCRequestsSeqToRequestsSeq(election.requests_received_prev_epochs))
 }
 
-predicate method CRequestsMatch(r1:CRequest, r2:CRequest)
+predicate CRequestsMatch(r1:CRequest, r2:CRequest)
 {
   r1.client == r2.client && r1.seqno == r2.seqno
 }
 
-predicate method CRequestSatisfiedBy(r1:CRequest, r2:CRequest)
+predicate CRequestSatisfiedBy(r1:CRequest, r2:CRequest)
 {
   r1.client == r2.client && r1.seqno <= r2.seqno
 }
 
-predicate HeadersMatch(requests:seq<CRequest>, headers:set<CRequestHeader>)
+ghost predicate HeadersMatch(requests:seq<CRequest>, headers:set<CRequestHeader>)
 {
   &&  |requests| == |headers|
   && (forall r :: r in requests ==> CRequestHeader(r.client, r.seqno) in headers)
   && (forall i,j {:trigger CRequestsMatch(requests[i], requests[j])} :: 0 <= i < j < |requests| && CRequestsMatch(requests[i], requests[j]) ==> i == j)
 }
 
-predicate CElectionStateIsValid(election:CElectionState)
+ghost predicate CElectionStateIsValid(election:CElectionState)
 {
   && CElectionStateIsAbstractable(election)
   && ReplicaConstantsState_IsValid(election.constants)

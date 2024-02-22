@@ -15,7 +15,7 @@ datatype LReplicaConstants = LReplicaConstants(
   all:LConstants
   )
 
-predicate LReplicaConstantsValid(c:LReplicaConstants)
+ghost predicate LReplicaConstantsValid(c:LReplicaConstants)
 {
   0 <= c.my_index < |c.all.config.replica_ids|
 }

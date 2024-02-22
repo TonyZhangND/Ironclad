@@ -9,10 +9,10 @@ include "../IO/io_mem.s.dfy"
 //-/////////////////////////////////////
 
 //- App must specify an invariant on values it wants to write to the TPM then read later with assurance of integrity
-static function TPM_app_policy_okay_to_trust(trusted_data:seq<int>) : bool
+static ghost function TPM_app_policy_okay_to_trust(trusted_data:seq<int>) : bool
 
 //-//////////////////////////////////////////////////////////
-//-            Basic functions and datatypes
+//-            Basic ghost functions and datatypes
 //- (Note: Sec. 2.1.1 of Part 2: Everything is big endian)
 //-//////////////////////////////////////////////////////////
 
@@ -26,13 +26,13 @@ datatype TPM_struct = TPM_build(
     random_index : int            //- Tracks our current position in the stream of randomness from the TPM
     );
 
-static predicate TPM_valid(aTPM:TPM_struct)
+static ghost predicate TPM_valid(aTPM:TPM_struct)
 {
     IsByteSeq(aTPM.cmd_buf)
     && IsByteSeq(aTPM.reply_buf)
 }
 
-static predicate TPMs_match(TPM1:TPM_struct, TPM2:TPM_struct)
+static ghost predicate TPMs_match(TPM1:TPM_struct, TPM2:TPM_struct)
 {
     TPM1.PCR_19 == TPM2.PCR_19 &&
     TPM1.random_index == TPM2.random_index
@@ -43,7 +43,7 @@ static predicate TPMs_match(TPM1:TPM_struct, TPM2:TPM_struct)
 //-/////////////////////////////////////
 
 //- Invariant that must be true on Verve entry, and that remains true throughout TPM executions
-static predicate TPM_satisfies_integrity_policy(aTPM:TPM_struct)
+static ghost predicate TPM_satisfies_integrity_policy(aTPM:TPM_struct)
 {
     TPM_valid(aTPM)
 }
@@ -54,10 +54,10 @@ static predicate TPM_satisfies_integrity_policy(aTPM:TPM_struct)
 //- requires TPM.PCR_19 == [];
 
 //- We model the infinite stream of randomness as a series of "constants" returned
-//- by this function that are discovered by calls to read_random
-static function TPM_random_byte(index:int) : int
+//- by this ghost function that are discovered by calls to read_random
+static ghost function TPM_random_byte(index:int) : int
 
-static function TPM_random_bytes (old_random_index:int, new_random_index:int) : seq<int>
+static ghost function TPM_random_bytes (old_random_index:int, new_random_index:int) : seq<int>
     decreases new_random_index - old_random_index;
 {
     if old_random_index >= new_random_index then
@@ -67,23 +67,23 @@ static function TPM_random_bytes (old_random_index:int, new_random_index:int) : 
 }
 
 //- We only use this for 17 & 18, which don't change while we're executing
-static function PCR_val(index:int) : seq<int>
+static ghost function PCR_val(index:int) : seq<int>
 
 //- Tracks whether we have taken control of the TPM at access level 3
-//- Tracked via a function, since it cannot change while we execute
-static predicate Locality3_requested()
-static predicate Locality3_obtained()
+//- Tracked via a ghost function, since it cannot change while we execute
+static ghost predicate Locality3_requested()
+static ghost predicate Locality3_obtained()
 
 ghost var{:readonly} TPM:TPM_struct;
 
 //- Condenses all of the public information in the TPM
 //- I.e., public = PCR_19
-static function TPM_public(aTPM:TPM_struct, s:seq<int>) : bool
+static ghost function TPM_public(aTPM:TPM_struct, s:seq<int>) : bool
 {
     (exists i:int | 0 <= i < |aTPM.PCR_19| :: s == aTPM.PCR_19[i])
 }
 /* TODO: dafnycc
-static function TPM_public(aTPM:TPM_struct) : set<seq<int>>
+static ghost function TPM_public(aTPM:TPM_struct) : set<seq<int>>
 {
     (set i:int | 0 <= i < |aTPM.PCR_19| :: aTPM.PCR_19[i])
 }
@@ -193,7 +193,7 @@ ghost method {:axiom} TPM_enable_read_FIFO() returns (c:int)
     ensures  TPM == old(TPM)[reply_buf := TPM.reply_buf];
     ensures  IoMemPerm == IoReadAddr(0xFED43024, c);
 
-static predicate async_TPM_execution(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate async_TPM_execution(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
 {
     //- We execute a valid command
@@ -212,22 +212,22 @@ static predicate async_TPM_execution(old_TPM:TPM_struct, new_TPM:TPM_struct)
  *    TPM Tags
  ***************************************/
 
-static function TPM_TAG_RQU_COMMAND() : seq<int>
+static ghost function TPM_TAG_RQU_COMMAND() : seq<int>
 {
     [ 0, 0xC1 ]
 }
 
-static function TPM_TAG_RQU_AUTH1_COMMAND() : seq<int>
+static ghost function TPM_TAG_RQU_AUTH1_COMMAND() : seq<int>
 {
     [ 0, 0xC2 ]
 }
 
-static function method TPM_TAG_RSP_COMMAND() : seq<int>
+static function TPM_TAG_RSP_COMMAND() : seq<int>
 {
     [ 0, 0xC4 ]
 }
 
-static function method TPM_TAG_RSP_AUTH1_COMMAND() : seq<int>
+static function TPM_TAG_RSP_AUTH1_COMMAND() : seq<int>
 {
     [ 0, 0xC5 ]
 }
@@ -236,32 +236,32 @@ static function method TPM_TAG_RSP_AUTH1_COMMAND() : seq<int>
  *    TPM Command Ordinals
  ***************************************/
 
-static function TPM_ORD_Extend() : int
+static ghost function TPM_ORD_Extend() : int
 {
     0x14
 }
 
-static function TPM_ORD_Quote2() : int
+static ghost function TPM_ORD_Quote2() : int
 {
     0x3E
 }
 
-static function TPM_ORD_GetRandom() : int
+static ghost function TPM_ORD_GetRandom() : int
 {
     0x46
 }
 
-static function TPM_ORD_PcrRead() : int
+static ghost function TPM_ORD_PcrRead() : int
 {
     0x15
 }
 
-static function TPM_ORD_OIAP() : int
+static ghost function TPM_ORD_OIAP() : int
 {
     0x0A
 }
 
-static function TPM_ORD_LoadKey2() : int
+static ghost function TPM_ORD_LoadKey2() : int
 {
     0x41
 }
@@ -270,7 +270,7 @@ static function TPM_ORD_LoadKey2() : int
  *    TPM return codes
  ***************************************/
 
-static function method TPM_SUCCESS() : int
+static function TPM_SUCCESS() : int
 {
     0
 }
@@ -279,12 +279,12 @@ static function method TPM_SUCCESS() : int
  *  TPM structure parsing
  ********************************************************/
 
-static function method PCR_SELECTION_covering_PCRs_17_and_18() : seq<int>
+static function PCR_SELECTION_covering_PCRs_17_and_18() : seq<int>
 {
     [ 0, 3, 0, 0, 6 ]  //- pcrSelection = size (0x0003), PCR bit map.  Selects PCR 17 & 18 from byte 2 (0-indexed
 }
 
-static function method PCR_SELECTION_covering_PCRs_17_through_19() : seq<int>
+static function PCR_SELECTION_covering_PCRs_17_through_19() : seq<int>
 {
     [ 0, 3, 0, 0, 14 ]  //- pcrSelection = size (0x0003), PCR bit map.  Selects PCR 17, 18, 19 from byte 2 (0-indexed
 }
@@ -293,7 +293,7 @@ datatype PCRInfoShort = PCRInfoShort17And18_c(pcrs_17_18_digest:seq<int>) |
                         PCRInfoShort17Through19_c(pcrs_17_18_19_digest:seq<int>) |
                         PCRInfoShortInvalid_c()
 
-static function parse_PCR_info_short(s:seq<int>) : PCRInfoShort
+static ghost function parse_PCR_info_short(s:seq<int>) : PCRInfoShort
 {
     if |s| != 26 then
         PCRInfoShortInvalid_c()
@@ -312,7 +312,7 @@ static function parse_PCR_info_short(s:seq<int>) : PCRInfoShort
     )
 }
 
-static predicate is_TPM_COMPOSITE_HASH(h:seq<int>, PCR_17:seq<int>, PCR_18:seq<int>)
+static ghost predicate is_TPM_COMPOSITE_HASH(h:seq<int>, PCR_17:seq<int>, PCR_18:seq<int>)
 {
     var pcr_composite := PCR_SELECTION_covering_PCRs_17_and_18() +
                          [0, 0, 0, 40] + //- size of next two PCRs
@@ -323,7 +323,7 @@ static predicate is_TPM_COMPOSITE_HASH(h:seq<int>, PCR_17:seq<int>, PCR_18:seq<i
     h == BEWordSeqToByteSeq(SHA1(pcr_composite_bits)))
 }
 
-static predicate Verve_quote(pcr_info:seq<int>, sig:seq<int>, nonce:seq<int>, PCR_19_history:seq<seq<int>>)
+static ghost predicate Verve_quote(pcr_info:seq<int>, sig:seq<int>, nonce:seq<int>, PCR_19_history:seq<seq<int>>)
 
 /********************************************************
  *  TPM command parsing
@@ -337,7 +337,7 @@ datatype TPMCommand = TPMCommandQuote2_c(nonce_external:seq<int>, key_handle:seq
                       TPMCommandLoadKey2_c() |
                       TPMCommandInvalid_c()
 
-static function parse_TPM_command_quote2(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_quote2(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| != 85 then
@@ -356,7 +356,7 @@ static function parse_TPM_command_quote2(s:seq<int>) : TPMCommand
     )
 }
 
-static function parse_TPM_command_read_PCR_17_or_18(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_read_PCR_17_or_18(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| != 14 then
@@ -371,7 +371,7 @@ static function parse_TPM_command_read_PCR_17_or_18(s:seq<int>) : TPMCommand
     )
 }
 
-static function parse_TPM_command_extend_PCR_19(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_extend_PCR_19(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| != 34 then
@@ -388,7 +388,7 @@ static function parse_TPM_command_extend_PCR_19(s:seq<int>) : TPMCommand
     )
 }
 
-static function parse_TPM_command_get_random(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_get_random(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| != 14 then
@@ -400,7 +400,7 @@ static function parse_TPM_command_get_random(s:seq<int>) : TPMCommand
     )
 }
 
-static function parse_TPM_command_OIAP(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_OIAP(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| != 10 then
@@ -409,7 +409,7 @@ static function parse_TPM_command_OIAP(s:seq<int>) : TPMCommand
         TPMCommandOIAP_c()    //- Nothing to the command but the header
 }
 
-static function parse_TPM_command_LoadKey2(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command_LoadKey2(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| < 59 then
@@ -418,7 +418,7 @@ static function parse_TPM_command_LoadKey2(s:seq<int>) : TPMCommand
         TPMCommandLoadKey2_c()    //- Nothing to track for security purposes
 }
 
-static function parse_TPM_command(s:seq<int>) : TPMCommand
+static ghost function parse_TPM_command(s:seq<int>) : TPMCommand
     requires IsByteSeq(s);
 {
     if |s| < 10 then
@@ -460,13 +460,13 @@ static function parse_TPM_command(s:seq<int>) : TPMCommand
     )
 }
 
-static predicate valid_cmd(s:seq<int>)
+static ghost predicate valid_cmd(s:seq<int>)
     requires IsByteSeq(s);
 {
     !(parse_TPM_command(s).TPMCommandInvalid_c?)
 }
 
-static predicate {:autoReq} valid_cmd_present(aTPM:TPM_struct)
+static ghost predicate {:autoReq} valid_cmd_present(aTPM:TPM_struct)
 {
     valid_cmd(aTPM.cmd_buf)
 }
@@ -483,7 +483,7 @@ datatype TPMReply = TPMReplyQuote2_c(nonce_even:seq<int>, pcr_info:seq<int>, sig
                     TPMReplyLoadKey2() |
                     TPMReplyInvalid_c()
 
-static predicate is_TPM_reply_header_ok(s:seq<int>, expected_tag:seq<int>)
+static ghost predicate is_TPM_reply_header_ok(s:seq<int>, expected_tag:seq<int>)
     requires IsByteSeq(s);
 {
     |s| >= 10 &&
@@ -496,7 +496,7 @@ static predicate is_TPM_reply_header_ok(s:seq<int>, expected_tag:seq<int>)
 }
 
 
-static function parse_TPM_reply_quote2(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_quote2(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s,TPM_TAG_RSP_AUTH1_COMMAND()) || |s| < 40 then
@@ -530,7 +530,7 @@ static function parse_TPM_reply_quote2(s:seq<int>) : TPMReply
     )
 }
 
-static function parse_TPM_reply_read_PCR_17_or_18(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_read_PCR_17_or_18(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s,TPM_TAG_RSP_COMMAND()) || |s| != 30 then
@@ -539,7 +539,7 @@ static function parse_TPM_reply_read_PCR_17_or_18(s:seq<int>) : TPMReply
         TPMReplyReadPCR17Or18_c(s[10..30])
 }
 
-static function parse_TPM_reply_extend_PCR_19(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_extend_PCR_19(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s,TPM_TAG_RSP_COMMAND()) || |s| != 30 then
@@ -548,7 +548,7 @@ static function parse_TPM_reply_extend_PCR_19(s:seq<int>) : TPMReply
         TPMReplyExtendPCR19_c()
 }
 
-static function parse_TPM_reply_get_random(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_get_random(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s,TPM_TAG_RSP_COMMAND()) || |s| < 14 then
@@ -563,7 +563,7 @@ static function parse_TPM_reply_get_random(s:seq<int>) : TPMReply
     )
 }
 
-static function parse_TPM_reply_OIAP(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_OIAP(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s,TPM_TAG_RSP_COMMAND()) || |s| != 34 then
@@ -572,7 +572,7 @@ static function parse_TPM_reply_OIAP(s:seq<int>) : TPMReply
         TPMReplyOIAP()  
 }
 
-static function parse_TPM_reply_LoadKey2(s:seq<int>) : TPMReply
+static ghost function parse_TPM_reply_LoadKey2(s:seq<int>) : TPMReply
     requires IsByteSeq(s);
 {
     if !is_TPM_reply_header_ok(s, TPM_TAG_RSP_AUTH1_COMMAND()) || |s| != 55 then
@@ -585,7 +585,7 @@ static function parse_TPM_reply_LoadKey2(s:seq<int>) : TPMReply
  *  Semantic-level TPM Commands
  ********************************************************/
 
-static predicate TPM_executed_extend_PCR_19(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_extend_PCR_19(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -601,7 +601,7 @@ static predicate TPM_executed_extend_PCR_19(old_TPM:TPM_struct, new_TPM:TPM_stru
     && new_TPM == old_TPM[cmd_state := CmdComplete()][reply_buf := new_TPM.reply_buf][PCR_19 := new_TPM.PCR_19])
 }
 
-static predicate TPM_executed_quote2(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_quote2(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -613,7 +613,7 @@ static predicate TPM_executed_quote2(old_TPM:TPM_struct, new_TPM:TPM_struct)
     && new_TPM == old_TPM[cmd_state := CmdComplete()][reply_buf := new_TPM.reply_buf]
 }
 
-static predicate TPM_executed_get_random(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_get_random(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -628,7 +628,7 @@ static predicate TPM_executed_get_random(old_TPM:TPM_struct, new_TPM:TPM_struct)
     && new_TPM == old_TPM[cmd_state := CmdComplete()][reply_buf := new_TPM.reply_buf][random_index := new_TPM.random_index]
 }
 
-static predicate TPM_executed_read_PCR_17_or_18(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_read_PCR_17_or_18(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -639,7 +639,7 @@ static predicate TPM_executed_read_PCR_17_or_18(old_TPM:TPM_struct, new_TPM:TPM_
     && new_TPM == old_TPM[cmd_state := CmdComplete()][reply_buf := new_TPM.reply_buf]
 }
 
-static predicate TPM_executed_OIAP(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_OIAP(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -649,7 +649,7 @@ static predicate TPM_executed_OIAP(old_TPM:TPM_struct, new_TPM:TPM_struct)
     new_TPM == old_TPM  //- Doesn't affect any of the TPM state we track
 }
 
-static predicate TPM_executed_LoadKey2(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_LoadKey2(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {
@@ -659,7 +659,7 @@ static predicate TPM_executed_LoadKey2(old_TPM:TPM_struct, new_TPM:TPM_struct)
     new_TPM == old_TPM  //- Doesn't affect any of the TPM state we track
 }
 
-static predicate TPM_executed_some_command(old_TPM:TPM_struct, new_TPM:TPM_struct)
+static ghost predicate TPM_executed_some_command(old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires IsByteSeq(old_TPM.cmd_buf);
     requires IsByteSeq(new_TPM.reply_buf);
 {

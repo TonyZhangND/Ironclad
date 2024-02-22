@@ -21,14 +21,14 @@ import opened Math__power2_i
 //////////////////////////////////////////////////////////////////////////////
 //  Useful for EndPoint index to node index conversions
 
-function {:opaque} AbstractifySeqOfUint64sToSeqOfInts(s:seq<uint64>) : seq<int>
+ghost function {:opaque} AbstractifySeqOfUint64sToSeqOfInts(s:seq<uint64>) : seq<int>
   ensures |AbstractifySeqOfUint64sToSeqOfInts(s)| == |s|
   ensures forall i :: 0 <= i < |s| ==> s[i] as int == AbstractifySeqOfUint64sToSeqOfInts(s)[i]
 {
   MapSeqToSeq(s, uint64_to_int)
 }
 
-function {:opaque} AbstractifySeqOfUint64sToSetOfInts(s:seq<uint64>) : set<int>
+ghost function {:opaque} AbstractifySeqOfUint64sToSetOfInts(s:seq<uint64>) : set<int>
   requires SeqIsUnique(s)
   ensures forall x :: x in s ==> (x as int in AbstractifySeqOfUint64sToSetOfInts(s))
 {
@@ -85,22 +85,22 @@ lemma lemma_AbstractifySeqOfUint64sToSetOfInts_append(original_seq:seq<uint64>, 
 //////////////////////////////////////////////////////////////////////////////
 // NodeIdentity
 
-predicate EndPointIsAbstractable(endpoint:EndPoint)
+ghost predicate EndPointIsAbstractable(endpoint:EndPoint)
 {
   true
 }
 
-function AbstractifyEndPointToNodeIdentity(endpoint:EndPoint) : NodeIdentity
+ghost function AbstractifyEndPointToNodeIdentity(endpoint:EndPoint) : NodeIdentity
 {
   endpoint
 }
 
-predicate SeqOfEndPointsIsAbstractable(endPoints:seq<EndPoint>)
+ghost predicate SeqOfEndPointsIsAbstractable(endPoints:seq<EndPoint>)
 {
   forall e :: e in endPoints ==> EndPointIsAbstractable(e)
 }
 
-function {:opaque} AbstractifyEndPointsToNodeIdentities(endPoints:seq<EndPoint>) : seq<NodeIdentity>
+ghost function {:opaque} AbstractifyEndPointsToNodeIdentities(endPoints:seq<EndPoint>) : seq<NodeIdentity>
   requires forall e :: e in endPoints ==> EndPointIsAbstractable(e)
   ensures |AbstractifyEndPointsToNodeIdentities(endPoints)| == |endPoints|
   ensures forall i :: 0<=i<|endPoints| ==> AbstractifyEndPointToNodeIdentity(endPoints[i]) == AbstractifyEndPointsToNodeIdentities(endPoints)[i]
@@ -198,13 +198,13 @@ lemma lemma_AbstractifyEndPointsToNodeIdentities_injective(s1:seq<EndPoint>, s2:
 // Reversing the process of refining a node identity
 //////////////////////////////////////////////////////////
 
-predicate NodeIdentityIsRefinable(id:NodeIdentity)
+ghost predicate NodeIdentityIsRefinable(id:NodeIdentity)
 {
   true
 }
 
 // Give Dafny a symbol handle for this choose (:|) expression
-function{:opaque} RefineNodeIdentityToEndPoint(id:NodeIdentity) : EndPoint
+ghost function{:opaque} RefineNodeIdentityToEndPoint(id:NodeIdentity) : EndPoint
   ensures  NodeIdentityIsRefinable(id) ==> EndPointIsAbstractable(RefineNodeIdentityToEndPoint(id))
   ensures  NodeIdentityIsRefinable(id) ==> AbstractifyEndPointToNodeIdentity(RefineNodeIdentityToEndPoint(id)) == id
 {

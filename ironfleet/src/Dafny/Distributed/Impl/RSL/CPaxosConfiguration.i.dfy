@@ -17,13 +17,13 @@ import opened Collections__Seqs_i
 
 datatype CPaxosConfiguration = CPaxosConfiguration(replica_ids:seq<EndPoint>)
 
-predicate CPaxosConfigurationIsAbstractable(config:CPaxosConfiguration)
+ghost predicate CPaxosConfigurationIsAbstractable(config:CPaxosConfiguration)
 {
   && (forall e :: e in config.replica_ids ==> EndPointIsValidPublicKey(e))
   && SeqIsUnique(config.replica_ids)
 }
 
-predicate CPaxosConfigurationIsValid(config:CPaxosConfiguration)
+ghost predicate CPaxosConfigurationIsValid(config:CPaxosConfiguration)
   ensures CPaxosConfigurationIsValid(config) ==> SeqIsUnique(config.replica_ids)
 {
   && 0 < |config.replica_ids| < 0xffff_ffff_ffff_ffff
@@ -31,25 +31,25 @@ predicate CPaxosConfigurationIsValid(config:CPaxosConfiguration)
   && LMinQuorumSize(AbstractifyCPaxosConfigurationToConfiguration(config)) <= |config.replica_ids|
 }
 
-function method PaxosEndPointIsValid(endPoint:EndPoint, config:CPaxosConfiguration) : bool
+function PaxosEndPointIsValid(endPoint:EndPoint, config:CPaxosConfiguration) : bool
   requires CPaxosConfigurationIsValid(config)
 {
   EndPointIsValidPublicKey(endPoint)
 }
 
 
-function AbstractifyCPaxosConfigurationToConfiguration(config:CPaxosConfiguration) : LConfiguration
+ghost function AbstractifyCPaxosConfigurationToConfiguration(config:CPaxosConfiguration) : LConfiguration
   requires CPaxosConfigurationIsAbstractable(config)
 {
   LConfiguration({}, AbstractifyEndPointsToNodeIdentities(config.replica_ids))
 }
 
-predicate ReplicaIndexValid(index:uint64, config:CPaxosConfiguration)
+ghost predicate ReplicaIndexValid(index:uint64, config:CPaxosConfiguration)
 {
   0 <= index as int < |config.replica_ids|
 }
 
-predicate ReplicaIndicesValid(indices:seq<uint64>, config:CPaxosConfiguration)
+ghost predicate ReplicaIndicesValid(indices:seq<uint64>, config:CPaxosConfiguration)
 {
   forall i :: 0 <= i < |indices| ==> ReplicaIndexValid(indices[i], config)
 }
@@ -85,7 +85,7 @@ lemma lemma_WFCPaxosConfiguration(config:CPaxosConfiguration)
   }
 }
 
-predicate WFCPaxosConfiguration(config:CPaxosConfiguration)
+ghost predicate WFCPaxosConfiguration(config:CPaxosConfiguration)
   ensures WFCPaxosConfiguration(config) ==>
             && CPaxosConfigurationIsAbstractable(config)
             && WellFormedLConfiguration(AbstractifyCPaxosConfigurationToConfiguration(config))

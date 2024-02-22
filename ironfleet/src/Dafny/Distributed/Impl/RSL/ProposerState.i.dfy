@@ -54,12 +54,12 @@ datatype ProposerState = ProposerState(
   )
 
 // Implied by Received1bPacketsIsModest
-//predicate Received1bPacketsIsModest(proposer:ProposerState)
+//ghost predicate Received1bPacketsIsModest(proposer:ProposerState)
 //{
 //  |proposer.received_1b_packets| < 0xffffffff_ffffffff
 //}
 
-predicate ProposerIsAbstractable(proposer:ProposerState)
+ghost predicate ProposerIsAbstractable(proposer:ProposerState)
 {
   && ReplicaConstantsStateIsAbstractable(proposer.constants)
   && CRequestsSeqIsAbstractable(proposer.request_queue)
@@ -69,7 +69,7 @@ predicate ProposerIsAbstractable(proposer:ProposerState)
   && CElectionStateIsAbstractable(proposer.election_state)
 }
 
-function AbstractifyCIncompleteBatchTimerToIncompleteBatchTimer(timer:CIncompleteBatchTimer) : IncompleteBatchTimer
+ghost function AbstractifyCIncompleteBatchTimerToIncompleteBatchTimer(timer:CIncompleteBatchTimer) : IncompleteBatchTimer
 {
   match timer {
     case CIncompleteBatchTimerOn(when) => IncompleteBatchTimerOn(when as int)
@@ -77,7 +77,7 @@ function AbstractifyCIncompleteBatchTimerToIncompleteBatchTimer(timer:CIncomplet
   }
 }
 
-function AbstractifyProposerStateToLProposer(proposer:ProposerState) : LProposer
+ghost function AbstractifyProposerStateToLProposer(proposer:ProposerState) : LProposer
   requires ProposerIsAbstractable(proposer)
 {
   LProposer(AbstractifyReplicaConstantsStateToLReplicaConstants(proposer.constants),
@@ -91,33 +91,33 @@ function AbstractifyProposerStateToLProposer(proposer:ProposerState) : LProposer
             AbstractifyCElectionStateToElectionState(proposer.election_state))
 }
 
-predicate RequestQueueValid(queue:seq<CRequest>) 
+ghost predicate RequestQueueValid(queue:seq<CRequest>) 
 {
   forall i :: 0 <= i < |queue| ==> ValidRequest(queue[i])
 }
 
-predicate MaxOpnWithProposalInVotes(proposer:ProposerState)
+ghost predicate MaxOpnWithProposalInVotes(proposer:ProposerState)
 {
   forall p :: p in proposer.received_1b_packets && p.msg.CMessage_1b? ==> MaxOpnWithProposal(proposer, p.msg.votes)
 }
 
-predicate MaxOpnWithProposal(proposer:ProposerState, votes:CVotes)
+ghost predicate MaxOpnWithProposal(proposer:ProposerState, votes:CVotes)
 {
   forall opn :: opn in votes.v ==> opn.n < proposer.maxOpnWithProposal.n
 }
 
-predicate MaxLogTruncationPoint(proposer:ProposerState)
+ghost predicate MaxLogTruncationPoint(proposer:ProposerState)
 {
   forall p :: p in proposer.received_1b_packets && p.msg.CMessage_1b? ==> p.msg.log_truncation_point.n <= proposer.maxLogTruncationPoint.n
 }
 
-predicate {:opaque} Received1bProperties(received_1b_packets:set<CPacket>, constants:ReplicaConstantsState)
+ghost predicate {:opaque} Received1bProperties(received_1b_packets:set<CPacket>, constants:ReplicaConstantsState)
 {
   && (forall p :: p in received_1b_packets ==> p.src in constants.all.config.replica_ids)
   && (forall p1,p2 :: p1 in received_1b_packets && p2 in received_1b_packets && p1.src == p2.src ==> p1 == p2)
 }
 
-predicate ProposerIsValid(proposer:ProposerState) 
+ghost predicate ProposerIsValid(proposer:ProposerState) 
 {
   && ProposerIsAbstractable(proposer)
   && ReplicaConstantsState_IsValid(proposer.constants)

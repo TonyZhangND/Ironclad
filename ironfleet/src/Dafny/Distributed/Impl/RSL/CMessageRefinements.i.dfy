@@ -20,7 +20,7 @@ import opened Common__NetClient_i
 import opened Environment_s
 import opened Collections__Sets_i
 
-predicate CMessageIsAbstractable(msg:CMessage)
+ghost predicate CMessageIsAbstractable(msg:CMessage)
 {
   match msg
     case CMessage_Invalid => true
@@ -37,7 +37,7 @@ predicate CMessageIsAbstractable(msg:CMessage)
 
 }
 
-function AbstractifyCMessageToRslMessage(msg:CMessage) : RslMessage
+ghost function AbstractifyCMessageToRslMessage(msg:CMessage) : RslMessage
   requires CMessageIsAbstractable(msg)
 {
   match msg
@@ -54,7 +54,7 @@ function AbstractifyCMessageToRslMessage(msg:CMessage) : RslMessage
     case CMessage_StartingPhase2(bal_2, logTruncationPoint_2) => RslMessage_StartingPhase2(AbstractifyCBallotToBallot(bal_2), AbstractifyCOperationNumberToOperationNumber(logTruncationPoint_2))
 }
 
-function AbstractifyCMessageToRslPacket(sentTo:EndPoint, sentFrom:EndPoint, msg:CMessage) : RslPacket
+ghost function AbstractifyCMessageToRslPacket(sentTo:EndPoint, sentFrom:EndPoint, msg:CMessage) : RslPacket
   requires CMessageIsAbstractable(msg)
   requires EndPointIsValidPublicKey(sentTo)
   requires EndPointIsValidPublicKey(sentFrom)
@@ -62,19 +62,19 @@ function AbstractifyCMessageToRslPacket(sentTo:EndPoint, sentFrom:EndPoint, msg:
   LPacket(AbstractifyEndPointToNodeIdentity(sentTo), AbstractifyEndPointToNodeIdentity(sentFrom), AbstractifyCMessageToRslMessage(msg))
 }
 
-predicate CPacketIsAbstractable(cp:CPacket)
+ghost predicate CPacketIsAbstractable(cp:CPacket)
 {
   && CMessageIsAbstractable(cp.msg)
   && EndPointIsValidPublicKey(cp.src)
   && EndPointIsValidPublicKey(cp.dst)
 }
 
-predicate CPacketsIsAbstractable(cps:set<CPacket>)
+ghost predicate CPacketsIsAbstractable(cps:set<CPacket>)
 {
   forall cp :: cp in cps ==> CPacketIsAbstractable(cp)
 }
 
-function AbstractifyCPacketToRslPacket(cp: CPacket): RslPacket
+ghost function AbstractifyCPacketToRslPacket(cp: CPacket): RslPacket
   ensures CPacketIsAbstractable(cp) ==> AbstractifyCPacketToRslPacket(cp) == LPacket(AbstractifyEndPointToNodeIdentity(cp.dst), AbstractifyEndPointToNodeIdentity(cp.src), AbstractifyCMessageToRslMessage(cp.msg))
 {
   if (CPacketIsAbstractable(cp)) then
@@ -83,13 +83,13 @@ function AbstractifyCPacketToRslPacket(cp: CPacket): RslPacket
     var x:RslPacket :| (true); x
 }
 
-function AbstractifySetOfCPacketsToSetOfRslPackets_transparent(cps:set<CPacket>) : set<RslPacket>
+ghost function AbstractifySetOfCPacketsToSetOfRslPackets_transparent(cps:set<CPacket>) : set<RslPacket>
   requires CPacketsIsAbstractable(cps)
 {
   set cp | cp in cps :: AbstractifyCPacketToRslPacket(cp)
 }
 
-function {:opaque} AbstractifySetOfCPacketsToSetOfRslPackets(cps:set<CPacket>) : set<RslPacket>
+ghost function {:opaque} AbstractifySetOfCPacketsToSetOfRslPackets(cps:set<CPacket>) : set<RslPacket>
   requires CPacketsIsAbstractable(cps)
   //ensures forall p :: p in cps ==> AbstractifyCPacketToRslPacket(p) in AbstractifySetOfCPacketsToSetOfRslPackets(cps)   // Still too trigger happy
 {
@@ -98,12 +98,12 @@ function {:opaque} AbstractifySetOfCPacketsToSetOfRslPackets(cps:set<CPacket>) :
   AbstractifySetOfCPacketsToSetOfRslPackets_transparent(cps)
 }
 
-predicate CPacketSeqIsAbstractable(cps:seq<CPacket>)
+ghost predicate CPacketSeqIsAbstractable(cps:seq<CPacket>)
 {
   forall i :: 0 <= i < |cps| ==> CPacketIsAbstractable(cps[i])
 }
 
-function {:opaque} AbstractifySeqOfCPacketsToSeqOfRslPackets(cps:seq<CPacket>) : seq<RslPacket>
+ghost function {:opaque} AbstractifySeqOfCPacketsToSeqOfRslPackets(cps:seq<CPacket>) : seq<RslPacket>
   requires CPacketSeqIsAbstractable(cps)
   ensures |cps| == |AbstractifySeqOfCPacketsToSeqOfRslPackets(cps)|
   ensures forall i :: 0 <= i < |cps| ==> AbstractifySeqOfCPacketsToSeqOfRslPackets(cps)[i] == AbstractifyCPacketToRslPacket(cps[i])
@@ -112,13 +112,13 @@ function {:opaque} AbstractifySeqOfCPacketsToSeqOfRslPackets(cps:seq<CPacket>) :
   else [AbstractifyCPacketToRslPacket(cps[0])] + AbstractifySeqOfCPacketsToSeqOfRslPackets(cps[1..])
 }
 
-predicate CPacketSeqHasCorrectSrc(sent_packets:seq<CPacket>, me:EndPoint)
+ghost predicate CPacketSeqHasCorrectSrc(sent_packets:seq<CPacket>, me:EndPoint)
 {
   forall p :: p in sent_packets ==> p.src == me
 }
 
 
-predicate CMessageIsInjectiveType(m:CMessage)
+ghost predicate CMessageIsInjectiveType(m:CMessage)
 {
   && CMessageIsAbstractable(m)
   && (m.CMessage_1b? || m.CMessage_2b?)
@@ -142,7 +142,7 @@ lemma lemma_AbstractifyCMessageToRslMessage_isInjective(m1:CMessage, m2:CMessage
   }
 }
 
-predicate CPacketIsInjectiveType(p:CPacket)
+ghost predicate CPacketIsInjectiveType(p:CPacket)
 {
   CPacketIsAbstractable(p) && CMessageIsInjectiveType(p.msg)
 }
@@ -165,12 +165,12 @@ lemma lemma_AbstractifyCPacketToRslPacket_isInjective()
   }
 }
 
-predicate SetOfInjectiveTypeCPackets(s:set<CPacket>)
+ghost predicate SetOfInjectiveTypeCPackets(s:set<CPacket>)
 {
   forall p :: p in s ==> CPacketIsInjectiveType(p)
 }
 
-predicate SetOfInjectiveTypeCPacketsIsInjective(s:set<CPacket>)
+ghost predicate SetOfInjectiveTypeCPacketsIsInjective(s:set<CPacket>)
 {
   && SetOfInjectiveTypeCPackets(s)
   && (forall p1, p2 :: p1 in s && p2 in s && AbstractifyCPacketToRslPacket(p1) == AbstractifyCPacketToRslPacket(p2)
@@ -304,7 +304,7 @@ lemma lemma_AbstractifySetOfCPacketsToSetOfRslPackets_srcMembership(cps:set<CPac
 }
 
 
-function {:opaque} BuildLBroadcast(src:NodeIdentity, dsts:seq<NodeIdentity>, m:RslMessage):seq<RslPacket>
+ghost function {:opaque} BuildLBroadcast(src:NodeIdentity, dsts:seq<NodeIdentity>, m:RslMessage):seq<RslPacket>
   ensures |BuildLBroadcast(src, dsts, m)| == |dsts|
   ensures forall i :: 0 <= i < |dsts| ==> BuildLBroadcast(src, dsts, m)[i] == LPacket(dsts[i], src, m)
 {
@@ -312,7 +312,7 @@ function {:opaque} BuildLBroadcast(src:NodeIdentity, dsts:seq<NodeIdentity>, m:R
   else [LPacket(dsts[0], src, m)] + BuildLBroadcast(src, dsts[1..], m)
 }
 
-predicate CBroadcastIsAbstractable(broadcast:CBroadcast) 
+ghost predicate CBroadcastIsAbstractable(broadcast:CBroadcast) 
 {
   || broadcast.CBroadcastNop?
   || (&& broadcast.CBroadcast? 
@@ -321,7 +321,7 @@ predicate CBroadcastIsAbstractable(broadcast:CBroadcast)
      && CMessageIsAbstractable(broadcast.msg))
 }
 
-function AbstractifyCBroadcastToRlsPacketSeq(broadcast:CBroadcast) : seq<RslPacket>
+ghost function AbstractifyCBroadcastToRlsPacketSeq(broadcast:CBroadcast) : seq<RslPacket>
   requires CBroadcastIsAbstractable(broadcast)
 {
   match broadcast
@@ -331,7 +331,7 @@ function AbstractifyCBroadcastToRlsPacketSeq(broadcast:CBroadcast) : seq<RslPack
     case CBroadcastNop => []
 }
 
-predicate OutboundPacketsIsAbstractable(out:OutboundPackets)
+ghost predicate OutboundPacketsIsAbstractable(out:OutboundPackets)
 {
   match out
     case Broadcast(broadcast) => CBroadcastIsAbstractable(broadcast)
@@ -340,7 +340,7 @@ predicate OutboundPacketsIsAbstractable(out:OutboundPackets)
     case PacketSequence(s) => CPacketSeqIsAbstractable(s)
 } 
 
-function AbstractifyOutboundCPacketsToSeqOfRslPackets(out:OutboundPackets) : seq<RslPacket>
+ghost function AbstractifyOutboundCPacketsToSeqOfRslPackets(out:OutboundPackets) : seq<RslPacket>
   requires OutboundPacketsIsAbstractable(out)
 {
   match out
@@ -350,7 +350,7 @@ function AbstractifyOutboundCPacketsToSeqOfRslPackets(out:OutboundPackets) : seq
     case PacketSequence(s) => AbstractifySeqOfCPacketsToSeqOfRslPackets(s)
 } 
 
-predicate OutboundPacketsHasCorrectSrc(out:OutboundPackets, me:EndPoint)
+ghost predicate OutboundPacketsHasCorrectSrc(out:OutboundPackets, me:EndPoint)
 {
   match out
     case Broadcast(CBroadcast(src, _, _)) => src == me

@@ -9,20 +9,20 @@ include "Noise.s.dfy"
 
 datatype DiffPrivState = DiffPrivState_ctor(db:seq<Row>, budget:real, rows_received:int);
 
-static predicate DiffPrivStateValid (s:DiffPrivState)
+static ghost predicate DiffPrivStateValid (s:DiffPrivState)
 {
     DatabaseValid(s.db) &&
     s.budget >= 1.0
 }
 
-static function PublicPartOfDiffPrivState (s:DiffPrivState) : DiffPrivState
+static ghost function PublicPartOfDiffPrivState (s:DiffPrivState) : DiffPrivState
 {
     DiffPrivState_ctor([], s.budget, s.rows_received)
 }
 
-//- This function is used to ensure that DiffPriv initialization operates correctly.
+//- This ghost function is used to ensure that DiffPriv initialization operates correctly.
 
-static predicate {:autoReq} DiffPrivInitializeValid(diffpriv_state:DiffPrivState)
+static ghost predicate {:autoReq} DiffPrivInitializeValid(diffpriv_state:DiffPrivState)
 {
     diffpriv_state.db == [] &&
     diffpriv_state.budget == 1.0 &&
@@ -33,7 +33,7 @@ datatype QueryParameters = QueryParameters_ctor(program_encoding:seq<int>, row_m
                                                 answer_units:int, answer_min:int, answer_max:int,
                                                 alpha:real, beta:real)
 
-static predicate QueryParametersValid (q:QueryParameters)
+static ghost predicate QueryParametersValid (q:QueryParameters)
 {
     Word32(q.row_min) &&
     Word32(q.row_max) &&
@@ -49,7 +49,7 @@ static predicate QueryParametersValid (q:QueryParameters)
     ProgramValid(MessageToProgram(q.program_encoding))
 }
 
-static predicate DiffPrivInitializedDBCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, budget:real)
+static ghost predicate DiffPrivInitializedDBCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, budget:real)
 {
     DiffPrivStateValid(new_state) &&
     budget >= 1.0 &&
@@ -63,7 +63,7 @@ datatype DecryptedAddRowRequest = DecryptedAddRowRequest_c(row:Row, max_budget_n
                                   InvalidAddRowRequest_c() |
                                   UndecryptableAddRowRequest_c();
 
-static function ParseDecryptedAddRowRequest(plaintext:seq<int>) : DecryptedAddRowRequest
+static ghost function ParseDecryptedAddRowRequest(plaintext:seq<int>) : DecryptedAddRowRequest
     requires IsByteSeq(plaintext);
 {
     if |plaintext| < 16 then
@@ -83,7 +83,7 @@ static function ParseDecryptedAddRowRequest(plaintext:seq<int>) : DecryptedAddRo
     )
 }
 
-static predicate AddRowRequestDecryptedCorrectly(ciphertext:seq<int>, key_pair:RSAKeyPairSpec, request:DecryptedAddRowRequest)
+static ghost predicate AddRowRequestDecryptedCorrectly(ciphertext:seq<int>, key_pair:RSAKeyPairSpec, request:DecryptedAddRowRequest)
     requires IsByteSeq(ciphertext);
 {
     (
@@ -97,7 +97,7 @@ static predicate AddRowRequestDecryptedCorrectly(ciphertext:seq<int>, key_pair:R
     )
 }
 
-static predicate DiffPrivRowAddedCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, key_pair:RSAKeyPairSpec,
+static ghost predicate DiffPrivRowAddedCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, key_pair:RSAKeyPairSpec,
                                             request_ciphertext:seq<int>)
 {
     IsByteSeq(request_ciphertext) &&
@@ -117,7 +117,7 @@ static predicate DiffPrivRowAddedCorrectly (old_state:DiffPrivState, new_state:D
     )
 }
 
-static function QueryResponse (db:seq<Row>, q:QueryParameters, noise:int) : int
+static ghost function QueryResponse (db:seq<Row>, q:QueryParameters, noise:int) : int
     requires DatabaseValid(db);
     requires QueryParametersValid(q);
 {
@@ -129,7 +129,7 @@ static function QueryResponse (db:seq<Row>, q:QueryParameters, noise:int) : int
     Clip(noised_answer, q.answer_min, q.answer_max)
 }
 
-static function QueryParametersToDiffPrivParameters (q:QueryParameters) : DiffPrivParameters
+static ghost function QueryParametersToDiffPrivParameters (q:QueryParameters) : DiffPrivParameters
     requires QueryParametersValid(q);
 {
     DiffPrivParameters_ctor(q.alpha,
@@ -138,7 +138,7 @@ static function QueryParametersToDiffPrivParameters (q:QueryParameters) : DiffPr
                             q.answer_max - q.answer_min)
 }
 
-static predicate QuerySuccessful (old_state:DiffPrivState, new_state:DiffPrivState, q:QueryParameters, response:int,
+static ghost predicate QuerySuccessful (old_state:DiffPrivState, new_state:DiffPrivState, q:QueryParameters, response:int,
                                   randoms_used:seq<int>, noise:int)
     requires DiffPrivStateValid(old_state);
     requires QueryParametersValid(q);
@@ -162,12 +162,12 @@ static predicate QuerySuccessful (old_state:DiffPrivState, new_state:DiffPrivSta
     )
 }
 
-static predicate QuerySuccessfulTrigger (noise:int)
+static ghost predicate QuerySuccessfulTrigger (noise:int)
 {
     true
 }
 
-static predicate {:opaque} DiffPrivQueryPerformedCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, q:QueryParameters,
+static ghost predicate {:opaque} DiffPrivQueryPerformedCorrectly (old_state:DiffPrivState, new_state:DiffPrivState, q:QueryParameters,
                                                             response:int, old_TPM:TPM_struct, new_TPM:TPM_struct)
     requires DiffPrivStateValid(old_state);
 {

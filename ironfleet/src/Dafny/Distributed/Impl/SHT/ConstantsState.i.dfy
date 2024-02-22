@@ -14,18 +14,18 @@ datatype ConstantsState = ConstantsState(
     hostIds:seq<EndPoint>,
     params:CParameters)
 
-predicate ConstantsStateIsAbstractable(constants:ConstantsState) {
+ghost predicate ConstantsStateIsAbstractable(constants:ConstantsState) {
        EndPointIsAbstractable(constants.rootIdentity)
     && SeqOfEndPointsIsAbstractable(constants.hostIds)
 }
 
-function AbstractifyToConstants(constants:ConstantsState) : Constants
+ghost function AbstractifyToConstants(constants:ConstantsState) : Constants
     requires ConstantsStateIsAbstractable(constants);
 {
     Constants(AbstractifyEndPointToNodeIdentity(constants.rootIdentity), AbstractifyEndPointsToNodeIdentities(constants.hostIds), AbstractifyCParametersToParameters(constants.params))
 }
 
-predicate ConstantsStateIsValid(constants:ConstantsState) {
+ghost predicate ConstantsStateIsValid(constants:ConstantsState) {
     ConstantsStateIsAbstractable(constants)
  && CParametersIsValid(constants.params)
  && SeqIsUnique(constants.hostIds)

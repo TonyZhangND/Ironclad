@@ -5,7 +5,7 @@ include "CanonicalArrays.i.dfy"
 datatype FNDivReciprocal = FNDivKnownReciprocal(w:int, TwoTo32wDividedByD:array<int>) |
                            FNDivUnknownReciprocal();
 
-predicate FNDivReciprocalValid(reciprocal:FNDivReciprocal, dv:array<int>)
+ghost predicate FNDivReciprocalValid(reciprocal:FNDivReciprocal, dv:array<int>)
     reads dv;
     reads if reciprocal.FNDivKnownReciprocal? then reciprocal.TwoTo32wDividedByD else dv;
 {

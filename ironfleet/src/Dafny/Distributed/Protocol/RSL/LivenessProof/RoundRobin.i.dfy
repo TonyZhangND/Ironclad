@@ -31,7 +31,7 @@ import opened Temporal__Time_i
 import opened Collections__Maps2_s
 import opened Collections__Maps2_i
 
-predicate SpecificRslActionOccurs(
+ghost predicate SpecificRslActionOccurs(
   ps:RslState,
   ps':RslState,
   action_fun:(LReplica, LReplica, seq<RslIo>)->bool,
@@ -46,7 +46,7 @@ predicate SpecificRslActionOccurs(
     && action_fun(ps.replicas[replica_index].replica, ps'.replicas[replica_index].replica, ios)
 }
 
-function{:opaque} MakeRslActionTemporalFromReplicaFunction(
+ghost function{:opaque} MakeRslActionTemporalFromReplicaghost function(
   b:Behavior<RslState>,
   action_fun:(LReplica, LReplica, seq<RslIo>)->bool,
   replica_index:int
@@ -54,14 +54,14 @@ function{:opaque} MakeRslActionTemporalFromReplicaFunction(
   reads action_fun.reads
   requires forall r, r', ios :: action_fun.requires(r, r', ios)
   requires imaptotal(b)
-  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromReplicaFunction(b, action_fun, replica_index))} ::
-               sat(i, MakeRslActionTemporalFromReplicaFunction(b, action_fun, replica_index)) <==>
+  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromReplicaghost function(b, action_fun, replica_index))} ::
+               sat(i, MakeRslActionTemporalFromReplicaghost function(b, action_fun, replica_index)) <==>
                SpecificRslActionOccurs(b[i], b[i+1], action_fun, replica_index)
 {
   stepmap(imap i :: SpecificRslActionOccurs(b[i], b[nextstep(i)], action_fun, replica_index))
 }
 
-predicate SpecificSpontaneousRslActionOccurs(
+ghost predicate SpecificSpontaneousRslActionOccurs(
   ps:RslState,
   ps':RslState,
   action_fun:(LReplica, LReplica, seq<RslPacket>)->bool,
@@ -77,7 +77,7 @@ predicate SpecificSpontaneousRslActionOccurs(
     && action_fun(ps.replicas[replica_index].replica, ps'.replicas[replica_index].replica, ExtractSentPacketsFromIos(ios))
 }
 
-function{:opaque} MakeRslActionTemporalFromSpontaneousReplicaFunction(
+ghost function{:opaque} MakeRslActionTemporalFromSpontaneousReplicaghost function(
   b:Behavior<RslState>,
   action_fun:(LReplica, LReplica, seq<RslPacket>)->bool,
   replica_index:int
@@ -85,14 +85,14 @@ function{:opaque} MakeRslActionTemporalFromSpontaneousReplicaFunction(
   reads action_fun.reads
   requires forall r, r', sent_packets :: action_fun.requires(r, r', sent_packets)
   requires imaptotal(b)
-  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromSpontaneousReplicaFunction(b, action_fun, replica_index))} ::
-               sat(i, MakeRslActionTemporalFromSpontaneousReplicaFunction(b, action_fun, replica_index)) <==>
+  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromSpontaneousReplicaghost function(b, action_fun, replica_index))} ::
+               sat(i, MakeRslActionTemporalFromSpontaneousReplicaghost function(b, action_fun, replica_index)) <==>
                SpecificSpontaneousRslActionOccurs(b[i], b[i+1], action_fun, replica_index)
 {
   stepmap(imap i :: SpecificSpontaneousRslActionOccurs(b[i], b[nextstep(i)], action_fun, replica_index))
 }
 
-predicate SpecificClockReadingRslActionOccurs(
+ghost predicate SpecificClockReadingRslActionOccurs(
   ps:RslState,
   ps':RslState,
   action_fun:(LReplica, LReplica, ClockReading, seq<RslPacket>)->bool,
@@ -108,7 +108,7 @@ predicate SpecificClockReadingRslActionOccurs(
     && action_fun(ps.replicas[replica_index].replica, ps'.replicas[replica_index].replica, SpontaneousClock(ios), ExtractSentPacketsFromIos(ios))
 }
 
-function{:opaque} MakeRslActionTemporalFromReadClockReplicaFunction(
+ghost function{:opaque} MakeRslActionTemporalFromReadClockReplicaghost function(
   b:Behavior<RslState>,
   action_fun:(LReplica, LReplica, ClockReading, seq<RslPacket>)->bool,
   replica_index:int
@@ -116,30 +116,30 @@ function{:opaque} MakeRslActionTemporalFromReadClockReplicaFunction(
   reads action_fun.reads
   requires forall r, r', ios :: action_fun.requires(r, r', SpontaneousClock(ios), ExtractSentPacketsFromIos(ios))
   requires imaptotal(b)
-  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromReadClockReplicaFunction(b, action_fun, replica_index))} ::
-               sat(i, MakeRslActionTemporalFromReadClockReplicaFunction(b, action_fun, replica_index)) <==>
+  ensures  forall i {:trigger sat(i, MakeRslActionTemporalFromReadClockReplicaghost function(b, action_fun, replica_index))} ::
+               sat(i, MakeRslActionTemporalFromReadClockReplicaghost function(b, action_fun, replica_index)) <==>
                SpecificClockReadingRslActionOccurs(b[i], b[nextstep(i)], action_fun, replica_index)
 {
   stepmap(imap i :: SpecificClockReadingRslActionOccurs(b[i], b[nextstep(i)], action_fun, replica_index))
 }
 
-function ReplicaSchedule(b:Behavior<RslState>, replica_index:int):seq<temporal>
+ghost function ReplicaSchedule(b:Behavior<RslState>, replica_index:int):seq<temporal>
   requires imaptotal(b)
 {
-  [ MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index),
-    MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, replica_index),
-    MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterPhase2, replica_index),
-    MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, replica_index),
-    MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints, replica_index),
-    MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeMakeDecision, replica_index),
-    MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeExecute, replica_index),
-    MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockCheckForViewTimeout, replica_index),
-    MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockCheckForQuorumOfViewSuspicions, replica_index),
-    MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeSendHeartbeat, replica_index)
+  [ MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index),
+    MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, replica_index),
+    MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterPhase2, replica_index),
+    MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, replica_index),
+    MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints, replica_index),
+    MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeMakeDecision, replica_index),
+    MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeExecute, replica_index),
+    MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockCheckForViewTimeout, replica_index),
+    MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockCheckForQuorumOfViewSuspicions, replica_index),
+    MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeSendHeartbeat, replica_index)
   ]
 }
 
-function TimeToPerformGenericAction(asp:AssumptionParameters):int
+ghost function TimeToPerformGenericAction(asp:AssumptionParameters):int
   requires asp.host_period > 0
   ensures  TimeToPerformGenericAction(asp) >= 0
 {
@@ -154,25 +154,25 @@ lemma lemma_ExpandReplicaSchedule(
   )
   requires imaptotal(b)
   ensures  pos == 0 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, idx)
+                        MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, idx)
   ensures  pos == 1 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, idx)
+                        MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, idx)
   ensures  pos == 2 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterPhase2, idx)
+                        MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterPhase2, idx)
   ensures  pos == 3 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx)
+                        MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx)
   ensures  pos == 4 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints, idx)
+                        MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints, idx)
   ensures  pos == 5 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeMakeDecision, idx)
+                        MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeMakeDecision, idx)
   ensures  pos == 6 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeExecute, idx)
+                        MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeExecute, idx)
   ensures  pos == 7 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockCheckForViewTimeout, idx)
+                        MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockCheckForViewTimeout, idx)
   ensures  pos == 8 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockCheckForQuorumOfViewSuspicions, idx)
+                        MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockCheckForQuorumOfViewSuspicions, idx)
   ensures  pos == 9 ==> ReplicaSchedule(b, idx)[pos] ==
-                        MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeSendHeartbeat, idx)
+                        MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeSendHeartbeat, idx)
 {
 }
 
@@ -234,7 +234,7 @@ lemma lemma_SchedulerNextImpliesSpecificScheduleAction(
   action_index:int
   )
   requires imaptotal(b)
-  requires sat(i, MakeRslActionTemporalFromSchedulerFunction(b, replica_index))
+  requires sat(i, MakeRslActionTemporalFromSchedulerghost function(b, replica_index))
   requires b[i].replicas[replica_index].nextActionIndex == action_index
   ensures  0 <= action_index < LReplicaNumActions() ==> sat(i, ReplicaSchedule(b, replica_index)[action_index])
 {
@@ -299,7 +299,7 @@ lemma lemma_ReplicaNextPerformsSubactionPeriodically(
 {
   var next_action_type_fun := imap i :: if 0 <= replica_index < |b[i].replicas| then b[i].replicas[replica_index].nextActionIndex else 0;
   var real_time_fun := PaxosTimeMap(b);
-  var scheduler_action := MakeRslActionTemporalFromSchedulerFunction(b, replica_index);
+  var scheduler_action := MakeRslActionTemporalFromSchedulerghost function(b, replica_index);
   var schedule := ReplicaSchedule(b, replica_index);
 
   var t := stepmap(imap j :: real_time_fun[j] <= real_time_fun[nextstep(j)]);
@@ -410,13 +410,13 @@ lemma lemma_ProcessingPacketCausesReceiveAttempt(
   requires LivenessAssumptions(b, asp)
   requires 0 <= i
   requires 0 <= replica_index < |asp.c.config.replica_ids|
-  requires sat(i, MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index))
+  requires sat(i, MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index))
   ensures  sat(i, ReceiveAttemptedTemporal(RestrictBehaviorToEnvironment(b), asp.c.config.replica_ids[replica_index]))
 {
   var eb := RestrictBehaviorToEnvironment(b);
   var host := asp.c.config.replica_ids[replica_index];
   lemma_ReplicasSize(b, asp.c, i);
-  var action := MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index);
+  var action := MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index);
   assert sat(i, action);
   assert SpecificRslActionOccurs(b[i], b[i+1], LReplicaNextProcessPacket, replica_index);
   var ios:seq<RslIo> :| && RslNextOneReplica(b[i], b[i+1], replica_index, ios)
@@ -436,7 +436,7 @@ lemma lemma_ReplicaNextPerformsProcessPacketPeriodically(
   requires replica_index in asp.live_quorum
   ensures  var real_time_fun := PaxosTimeMap(b);
            var longer_interval := TimeToPerformGenericAction(asp);
-           sat(asp.synchrony_start, always(eventuallynextwithin(MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun)))
+           sat(asp.synchrony_start, always(eventuallynextwithin(MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun)))
   ensures  var real_time_fun := PaxosTimeMap(b);
            var longer_interval := TimeToPerformGenericAction(asp);
            var host := asp.c.config.replica_ids[replica_index];
@@ -445,7 +445,7 @@ lemma lemma_ReplicaNextPerformsProcessPacketPeriodically(
   var real_time_fun := PaxosTimeMap(b);
   var longer_interval := TimeToPerformGenericAction(asp);
   lemma_ReplicaNextPerformsSubactionPeriodically(b, asp, replica_index, 0);
-  assert sat(asp.synchrony_start, always(eventuallynextwithin(MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun)));
+  assert sat(asp.synchrony_start, always(eventuallynextwithin(MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun)));
 
   var host := asp.c.config.replica_ids[replica_index];
 
@@ -454,8 +454,8 @@ lemma lemma_ReplicaNextPerformsProcessPacketPeriodically(
     ensures sat(i, eventuallynextwithin(ReceiveAttemptedTemporal(eb, host), longer_interval, real_time_fun))
   {
     lemma_ReplicasSize(b, asp.c, i);
-    TemporalDeduceFromAlways(asp.synchrony_start, i, eventuallynextwithin(MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun));
-    var j := TemporalDeduceFromEventuallyNextWithin(i, MakeRslActionTemporalFromReplicaFunction(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun);
+    TemporalDeduceFromAlways(asp.synchrony_start, i, eventuallynextwithin(MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun));
+    var j := TemporalDeduceFromEventuallyNextWithin(i, MakeRslActionTemporalFromReplicaghost function(b, LReplicaNextProcessPacket, replica_index), longer_interval, real_time_fun);
     lemma_ProcessingPacketCausesReceiveAttempt(b, asp, replica_index, j);
     TemporalEventuallyNextWithin(i, j, ReceiveAttemptedTemporal(eb, host), longer_interval, real_time_fun);
   }

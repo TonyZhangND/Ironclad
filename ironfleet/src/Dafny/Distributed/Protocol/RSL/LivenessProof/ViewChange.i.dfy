@@ -37,17 +37,17 @@ import opened Common__UpperBound_s
 
 datatype ViewPlus = ViewPlus(view:Ballot, suspected:bool)
 
-predicate ViewPlusLt(vp1:ViewPlus, vp2:ViewPlus)
+ghost predicate ViewPlusLt(vp1:ViewPlus, vp2:ViewPlus)
 {
   BalLt(vp1.view, vp2.view) || (vp1.view == vp2.view && !vp1.suspected && vp2.suspected)
 }
 
-predicate ViewPlusLe(vp1:ViewPlus, vp2:ViewPlus)
+ghost predicate ViewPlusLe(vp1:ViewPlus, vp2:ViewPlus)
 {
   BalLt(vp1.view, vp2.view) || (vp1.view == vp2.view && (vp1.suspected ==> vp2.suspected))
 }
 
-function CurrentViewPlusOfHost(
+ghost function CurrentViewPlusOfHost(
   ps:RslState,
   replica_index:int
   ):ViewPlus
@@ -57,7 +57,7 @@ function CurrentViewPlusOfHost(
   ViewPlus(es.current_view, es.constants.my_index in es.current_view_suspectors)
 }
 
-predicate HostInView(
+ghost predicate HostInView(
   ps:RslState,
   replica_index:int,
   view:Ballot
@@ -66,7 +66,7 @@ predicate HostInView(
   0 <= replica_index < |ps.replicas| && CurrentViewOfHost(ps, replica_index) == view
 }
 
-function{:opaque} HostInViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
+ghost function{:opaque} HostInViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, HostInViewTemporal(b, replica_index, view))} ::
                sat(i, HostInViewTemporal(b, replica_index, view)) <==> HostInView(b[i], replica_index, view)
@@ -74,7 +74,7 @@ function{:opaque} HostInViewTemporal(b:Behavior<RslState>, replica_index:int, vi
   stepmap(imap i :: HostInView(b[i], replica_index, view))
 }
 
-predicate HostSuspectsOrInLaterView(
+ghost predicate HostSuspectsOrInLaterView(
   ps:RslState,
   replica_index:int,
   view:Ballot
@@ -84,7 +84,7 @@ predicate HostSuspectsOrInLaterView(
   && ViewPlusLe(ViewPlus(view, true), CurrentViewPlusOfHost(ps, replica_index))
 }
 
-function{:opaque} HostSuspectsOrInLaterViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
+ghost function{:opaque} HostSuspectsOrInLaterViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, HostSuspectsOrInLaterViewTemporal(b, replica_index, view))} ::
                sat(i, HostSuspectsOrInLaterViewTemporal(b, replica_index, view)) <==> HostSuspectsOrInLaterView(b[i], replica_index, view)
@@ -92,7 +92,7 @@ function{:opaque} HostSuspectsOrInLaterViewTemporal(b:Behavior<RslState>, replic
   stepmap(imap i :: HostSuspectsOrInLaterView(b[i], replica_index, view))
 }
 
-predicate HostReadyToSuspectView(
+ghost predicate HostReadyToSuspectView(
   ps:RslState,
   idx:int,
   view:Ballot,
@@ -108,7 +108,7 @@ predicate HostReadyToSuspectView(
     && req in es.requests_received_prev_epochs
 }
 
-function{:opaque} HostReadyToSuspectViewTemporal(
+ghost function{:opaque} HostReadyToSuspectViewTemporal(
   b:Behavior<RslState>,
   idx:int,
   view:Ballot,

@@ -13,7 +13,7 @@ type LSHTEnvironment = LEnvironment<NodeIdentity, SingleMessage<Message>>
 type LSHTPacket = LPacket<NodeIdentity, SingleMessage<Message>>
 type LSHTIo = LIoOp<NodeIdentity, SingleMessage<Message>>
 
-function ConcatenateSHTIos(s:seq<seq<LSHTIo>>) : seq<LSHTIo>
+ghost function ConcatenateSHTIos(s:seq<seq<LSHTIo>>) : seq<LSHTIo>
 {
     if |s| == 0 then
         []

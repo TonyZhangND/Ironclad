@@ -33,7 +33,7 @@ import opened Temporal__Rules_i
 import opened Common__UpperBound_s
 import opened Environment_s
 
-predicate ReplicaHasCollectedSuspicionFrom(
+ghost predicate ReplicaHasCollectedSuspicionFrom(
   ps:RslState,
   collector_idx:int,
   suspector_idx:int,
@@ -46,7 +46,7 @@ predicate ReplicaHasCollectedSuspicionFrom(
         && suspector_idx in ps.replicas[collector_idx].replica.proposer.election_state.current_view_suspectors))
 }
 
-function{:opaque} ReplicaHasCollectedSuspicionFromTemporal(
+ghost function{:opaque} ReplicaHasCollectedSuspicionFromTemporal(
   b:Behavior<RslState>,
   collector_idx:int,
   suspector_idx:int,

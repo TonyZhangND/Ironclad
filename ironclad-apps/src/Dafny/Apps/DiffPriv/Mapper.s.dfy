@@ -7,14 +7,14 @@ include "Database.s.dfy"
 
 datatype BinaryInstruction = InstAdd | InstSub | InstMul | InstDiv | InstMod | InstGt | InstLt | InstEq | InstGe | InstLe
 
-static function method BooleanToInt(b:bool):int
+static function BooleanToInt(b:bool):int
 {
     if b then 1 else 0
 }
 
-static function{:opaque} Mod0x100000000(i:int):int { i % 0x100000000 }
+static ghost function{:opaque} Mod0x100000000(i:int):int { i % 0x100000000 }
 
-static function{:opaque} ApplyBinaryInstruction(inst:BinaryInstruction, v1:int, v2:int):int
+static ghost function{:opaque} ApplyBinaryInstruction(inst:BinaryInstruction, v1:int, v2:int):int
 {
     match inst
         case InstAdd => Mod0x100000000(v1 + v2)
@@ -38,7 +38,7 @@ datatype Expression = ExpInt(i:int)
                     | ExpBinary(inst:BinaryInstruction, e1:Expression, e2:Expression)
                     | ExpIf(e_cond:Expression, e_true:Expression, e_false:Expression)
 
-static predicate ExpressionValid(e:Expression)
+static ghost predicate ExpressionValid(e:Expression)
 {
     match e
         case ExpInt(i) => Word32(i)
@@ -47,12 +47,12 @@ static predicate ExpressionValid(e:Expression)
         case ExpIf(e1, e2, e3) => ExpressionValid(e1) && ExpressionValid(e2) && ExpressionValid(e3)
 }
 
-static predicate ExpressionStackContainsOnlyWords(estack:seq<Expression>)
+static ghost predicate ExpressionStackContainsOnlyWords(estack:seq<Expression>)
 {
     forall i:int :: 0 <= i < |estack| ==> ExpressionValid(estack[i])
 }
 
-static function EvaluateExpression(e:Expression, row:Row):int
+static ghost function EvaluateExpression(e:Expression, row:Row):int
 {
     match e
         case ExpInt(i) => i
@@ -66,7 +66,7 @@ static function EvaluateExpression(e:Expression, row:Row):int
 //- Operations
 //-/////////////////////////////////////////
 
-static function method ExtractColumn(column_index:int, row:Row):int
+static function ExtractColumn(column_index:int, row:Row):int
 {
     if 0 <= column_index < |row.data| then row.data[column_index] else 0
 }
@@ -76,12 +76,12 @@ datatype Operation = OperationPush(i:int)
                    | OperationBinary(inst:BinaryInstruction)
                    | OperationIf
 
-static predicate OperationValid(op:Operation)
+static ghost predicate OperationValid(op:Operation)
 {
     if op.OperationPush? then Word32(op.i) else true
 }
 
-static function method StackSizeChangeFromOperation(t:Operation):int
+static function StackSizeChangeFromOperation(t:Operation):int
 {
     match t
         case OperationPush(_) => 1
@@ -94,7 +94,7 @@ static function method StackSizeChangeFromOperation(t:Operation):int
 
 ///////////////////////////////////////////
 
-static predicate ProgramContainsOnlyWords(program:seq<Operation>)
+static ghost predicate ProgramContainsOnlyWords(program:seq<Operation>)
 {
     forall k :: 0 <= k < |program| ==> OperationValid(program[k])
 }
@@ -103,7 +103,7 @@ static predicate ProgramContainsOnlyWords(program:seq<Operation>)
 
 ///////////////////////////////////////////
 
-static function HowOperationChangesExpressionStack(op:Operation, estack:seq<Expression>):seq<Expression>
+static ghost function HowOperationChangesExpressionStack(op:Operation, estack:seq<Expression>):seq<Expression>
 {
     match op
         case OperationPush(i) =>       estack + [ExpInt(i)]
@@ -112,24 +112,24 @@ static function HowOperationChangesExpressionStack(op:Operation, estack:seq<Expr
         case OperationIf =>            if |estack| >= 3 then estack[..|estack|-3] + [ExpIf(estack[|estack|-3], estack[|estack| - 2], estack[|estack| - 1])] else []
 }
 
-static function StackSizeAfterRunning(program:seq<Operation>):int
+static ghost function StackSizeAfterRunning(program:seq<Operation>):int
 {
     if |program| == 0 then 0
     else StackSizeAfterRunning(program[..|program| - 1]) + StackSizeChangeFromOperation(program[|program| - 1])
 }
 
-static predicate ProgramPrefixValid(program:seq<Operation>)
+static ghost predicate ProgramPrefixValid(program:seq<Operation>)
 {
     ProgramContainsOnlyWords(program) &&
     forall k :: 1 <= k <= |program| ==> StackSizeAfterRunning(program[..k]) >= 1
 }
 
-static predicate ProgramValid(program:seq<Operation>)
+static ghost predicate ProgramValid(program:seq<Operation>)
 {
     ProgramPrefixValid(program) && StackSizeAfterRunning(program) == 1
 }
 
-static function {:opaque} ProgramPrefixToExpressionStack(program:seq<Operation>):seq<Expression>
+static ghost function {:opaque} ProgramPrefixToExpressionStack(program:seq<Operation>):seq<Expression>
 {
     if |program| == 0 then
         []
@@ -137,13 +137,13 @@ static function {:opaque} ProgramPrefixToExpressionStack(program:seq<Operation>)
         HowOperationChangesExpressionStack(program[|program|-1], ProgramPrefixToExpressionStack(program[..|program|-1]))
 }
 
-static function ProgramToExpression(program:seq<Operation>):Expression
+static ghost function ProgramToExpression(program:seq<Operation>):Expression
 {
     var estack := ProgramPrefixToExpressionStack(program);
     if |estack| == 1 then estack[0] else ExpInt(0)
 }
 
-static function EvaluateProgram(program:seq<Operation>, row:Row):int
+static ghost function EvaluateProgram(program:seq<Operation>, row:Row):int
 {
     EvaluateExpression(ProgramToExpression(program), row)
 }
@@ -152,7 +152,7 @@ static function EvaluateProgram(program:seq<Operation>, row:Row):int
 
 ///////////////////////////////////////////
 
-static function method WordToOperation(w:int):Operation
+static function WordToOperation(w:int):Operation
     requires Word32(w);
 {
        if w == 2000000001 then OperationColumn
@@ -170,7 +170,7 @@ static function method WordToOperation(w:int):Operation
     else OperationPush(w)
 }
 
-static function MessageToProgram(message:seq<int>):seq<Operation>
+static ghost function MessageToProgram(message:seq<int>):seq<Operation>
     requires IsWordSeq(message);
 {
     if |message| == 0 then [] else MessageToProgram(message[..|message|-1]) + [WordToOperation(message[|message|-1])]

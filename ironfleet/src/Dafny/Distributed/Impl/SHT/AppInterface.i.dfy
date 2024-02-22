@@ -7,16 +7,16 @@ import opened SHT__Keys_i
 import opened AppInterface_i`All
 
 //////////////////////////////////////////////////////////////////////////////////
-// The application's implementation supplies these functions, lemmas, etc.
+// The application's implementation supplies these ghost functions, lemmas, etc.
 //////////////////////////////////////////////////////////////////////////////////
 
-function method Key_grammar() : G 
-function method Value_grammar() : G 
+function Key_grammar() : G 
+function Value_grammar() : G 
 
-function method parse_Key(val:V) : Key
+function parse_Key(val:V) : Key
     requires ValInGrammar(val, Key_grammar());
 
-function method parse_Value(val:V) : Value
+function parse_Value(val:V) : Value
     requires ValInGrammar(val, Value_grammar());
 
 method MarshallKey(c:Key) returns (val:V)
@@ -48,7 +48,7 @@ lemma lemma_ValidKey_grammer()
 lemma lemma_ValidValue_grammer()
     ensures ValidGrammar(Value_grammar());
 
-//function method KeyRangeSize(kr:KeyRange) : uint64
+//function KeyRangeSize(kr:KeyRange) : uint64
 
 
 }

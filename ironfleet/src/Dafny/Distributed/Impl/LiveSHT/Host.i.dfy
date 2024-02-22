@@ -30,7 +30,7 @@ module Host_i refines Host_s {
     type HostState = CScheduler
     type ConcreteConfiguration = ConstantsState
 
-    predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+    ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
     {
         host_state.scheduler_impl != null 
      && host_state.scheduler_impl.Valid() 
@@ -38,7 +38,7 @@ module Host_i refines Host_s {
      && host_state.sched == host_state.scheduler_impl.AbstractifyToLScheduler()
     }
 
-    predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
+    ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
     {
         host_state.scheduler_impl != null && host_state.scheduler_impl.Valid()
      && host_state.scheduler_impl.host.constants == config
@@ -50,7 +50,7 @@ module Host_i refines Host_s {
                         AbstractifyCParametersToParameters(config.params))
     }
 
-    predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
            NetEventLogIsAbstractable(ios)
         && OnlySentMarshallableData(ios)
@@ -58,19 +58,19 @@ module Host_i refines Host_s {
             || HostNextIgnoreUnsendable(host_state.sched, host_state'.sched, ios))
     }
 
-    predicate ConcreteConfigInit(config:ConcreteConfiguration)
+    ghost predicate ConcreteConfigInit(config:ConcreteConfiguration)
     {
         ConstantsStateIsValid(config)
      && config.rootIdentity in config.hostIds
      //&& (forall i :: 0 <= i < |config.hostIds| ==> c
     }
 
-    function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
+    ghost function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPoint>
     {
       MapSeqToSet(config.hostIds, x=>x)
     }
 
-    function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
+    ghost function ParseCommandLineConfiguration(args:seq<seq<byte>>) : ConcreteConfiguration
     {
        sht_cmd_line_parsing(args)
     }
@@ -107,7 +107,7 @@ module Host_i refines Host_s {
         assert HostInit(host_state, config, id);
     }
     
-    predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
+    ghost predicate EventsConsistent(recvs:seq<NetEvent>, clocks:seq<NetEvent>, sends:seq<NetEvent>) 
     {
         forall e :: (e in recvs  ==> e.LIoOpReceive?) 
                  && (e in clocks ==> e.LIoOpReadClock? || e.LIoOpTimeoutReceive?) 
@@ -138,7 +138,7 @@ module Host_i refines Host_s {
         }
     }
 
-    predicate NetEventsReductionCompatible(events:seq<NetEvent>)
+    ghost predicate NetEventsReductionCompatible(events:seq<NetEvent>)
     {
         forall i :: 0 <= i < |events| - 1 ==> events[i].LIoOpReceive? || events[i+1].LIoOpSend?
     }

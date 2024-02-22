@@ -12,7 +12,7 @@ import opened LiveRSL__CTypes_i
 
 // In the insertion sort routine below, it's more convenient to keep track of only that
 // neighboring elements of the array are sorted...
-predicate NeighborSorted_COperationNumber(a: array<COperationNumber>, low: uint64, high: uint64)
+ghost predicate NeighborSorted_COperationNumber(a: array<COperationNumber>, low: uint64, high: uint64)
   requires a.Length < 0xFFFFFFFFFFFFFFFF
   requires 0 <= low <= high <= a.Length as uint64
   reads a
@@ -20,7 +20,7 @@ predicate NeighborSorted_COperationNumber(a: array<COperationNumber>, low: uint6
   forall i {:trigger a[i-1].n, a[i].n} :: low < i < high ==> a[i-1].n <= a[i].n
 }
 
-predicate Sorted_COperationNumber(a: array<COperationNumber>, low: uint64, high: uint64)
+ghost predicate Sorted_COperationNumber(a: array<COperationNumber>, low: uint64, high: uint64)
   requires a.Length < 0xFFFFFFFFFFFFFFFF
   requires 0 <= low <= high <= a.Length as uint64
   reads a

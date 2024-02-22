@@ -9,18 +9,18 @@ type AppState = Bytes
 type AppRequest = Bytes
 type AppReply = Bytes
 
-function {:axiom} AppInitialize() : AppState
-function {:axiom} AppHandleRequest(m:AppState, request:AppRequest) : (AppState, AppReply)
-function method MaxAppRequestSize() : int  { 0x800_0000 }            // 128 MB
-function method MaxAppReplySize() : int    { 0x800_0000 }            // 128 MB
-function method MaxAppStateSize() : int    { 0x1000_0000_0000_0000 } // 2^60 B
+ghost function {:axiom} AppInitialize() : AppState
+ghost function {:axiom} AppHandleRequest(m:AppState, request:AppRequest) : (AppState, AppReply)
+function MaxAppRequestSize() : int  { 0x800_0000 }            // 128 MB
+function MaxAppReplySize() : int    { 0x800_0000 }            // 128 MB
+function MaxAppStateSize() : int    { 0x1000_0000_0000_0000 } // 2^60 B
 
 class AppStateMachine
 {
   constructor{:axiom} ()
     requires false
 
-  function {:axiom} Abstractify() : AppState
+  ghost function {:axiom} Abstractify() : AppState
 
   static method {:axiom} Initialize() returns (m:AppStateMachine)
     ensures fresh(m)

@@ -34,14 +34,14 @@ import opened Environment_s
 import opened AppStateMachine_s
 import opened Temporal__Temporal_s
 
-predicate ClientIndexMatches(req_idx:int, client:EndPoint, newReplyCache:CReplyCache, batch:CRequestBatch, replies:seq<CReply>) 
+ghost predicate ClientIndexMatches(req_idx:int, client:EndPoint, newReplyCache:CReplyCache, batch:CRequestBatch, replies:seq<CReply>) 
   requires |batch| == |replies|
   requires client in newReplyCache
 {
   0 <= req_idx < |batch| && replies[req_idx].client == client && newReplyCache[client] == replies[req_idx] 
 }
 
-predicate ReplyCacheUpdated(client:EndPoint, oldReplyCache:CReplyCache, newReplyCache:CReplyCache, batch:CRequestBatch, replies:seq<CReply>) 
+ghost predicate ReplyCacheUpdated(client:EndPoint, oldReplyCache:CReplyCache, newReplyCache:CReplyCache, batch:CRequestBatch, replies:seq<CReply>) 
   requires client in newReplyCache
   requires |batch| == |replies|
 {
@@ -112,7 +112,7 @@ method {:timeLimitMultiplier 2} HandleRequestBatchImpl(
   modifies state
   ensures (g_states, g_replies) == HandleRequestBatch(old(state.Abstractify()), AbstractifyCRequestBatchToRequestBatch(batch));
   ensures |replies_seq| == |batch|
-  ensures forall i :: 0 <= i < |batch| ==> HelperPredicateHRBI(i, batch, replies_seq, g_states)
+  ensures forall i :: 0 <= i < |batch| ==> Helperghost predicateHRBI(i, batch, replies_seq, g_states)
   ensures g_states[0] == old(state.Abstractify())
   ensures g_states[|g_states|-1] == state.Abstractify()
   ensures CReplySeqIsAbstractable(replies_seq)
@@ -145,7 +145,7 @@ method {:timeLimitMultiplier 2} HandleRequestBatchImpl(
   while i < |batch| as uint64
     invariant 0 <= i as int <= |batch|
     invariant |replies| == i as int
-    invariant forall j :: 0 <= j < i as int ==> HelperPredicateHRBI(j, batch, replies, g_states)
+    invariant forall j :: 0 <= j < i as int ==> Helperghost predicateHRBI(j, batch, replies, g_states)
     invariant ValidReplyCache(newReplyCache)
     invariant CReplyCacheIsAbstractable(newReplyCache)
     invariant forall r :: r in replies ==> ValidReply(r) && CReplyIsAbstractable(r)
@@ -170,13 +170,13 @@ method {:timeLimitMultiplier 2} HandleRequestBatchImpl(
     newReplyCache := UpdateReplyCache(newReplyCache, reply_cache_mutable, batch[i].client, newReply, reply, i, batch, replies);
     i := i + 1;
         
-    // Prove the invariant about HelperPredicateHRBI(j, batch, states, replies, g_states)
+    // Prove the invariant about Helperghost predicateHRBI(j, batch, states, replies, g_states)
     forall j | 0 <= j < i as int 
-      ensures HelperPredicateHRBI(j, batch, replies, g_states)
+      ensures Helperghost predicateHRBI(j, batch, replies, g_states)
     {
       if j < (i as int) - 1 {
-        assert HelperPredicateHRBI(j, batch, old_replies, g_states);    // From the loop invariant
-        assert HelperPredicateHRBI(j, batch, replies, g_states);
+        assert Helperghost predicateHRBI(j, batch, old_replies, g_states);    // From the loop invariant
+        assert Helperghost predicateHRBI(j, batch, replies, g_states);
       }
     }
 
@@ -255,7 +255,7 @@ method {:timeLimitMultiplier 2} HandleRequestBatchImpl(
   }
     
   assert replies_seq == replies;
-  assert forall j :: 0 <= j < |batch| ==> j < |replies_seq| && HelperPredicateHRBI(j, batch, replies_seq, g_states);
+  assert forall j :: 0 <= j < |batch| ==> j < |replies_seq| && Helperghost predicateHRBI(j, batch, replies_seq, g_states);
 
   lemma_CReplyCacheUpdate(batch, reply_cache, replies, newReplyCache);
 }
@@ -363,11 +363,11 @@ method {:timeLimitMultiplier 6} UpdateReplyCache(ghost reply_cache:CReplyCache, 
   }
 }
 
-lemma lemma_HelperPredicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>, g_states:seq<AppState>)
+lemma lemma_Helperghost predicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>, g_states:seq<AppState>)
   requires 0 <= j < |batch|
   requires 0 <= j < |g_states|-1
   requires 0 <= j < |replies|
-  requires HelperPredicateHRBI(j, batch, replies, g_states)
+  requires Helperghost predicateHRBI(j, batch, replies, g_states)
   ensures  replies[j].CReply?
   ensures  (g_states[j+1], AbstractifyCAppReplyToAppReply(replies[j].reply)) == AppHandleRequest(g_states[j], AbstractifyCAppRequestToAppRequest(batch[j].request))
   ensures  replies[j].client == batch[j].client
@@ -375,7 +375,7 @@ lemma lemma_HelperPredicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>,
 {
 }
 
-predicate HelperPredicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>, g_states:seq<AppState>)
+ghost predicate Helperghost predicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>, g_states:seq<AppState>)
   requires 0 <= j < |batch|
   requires 0 <= j < |g_states|-1
   requires 0 <= j < |replies|
@@ -387,7 +387,7 @@ predicate HelperPredicateHRBI(j:int, batch:CRequestBatch, replies:seq<CReply>, g
 }
 
 // Same as x == y, but triggers extensional equality on fields and provides better error diagnostics
-predicate Eq_ExecutorState(x:LExecutor, y:LExecutor)
+ghost predicate Eq_ExecutorState(x:LExecutor, y:LExecutor)
 {
   && x.constants == y.constants
   && x.app == y.app
@@ -446,7 +446,7 @@ method ExecutorGetDecision(cs:ExecutorState, cbal:CBallot, copn:COperationNumber
   assert Eq_ExecutorState(s', AbstractifyExecutorStateToLExecutor(cs'));
 }
 
-predicate ExistsReqIdx(len:int, replies:seq<CReply>, reply_cache:CReplyCache, newReplyCache:CReplyCache, client:NodeIdentity)
+ghost predicate ExistsReqIdx(len:int, replies:seq<CReply>, reply_cache:CReplyCache, newReplyCache:CReplyCache, client:NodeIdentity)
   requires CReplyCacheIsAbstractable(reply_cache)
   requires CReplyCacheIsAbstractable(newReplyCache)
   requires client in AbstractifyCReplyCacheToReplyCache(newReplyCache)
@@ -458,7 +458,7 @@ predicate ExistsReqIdx(len:int, replies:seq<CReply>, reply_cache:CReplyCache, ne
   exists req_idx :: 0 <= req_idx < len && AbstractifyCReplySeqToReplySeq(replies)[req_idx].client == client && r_newReplyCache[client] == AbstractifyCReplySeqToReplySeq(replies)[req_idx]
 }
 
-predicate ExistsReqIdxConcrete(len:int, replies:seq<CReply>, reply_cache:CReplyCache, newReplyCache:CReplyCache, client:EndPoint)
+ghost predicate ExistsReqIdxConcrete(len:int, replies:seq<CReply>, reply_cache:CReplyCache, newReplyCache:CReplyCache, client:EndPoint)
   requires client in newReplyCache
   requires |replies| == len
   requires (forall i :: i in replies ==> CReplyIsAbstractable(i))

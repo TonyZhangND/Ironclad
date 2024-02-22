@@ -3,7 +3,7 @@ include "../../Math/power2.i.dfy"
 include "../../Util/integer_sequences_premium.i.dfy"
 include "../../BigNum/BigNumBEAdaptor.i.dfy"
 
-static function BigEndianIntegerValue(os:seq<int>) : nat
+static ghost function BigEndianIntegerValue(os:seq<int>) : nat
     decreases |os|;
     requires IsByteSeq(os);
 {
@@ -461,7 +461,7 @@ static lemma lemma_SingleZeroPrefixedBigEndianIntegerValuesEqual(s0:seq<int>, s1
     lemma_BigEndianIntegerValue_zero_prefix_converse(s0, s1);
 }
 
-static function LittleEndianIntegerValue(os:seq<int>) : nat
+static ghost function LittleEndianIntegerValue(os:seq<int>) : nat
     requires IsByteSeq(os);
 {
     if (os==[]) then

@@ -5,17 +5,17 @@ include "../../Util/integer_sequences.s.dfy"
 include "../../Util/seq_blocking.s.dfy"
 include "sha_common.s.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_NumPaddingZeroes(message_len: int) : int
-static function method{:CompiledSpec} CompiledSpec_OneOf8(i: int, n0: int, n1: int, n2: int, n3: int, n4: int, n5: int, n6: int, n7: int) : int
+static function{:CompiledSpec} CompiledSpec_NumPaddingZeroes(message_len: int) : int
+static function{:CompiledSpec} CompiledSpec_OneOf8(i: int, n0: int, n1: int, n2: int, n3: int, n4: int, n5: int, n6: int, n7: int) : int
 
-static function{:opaque} Mul16(i:int):int { i * 16 }
-static function{:opaque} Mod16(i:int):int { i % 16 }
+static ghost function{:opaque} Mul16(i:int):int { i * 16 }
+static ghost function{:opaque} Mod16(i:int):int { i % 16 }
 
 //-///////////////////////////////////////////////////
 //- Ch, Maj, BSIG0, BSIG1, SSIG0, SSIG1
 //-///////////////////////////////////////////////////
 
-static function method Ch_impl(x: int, y: int, z: int) : int
+static function Ch_impl(x: int, y: int, z: int) : int
     requires Word32(x);
     requires Word32(y);
     requires Word32(z);
@@ -26,7 +26,7 @@ static function method Ch_impl(x: int, y: int, z: int) : int
     Asm_BitwiseXor(Asm_BitwiseAnd(x, y), Asm_BitwiseAnd(Asm_BitwiseNot(x), z))
 }
 
-static function method Maj_impl(x: int, y: int, z: int) : int
+static function Maj_impl(x: int, y: int, z: int) : int
     requires Word32(x);
     requires Word32(y);
     requires Word32(z);
@@ -37,7 +37,7 @@ static function method Maj_impl(x: int, y: int, z: int) : int
     Asm_BitwiseXor(Asm_BitwiseXor(Asm_BitwiseAnd(x, y), Asm_BitwiseAnd(x, z)), Asm_BitwiseAnd(y, z))
 }
 
-static function method Parity_impl(x: int, y: int, z: int) : int
+static function Parity_impl(x: int, y: int, z: int) : int
     requires Word32(x);
     requires Word32(y);
     requires Word32(z);
@@ -48,7 +48,7 @@ static function method Parity_impl(x: int, y: int, z: int) : int
     Asm_BitwiseXor(Asm_BitwiseXor(x, y), z)
 }
 
-static function method ft_impl(t: int, x: int, y: int, z: int) : int
+static function ft_impl(t: int, x: int, y: int, z: int) : int
     requires 0 <= t <= 79;
     requires Word32(x);
     requires Word32(y);
@@ -67,7 +67,7 @@ static function method ft_impl(t: int, x: int, y: int, z: int) : int
         Parity_impl(x, y, z)
 }
 
-static function method BSIG0_impl(x: int) : int
+static function BSIG0_impl(x: int) : int
     requires Word32(x);
     ensures Word32(BSIG0_impl(x));
     ensures BSIG0_impl(x) == BSIG0(x);
@@ -76,7 +76,7 @@ static function method BSIG0_impl(x: int) : int
     Asm_BitwiseXor(Asm_BitwiseXor(Asm_RotateRight(x, 2), Asm_RotateRight(x, 13)), Asm_RotateRight(x, 22))
 }
 
-static function method BSIG1_impl(x: int) : int
+static function BSIG1_impl(x: int) : int
     requires Word32(x);
     ensures Word32(BSIG1_impl(x));
     ensures BSIG1_impl(x) == BSIG1(x);
@@ -85,7 +85,7 @@ static function method BSIG1_impl(x: int) : int
     Asm_BitwiseXor(Asm_BitwiseXor(Asm_RotateRight(x, 6), Asm_RotateRight(x, 11)), Asm_RotateRight(x, 25))
 }
 
-static function method SSIG0_impl(x: int) : int
+static function SSIG0_impl(x: int) : int
     requires Word32(x);
     ensures Word32(SSIG0_impl(x));
     ensures SSIG0_impl(x) == SSIG0(x);
@@ -94,7 +94,7 @@ static function method SSIG0_impl(x: int) : int
     Asm_BitwiseXor(Asm_BitwiseXor(Asm_RotateRight(x, 7), Asm_RotateRight(x, 18)), Asm_RightShift(x, 3))
 }
 
-static function method SSIG1_impl(x: int) : int
+static function SSIG1_impl(x: int) : int
     requires Word32(x);
     ensures Word32(SSIG1_impl(x));
     ensures SSIG1_impl(x) == SSIG1(x);

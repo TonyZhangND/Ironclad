@@ -28,7 +28,7 @@ lemma lemma_AllDelegationsToKnownHosts(s:SHT_State, k:Key, id:NodeIdentity, next
     var dm := s.hosts[id].delegationMap;
 }
 
-predicate NoHostsStoreEmptyValues(s:SHT_State)
+ghost predicate NoHostsStoreEmptyValues(s:SHT_State)
     requires MapComplete(s);
 {
     forall id,k ::
@@ -36,14 +36,14 @@ predicate NoHostsStoreEmptyValues(s:SHT_State)
         ==> HashtableLookup(s.hosts[id].h, k) != ValueAbsent()
 }
 
-predicate BufferedDelegationPacketPresent(pkt:Option<Packet>)
+ghost predicate BufferedDelegationPacketPresent(pkt:Option<Packet>)
     requires DelegationPacket(pkt);
 {
     forall k {:trigger HashtableLookup(pkt.v.msg.m.h, k) }:: 
         k in pkt.v.msg.m.h ==> HashtableLookup(pkt.v.msg.m.h, k) != ValueAbsent()
 }
 
-predicate BufferedPacketsInv(s:SHT_State)
+ghost predicate BufferedPacketsInv(s:SHT_State)
     requires MapComplete(s);
 {
     forall id :: id in AllHostIdentities(s) ==> 
@@ -55,20 +55,20 @@ predicate BufferedPacketsInv(s:SHT_State)
         
 }
 
-predicate DestinationsConsistent(s:SHT_State) 
+ghost predicate DestinationsConsistent(s:SHT_State) 
     requires MapComplete(s);
 {
     forall pkt :: pkt in s.network && pkt.msg.SingleMessage? && pkt.src in AllHostIdentities(s)
         ==> pkt.msg.dst == pkt.dst
 }
 
-predicate DelegationMessagesCarryNoEmptyValues(s:SHT_State)
+ghost predicate DelegationMessagesCarryNoEmptyValues(s:SHT_State)
 {
     forall pkt, k :: pkt in s.network && pkt.msg.SingleMessage? && pkt.msg.m.Delegate? && k in pkt.msg.m.h
         ==> HashtableLookup(pkt.msg.m.h, k) != ValueAbsent()
 }
 
-predicate DelegationMessagesCarryOnlyClaimedKeys(s:SHT_State)
+ghost predicate DelegationMessagesCarryOnlyClaimedKeys(s:SHT_State)
     requires MapComplete(s);
 {
     forall pkt, k :: pkt in s.network && pkt.src in AllHostIdentities(s)
@@ -79,7 +79,7 @@ predicate DelegationMessagesCarryOnlyClaimedKeys(s:SHT_State)
 //////////////////////////////////////////////////////////////////////////////
 // EachKeyClaimedInExactlyOnePlace (one Host or one Packet)
 
-predicate SomeHostClaimsKey(s:SHT_State, k:Key)
+ghost predicate SomeHostClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
 {
    exists id
@@ -87,7 +87,7 @@ predicate SomeHostClaimsKey(s:SHT_State, k:Key)
         :: id in AllHostIdentities(s) && HostClaimsKey(s.hosts[id], k)
 }
 
-predicate OnlyOneHostClaimsKey(s:SHT_State, k:Key)
+ghost predicate OnlyOneHostClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
 {
     forall i1,i2
@@ -98,13 +98,13 @@ predicate OnlyOneHostClaimsKey(s:SHT_State, k:Key)
         ==> i1==i2
 }
 
-predicate UniqueHostClaimsKey(s:SHT_State, k:Key)
+ghost predicate UniqueHostClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
 {
     SomeHostClaimsKey(s,k) && OnlyOneHostClaimsKey(s,k)
 }
 
-predicate NoHostClaimsKey(s:SHT_State, k:Key)
+ghost predicate NoHostClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
 {
     forall id
@@ -112,7 +112,7 @@ predicate NoHostClaimsKey(s:SHT_State, k:Key)
         :: id in AllHostIdentities(s) ==> !HostClaimsKey(s.hosts[id], k)
 }
 
-predicate SomePacketClaimsKey(s:SHT_State, k:Key)
+ghost predicate SomePacketClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
@@ -121,7 +121,7 @@ predicate SomePacketClaimsKey(s:SHT_State, k:Key)
         :: InFlightPacketClaimsKey(s, pkt, k)
 }
 
-predicate OnlyOnePacketClaimsKey(s:SHT_State, k:Key)
+ghost predicate OnlyOnePacketClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
@@ -131,14 +131,14 @@ predicate OnlyOnePacketClaimsKey(s:SHT_State, k:Key)
             :: InFlightPacketClaimsKey(s, p1, k) && InFlightPacketClaimsKey(s, p2, k) ==> p1==p2
 }
 
-predicate UniqueInFlightPacketClaimsKey(s:SHT_State, k:Key)
+ghost predicate UniqueInFlightPacketClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
     SomePacketClaimsKey(s, k) && OnlyOnePacketClaimsKey(s, k)
 }
 
-predicate NoInFlightPacketClaimsKey(s:SHT_State, k:Key)
+ghost predicate NoInFlightPacketClaimsKey(s:SHT_State, k:Key)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
@@ -148,7 +148,7 @@ predicate NoInFlightPacketClaimsKey(s:SHT_State, k:Key)
 }
 
 // Lots of exists in here seem to make this a brittle invariant to expose.
-predicate {:opaque} EachKeyClaimedInExactlyOnePlace(s:SHT_State)
+ghost predicate {:opaque} EachKeyClaimedInExactlyOnePlace(s:SHT_State)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
@@ -159,21 +159,21 @@ predicate {:opaque} EachKeyClaimedInExactlyOnePlace(s:SHT_State)
 
 //////////////////////////////////////////////////////////////////////////////
 
-predicate InvConstants(s:SHT_State)
+ghost predicate InvConstants(s:SHT_State)
     requires MapComplete(s);
 {
     forall id {:auto_trigger} :: id in AllHostIdentities(s)
         ==> s.hosts[id].me == id && s.hosts[id].constants.hostIds == s.config.hostIds
 }
 
-predicate HostsStoreOnlyOwnedKeys(s:SHT_State)
+ghost predicate HostsStoreOnlyOwnedKeys(s:SHT_State)
     requires MapComplete(s);
 {
     forall id,k :: id in AllHostIdentities(s) && k in s.hosts[id].h
         ==> HostClaimsKey(s.hosts[id], k)
 }
 
-predicate {:opaque} PacketsHaveSenderUniqueSeqnos(s:SHT_State)
+ghost predicate {:opaque} PacketsHaveSenderUniqueSeqnos(s:SHT_State)
     requires MapComplete(s);
 {
     forall p1,p2 ::
@@ -187,7 +187,7 @@ predicate {:opaque} PacketsHaveSenderUniqueSeqnos(s:SHT_State)
 }
 
 // Need this invariant to prove ReceiverHasCanceledNoUnsentSeqnos
-predicate NoPacketContainsUnsentSeqno(s:SHT_State)
+ghost predicate NoPacketContainsUnsentSeqno(s:SHT_State)
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
 {
@@ -198,7 +198,7 @@ predicate NoPacketContainsUnsentSeqno(s:SHT_State)
 
 // Need this invariant to ensure that, at the moment we send a packet,
 // it isn't DOA because the recipient had inflated his receive seqno
-predicate ReceiverHasNotCanceledUnsentSeqno(s:SHT_State, dst:NodeIdentity, src:NodeIdentity, seqno:int)
+ghost predicate ReceiverHasNotCanceledUnsentSeqno(s:SHT_State, dst:NodeIdentity, src:NodeIdentity, seqno:int)
     requires MapComplete(s);
 {
        dst in AllHostIdentities(s)
@@ -207,7 +207,7 @@ predicate ReceiverHasNotCanceledUnsentSeqno(s:SHT_State, dst:NodeIdentity, src:N
     ==> seqno > TombstoneTableLookup(src, s.hosts[dst].sd.receiveState)
 }
 
-predicate ReceiverHasCanceledNoUnsentSeqnos(s:SHT_State)
+ghost predicate ReceiverHasCanceledNoUnsentSeqnos(s:SHT_State)
     requires MapComplete(s);
 {
     forall dst, src, seqno :: ReceiverHasNotCanceledUnsentSeqno(s, dst, src, seqno)
@@ -217,7 +217,7 @@ predicate ReceiverHasCanceledNoUnsentSeqnos(s:SHT_State)
 //      The ultimate invariant
 //////////////////////////////////////////////////////
 
-predicate Inv(s:SHT_State)
+ghost predicate Inv(s:SHT_State)
 {
        MapComplete(s)
     && InvConstants(s)
@@ -237,7 +237,7 @@ predicate Inv(s:SHT_State)
     && EachKeyClaimedInExactlyOnePlace(s)
 }
 
-predicate {:opaque} HiddenInv(s:SHT_State)
+ghost predicate {:opaque} HiddenInv(s:SHT_State)
 {
     Inv(s)
 }
@@ -776,7 +776,7 @@ lemma ReceiveSingleMessageNew_Properties(s:SHT_State, s':SHT_State, id:NodeIdent
 }
 */
 
-predicate DelegationPacketStable(s:SHT_State, s':SHT_State, id:NodeIdentity)
+ghost predicate DelegationPacketStable(s:SHT_State, s':SHT_State, id:NodeIdentity)
     requires id in s.hosts && id in s'.hosts;
     requires DelegationPacket(s.hosts[id].receivedPacket);
 {
@@ -856,7 +856,7 @@ lemma NoHostClaimsKeySpecific(s:SHT_State, k:Key, id:NodeIdentity)
 {
 }
 
-predicate NoDelegationPacketsChangedAboutKey(s:SHT_State, s':SHT_State, k:Key)
+ghost predicate NoDelegationPacketsChangedAboutKey(s:SHT_State, s':SHT_State, k:Key)
     requires MapComplete(s) && InvConstants(s) && PacketsHaveSaneHeaders(s);
     requires MapComplete(s') && InvConstants(s') && PacketsHaveSaneHeaders(s');
 {
@@ -865,7 +865,7 @@ predicate NoDelegationPacketsChangedAboutKey(s:SHT_State, s':SHT_State, k:Key)
         ==> (PacketInFlight(s, pkt) <==> PacketInFlight(s', pkt))
 }
 
-predicate NoConfigChanged(s:SHT_State, s':SHT_State)
+ghost predicate NoConfigChanged(s:SHT_State, s':SHT_State)
     requires MapComplete(s);
     requires MapComplete(s');
 {
@@ -874,7 +874,7 @@ predicate NoConfigChanged(s:SHT_State, s':SHT_State)
 
 
 // TODO I think I can just dispense with this disjunct.
-predicate NoDelegationMapsChanged(s:SHT_State, s':SHT_State)
+ghost predicate NoDelegationMapsChanged(s:SHT_State, s':SHT_State)
     requires MapComplete(s);
     requires MapComplete(s');
     requires NoConfigChanged(s, s');
@@ -883,7 +883,7 @@ predicate NoDelegationMapsChanged(s:SHT_State, s':SHT_State)
         ==> s'.hosts[id].delegationMap == s.hosts[id].delegationMap
 }
 
-predicate NoDelegationMapsChangedAboutKey(s:SHT_State, s':SHT_State, k:Key)
+ghost predicate NoDelegationMapsChangedAboutKey(s:SHT_State, s':SHT_State, k:Key)
     requires MapComplete(s);
     requires MapComplete(s');
     requires NoConfigChanged(s, s');
@@ -1012,7 +1012,7 @@ lemma NonDelegationsEachKeyClaimedInExactlyOnePlace_case2'(s:SHT_State, s':SHT_S
     assert NoInFlightPacketClaimsKey(s', k);
 }
 
-predicate NotADelegateStep(s:SHT_State, s':SHT_State)
+ghost predicate NotADelegateStep(s:SHT_State, s':SHT_State)
     requires MapComplete(s);
     requires MapComplete(s');
     requires PacketsHaveSaneHeaders(s);

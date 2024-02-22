@@ -6,7 +6,7 @@ include "../Util/be_sequences.s.dfy"
 //- Pure bitwise operations -- "pure" in that they're defined over nats,
 //- not Word32s.
 
-static function BitAnd(x:nat, y:nat) : nat
+static ghost function BitAnd(x:nat, y:nat) : nat
     requires IsBit(x);
     requires IsBit(y);
     ensures IsBit(BitAnd(x,y));
@@ -14,7 +14,7 @@ static function BitAnd(x:nat, y:nat) : nat
     if x==1 && y==1 then 1 else 0
 }
 
-static function PureBitwiseAnd(x:nat, y:nat) : nat
+static ghost function PureBitwiseAnd(x:nat, y:nat) : nat
    decreases x+y;
 {
     
@@ -38,7 +38,7 @@ static function PureBitwiseAnd(x:nat, y:nat) : nat
 
 
 
-static predicate SelectBit(b:nat, x:nat)
+static ghost predicate SelectBit(b:nat, x:nat)
 {
     (x/power2(b)) % 2 == 1
 }
@@ -183,7 +183,7 @@ static lemma lemma_SelectBit_zero(x:nat)
     }
 }
 
-static predicate BitwiseAndPredicate(x:nat, y:nat, z:nat)
+static ghost predicate BitwiseAndghost predicate(x:nat, y:nat, z:nat)
 {
     forall b:nat :: (SelectBit(b, x) && SelectBit(b, y)) == SelectBit(b, z)
 }
@@ -344,17 +344,17 @@ static lemma lemma_SelectBit_shift(b:nat, x:nat)
     }
 }
 
-static lemma lemma_BitwiseAndPredicate_inner(x:nat, y:nat, z:nat)
+static lemma lemma_BitwiseAndghost predicate_inner(x:nat, y:nat, z:nat)
     requires 0<x;
     requires 0<y;
-    ensures BitwiseAndPredicate(x,y,z) ==
-        (BitwiseAndPredicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2);
+    ensures BitwiseAndghost predicate(x,y,z) ==
+        (BitwiseAndghost predicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2);
 {
     lemma_power2_0_is_1();
     lemma_div_basics(x);
     lemma_div_basics(y);
     lemma_div_basics(z);
-    if (BitwiseAndPredicate(x,y,z))
+    if (BitwiseAndghost predicate(x,y,z))
     {
         forall (b:nat)
             ensures (SelectBit(b, x/2) && SelectBit(b, y/2)) == SelectBit(b, z/2);
@@ -370,7 +370,7 @@ static lemma lemma_BitwiseAndPredicate_inner(x:nat, y:nat, z:nat)
                 SelectBit(b, z/2);
             }
         }
-        assert BitwiseAndPredicate(x/2,y/2,z/2);
+        assert BitwiseAndghost predicate(x/2,y/2,z/2);
         calc {
             (x % 2 == 1) && (y % 2 == 1);
             ((x/power2(0)) % 2 == 1) && ((y/power2(0)) % 2 == 1);
@@ -382,7 +382,7 @@ static lemma lemma_BitwiseAndPredicate_inner(x:nat, y:nat, z:nat)
         assert BitAnd(x%2,y%2)==z%2;
     }
 
-    if (BitwiseAndPredicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2)
+    if (BitwiseAndghost predicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2)
     {
         forall (b:nat)
             ensures (SelectBit(b, x) && SelectBit(b, y)) == SelectBit(b, z);
@@ -428,12 +428,12 @@ static lemma lemma_BitwiseAndPredicate_inner(x:nat, y:nat, z:nat)
                 }
             }
         }
-        assert BitwiseAndPredicate(x,y,z);
+        assert BitwiseAndghost predicate(x,y,z);
     }
 }
 
 static lemma lemma_BitwiseAnd_equivalence(x:nat, y:nat, z:nat)
-    ensures BitwiseAndPredicate(x,y,z) == (PureBitwiseAnd(x,y)==z);
+    ensures BitwiseAndghost predicate(x,y,z) == (PureBitwiseAnd(x,y)==z);
 {
     if (x==0)
     {
@@ -448,10 +448,10 @@ static lemma lemma_BitwiseAnd_equivalence(x:nat, y:nat, z:nat)
     else
     {
         calc {
-            BitwiseAndPredicate(x,y,z);
-                { lemma_BitwiseAndPredicate_inner(x,y,z); }
-            BitwiseAndPredicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2;
-            BitwiseAndPredicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2;
+            BitwiseAndghost predicate(x,y,z);
+                { lemma_BitwiseAndghost predicate_inner(x,y,z); }
+            BitwiseAndghost predicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2;
+            BitwiseAndghost predicate(x/2,y/2,z/2) && BitAnd(x%2,y%2)==z%2;
                 { lemma_BitwiseAnd_equivalence(x/2, y/2, z/2); }
             PureBitwiseAnd(x/2,y/2)==z/2 && BitAnd(x%2,y%2)==z%2;
             (PureBitwiseAnd(x/2, y/2)*2 + BitAnd(x%2, y%2)) == z;

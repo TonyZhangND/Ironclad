@@ -20,23 +20,23 @@ import opened Collections__Maps2_i
 // DEFINITIONS
 /////////////////////
 
-function TemporalWF1Req1(P:temporal, Q:temporal):temporal
+ghost function TemporalWF1Req1(P:temporal, Q:temporal):temporal
 {
   imply(P, or(Q, next(or(P, Q))))
 }
 
-function TemporalWF1Req2(P:temporal, Q:temporal, Action:temporal):temporal
+ghost function TemporalWF1Req2(P:temporal, Q:temporal, Action:temporal):temporal
 {
   imply(and(P, Action), or(Q, next(Q)))
 }
 
-function TemporalWF1RealTimeDelayedReq2(P:temporal, Q:temporal, Action:temporal, rt:int, timefun:imap<int, int>):temporal
+ghost function TemporalWF1RealTimeDelayedReq2(P:temporal, Q:temporal, Action:temporal, rt:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
 {
   imply(and(P, nextafter(Action, rt, timefun)), or(Q, next(Q)))
 }
 
-function TemporalWF1RealTimeDelayedImmediateQReq2(P:temporal, Q:temporal, Action:temporal, rt:int, timefun:imap<int, int>):temporal
+ghost function TemporalWF1RealTimeDelayedImmediateQReq2(P:temporal, Q:temporal, Action:temporal, rt:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
 {
   imply(and(P, nextafter(Action, rt, timefun)), Q)

@@ -4,7 +4,7 @@ include "CanonicalArrays.i.dfy"
 
 datatype Cmp = CmpLt | CmpEq | CmpGt;
 
-predicate DefCmp(a:int, cmp:Cmp, b:int)
+ghost predicate DefCmp(a:int, cmp:Cmp, b:int)
 {
        (cmp==CmpLt <==> (a < b))
     && (cmp==CmpEq <==> (a == b))

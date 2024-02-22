@@ -1,19 +1,19 @@
 include "mul_nonlinear.i.dfy"
 
-static function mul(x:int, y:int) : int { x*y }
+static ghost function mul(x:int, y:int) : int { x*y }
 
 //-////////////////////////////////////////////////////////////
 //- Recursive definitions that can be handy for proving 
 //- properties we can't or don't want to rely on nonlinear for
 //-////////////////////////////////////////////////////////////
 
-static function mul_recursive(x:int, y:int) : int
+static ghost function mul_recursive(x:int, y:int) : int
 {
  if x >= 0 then mul_pos(x, y)
  else -1*mul_pos(-1*x, y)
 }
 
-static function mul_pos(x:int, y:int) : int
+static ghost function mul_pos(x:int, y:int) : int
  requires x >= 0;
 {
  if x == 0 then 0
@@ -577,4 +577,4 @@ lemma lemma_mul_cancels_negatives(a:int, b:int)
 }
 
 //- Kept for legacy reasons:
-static function INTERNAL_mul_recursive(x:int, y:int) : int { mul_recursive(x, y) }
+static ghost function INTERNAL_mul_recursive(x:int, y:int) : int { mul_recursive(x, y) }

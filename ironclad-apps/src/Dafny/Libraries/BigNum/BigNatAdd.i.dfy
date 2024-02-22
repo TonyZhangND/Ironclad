@@ -6,20 +6,20 @@ include "BigNatCompare.i.dfy"
 datatype Problem = Problem_ctor(
     A:BigNat, B:BigNat, c:nat);
 
-static predicate WellformedCarry(carry:nat)
+static ghost predicate WellformedCarry(carry:nat)
     { carry==0 || carry==1 }
 
-static predicate WellformedProblem(p:Problem)
+static ghost predicate WellformedProblem(p:Problem)
     { WellformedBigNat(p.A) && WellformedBigNat(p.B) && WellformedCarry(p.c) }
 
-static predicate WorksheetProblemsWellformed(ps:seq<Problem>)
+static ghost predicate WorksheetProblemsWellformed(ps:seq<Problem>)
     { forall i :: 0 <= i < |ps| ==> WellformedProblem(ps[i]) }
 
-static function method ZeroProblem(p:Problem) : bool
+static function ZeroProblem(p:Problem) : bool
     requires WellformedProblem(p);
     { zero(p.A) && zero(p.B) && p.c==0 }
 
-static predicate WorksheetProblemsConnected(p0:Problem, s0:nat, p1:Problem)
+static ghost predicate WorksheetProblemsConnected(p0:Problem, s0:nat, p1:Problem)
     requires WellformedProblem(p0);
     requires Word32(s0);
     requires WellformedProblem(p1);
@@ -30,12 +30,12 @@ static predicate WorksheetProblemsConnected(p0:Problem, s0:nat, p1:Problem)
     && !ZeroProblem(p0)
 }
 
-static predicate WellformedSolutions(ss:seq<int>)
+static ghost predicate WellformedSolutions(ss:seq<int>)
 {
     forall i :: 0 <= i < |ss| ==> ss[i]>=0 && Word32(ss[i])
 }
 
-static predicate WorksheetConsistent(ps:seq<Problem>, ss:seq<int>)
+static ghost predicate WorksheetConsistent(ps:seq<Problem>, ss:seq<int>)
 {
     WorksheetProblemsWellformed(ps)
     && |ps| == |ss|+1
@@ -44,13 +44,13 @@ static predicate WorksheetConsistent(ps:seq<Problem>, ss:seq<int>)
         WorksheetProblemsConnected(ps[i], ss[i], ps[i+1]))
 }
 
-static predicate WorksheetComplete(ps:seq<Problem>, ss:seq<int>)
+static ghost predicate WorksheetComplete(ps:seq<Problem>, ss:seq<int>)
 {
     WorksheetConsistent(ps, ss)
     && ZeroProblem(ps[|ps|-1])
 }
 
-static predicate problem_smaller(p0:Problem, p1:Problem)
+static ghost predicate problem_smaller(p0:Problem, p1:Problem)
     requires WellformedProblem(p0);
     requires WellformedProblem(p1);
 {
@@ -215,31 +215,31 @@ static method BigNatAdd_(A:BigNat, B:BigNat) returns (ss:seq<int>, ghost ps:seq<
     }
 }
 
-static function ProblemValue(p:Problem) : int
+static ghost function ProblemValue(p:Problem) : int
     requires WellformedProblem(p);
 {
     I(p.A) + I(p.B) + p.c
 }
 
-static predicate WellformedBigNatSeq(R:seq<BigNat>)
+static ghost predicate WellformedBigNatSeq(R:seq<BigNat>)
 {
     forall i :: 0 <= i < |R| ==> WellformedBigNat(R[i])
 }
 
-static predicate WellformedWordSeq(s:seq<int>)
+static ghost predicate WellformedWordSeq(s:seq<int>)
 {
     forall i :: 0 <= i < |s| ==> s[i]>=0 && Word32(s[i])
 }
 
 //-////////////////////////////////////////////////////////////////////////////
-//- These functions define the relationship between a sequence of words
+//- These ghost functions define the relationship between a sequence of words
 //- and a sequence of BigNats formed from subsequences of the word seq.
 //- That's so that we can show that the high-place-value partial sums
 //- (one word at a time) can be viewed as correct BigNat solutions to the
 //- truncated problems. Then we inductively include low-order words one
 //- at a time until we've reconstructed the original problem.
 
-static predicate BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
     requires WellformedBigNatSeq(R);
 {
     |R| == |ss|+1
@@ -247,22 +247,22 @@ static predicate BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
     && R[0] == BigNat_ctor(ss)
 }
 
-static predicate BigNatsForSumWords_Nonzero(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate BigNatsForSumWords_Nonzero(ss:seq<int>, R:seq<BigNat>)
     requires WellformedBigNatSeq(R);
     requires BigNatsForSumWords_Base(ss, R);
     { forall i :: 0 <= i < |ss| ==> nonzero(R[i]) }
 
-static predicate BigNatsForSumWords_Assembly(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate BigNatsForSumWords_Assembly(ss:seq<int>, R:seq<BigNat>)
     requires WellformedBigNatSeq(R);
     requires BigNatsForSumWords_Base(ss, R);
     { forall i :: 0 <= i <=|ss| ==> R[i] == BigNat_ctor(ss[i..]) }
 
-static predicate ShiftRelation(M:seq<BigNat>, i:nat)
+static ghost predicate ShiftRelation(M:seq<BigNat>, i:nat)
     requires WellformedBigNatSeq(M);
     requires i < |M|-1;
 { I(M[i]) == I(M[i+1]) *  Width() + lo(M[i]) }
 
-static predicate ShiftRelationSeq(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate ShiftRelationSeq(ss:seq<int>, R:seq<BigNat>)
     requires WellformedBigNatSeq(R);
     requires |R| == |ss|+1;
 {    forall i :: 0 <= i < |ss| ==> ShiftRelation(R, i) }
@@ -276,7 +276,7 @@ static lemma ShiftRelationLemma(M:seq<BigNat>, i:nat)
     reveal_I();
 }
 
-static predicate BigNatsForSumWords(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate BigNatsForSumWords(ss:seq<int>, R:seq<BigNat>)
     requires WellformedBigNatSeq(R);
 {
     BigNatsForSumWords_Base(ss,R)

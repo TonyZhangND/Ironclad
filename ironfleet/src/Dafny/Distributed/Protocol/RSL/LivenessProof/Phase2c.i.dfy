@@ -52,7 +52,7 @@ import opened Collections__Maps2_s
 import opened Collections__Sets_i
 import opened Math__mul_i
 
-predicate ReplicaSentHeartbeatToPrimaryReflectingOpn(
+ghost predicate ReplicaSentHeartbeatToPrimaryReflectingOpn(
   ps:RslState,
   replica_idx:int,
   primary_idx:int,
@@ -72,7 +72,7 @@ predicate ReplicaSentHeartbeatToPrimaryReflectingOpn(
   && ps.replicas[replica_idx].replica.executor.ops_complete >= opn
 }
 
-function{:opaque} ReplicaSentHeartbeatToPrimaryReflectingOpnTemporal(
+ghost function{:opaque} ReplicaSentHeartbeatToPrimaryReflectingOpnTemporal(
   b:Behavior<RslState>,
   replica_idx:int,
   primary_idx:int,
@@ -86,7 +86,7 @@ function{:opaque} ReplicaSentHeartbeatToPrimaryReflectingOpnTemporal(
   stepmap(imap i :: exists p :: ReplicaSentHeartbeatToPrimaryReflectingOpn(b[i], replica_idx, primary_idx, opn, p))
 }
 
-function{:opaque} NextHeartbeatTimeOfReplicaIsParticularValueTemporal(
+ghost function{:opaque} NextHeartbeatTimeOfReplicaIsParticularValueTemporal(
   b:Behavior<RslState>,
   idx:int,
   nextHeartbeatTime:int
@@ -99,7 +99,7 @@ function{:opaque} NextHeartbeatTimeOfReplicaIsParticularValueTemporal(
   stepmap(imap i :: 0 <= idx < |b[i].replicas| && b[i].replicas[idx].replica.nextHeartbeatTime == nextHeartbeatTime)
 }
 
-predicate PrimaryKnowsReplicaHasOpsComplete(
+ghost predicate PrimaryKnowsReplicaHasOpsComplete(
   ps:RslState,
   replica_idx:int,
   primary_idx:int,
@@ -113,7 +113,7 @@ predicate PrimaryKnowsReplicaHasOpsComplete(
   && ps.replicas[replica_idx].replica.executor.ops_complete>= opn
 }
 
-function{:opaque} PrimaryKnowsReplicaHasOpsCompleteTemporal(
+ghost function{:opaque} PrimaryKnowsReplicaHasOpsCompleteTemporal(
   b:Behavior<RslState>,
   replica_idx:int,
   primary_idx:int,
@@ -127,7 +127,7 @@ function{:opaque} PrimaryKnowsReplicaHasOpsCompleteTemporal(
   stepmap(imap i :: PrimaryKnowsReplicaHasOpsComplete(b[i], replica_idx, primary_idx, opn))
 }
 
-function{:opaque} PrimaryKnowsEveryReplicaHasOpsCompleteTemporalSet(
+ghost function{:opaque} PrimaryKnowsEveryReplicaHasOpsCompleteTemporalSet(
   b:Behavior<RslState>,
   replica_indices:set<int>,
   primary_idx:int,
@@ -144,7 +144,7 @@ function{:opaque} PrimaryKnowsEveryReplicaHasOpsCompleteTemporalSet(
   set replica_idx | replica_idx in replica_indices :: PrimaryKnowsReplicaHasOpsCompleteTemporal(b, replica_idx, primary_idx, opn)
 }
 
-predicate PrimaryHasAdvancedLogTruncationPoint(
+ghost predicate PrimaryHasAdvancedLogTruncationPoint(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot,
@@ -156,7 +156,7 @@ predicate PrimaryHasAdvancedLogTruncationPoint(
   && ps.replicas[view.proposer_id].replica.acceptor.log_truncation_point >= opn
 }
 
-function {:opaque} PrimaryHasAdvancedLogTruncationPointTemporal(
+ghost function {:opaque} PrimaryHasAdvancedLogTruncationPointTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot,
@@ -585,7 +585,7 @@ lemma lemma_IfLiveReplicasReadyForAnOperationThenEventuallyPrimaryAdvancesLogTru
   var s := b[i].replicas[h.view.proposer_id].replica;
   var s' := b[i+1].replicas[h.view.proposer_id].replica;
   lemma_ExpandReplicaSchedule(b, h.view.proposer_id, 4);
-  assert sat(i, MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints,
+  assert sat(i, MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints,
                                                                     h.view.proposer_id));
   assert SpecificSpontaneousRslActionOccurs(b[i], b[i+1], LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints, h.view.proposer_id);
   var ios:seq<RslIo> :| && RslNextOneReplica(b[i], b[i+1], h.view.proposer_id, ios)

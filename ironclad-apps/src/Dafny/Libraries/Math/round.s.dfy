@@ -1,11 +1,11 @@
-static function method RoundUpToMultiple (x:int, m:int) : int
+static function RoundUpToMultiple (x:int, m:int) : int
     requires m > 0;
     requires x >= 0;
 {
     ((x + m - 1) / m) * m
 }
 
-static function method DivideRoundingUp (x:int, m:int) : int
+static function DivideRoundingUp (x:int, m:int) : int
     requires x >= 0;
     requires m > 0;
 {

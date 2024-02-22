@@ -27,7 +27,7 @@ datatype AcceptorState = AcceptorState(
   minVotedOpn:COperationNumber
   )
 
-predicate AcceptorIsAbstractable(acceptor:AcceptorState)
+ghost predicate AcceptorIsAbstractable(acceptor:AcceptorState)
 {
   && ReplicaConstantsStateIsAbstractable(acceptor.constants)
   && CBallotIsAbstractable(acceptor.maxBallot)
@@ -37,7 +37,7 @@ predicate AcceptorIsAbstractable(acceptor:AcceptorState)
   && ReplicaConstantsStateIsAbstractable(acceptor.constants)
 }
 
-function AbstractifyAcceptorStateToAcceptor(acceptor:AcceptorState) : LAcceptor
+ghost function AbstractifyAcceptorStateToAcceptor(acceptor:AcceptorState) : LAcceptor
     requires AcceptorIsAbstractable(acceptor);
 {
   LAcceptor(
@@ -49,12 +49,12 @@ function AbstractifyAcceptorStateToAcceptor(acceptor:AcceptorState) : LAcceptor
     AbstractifyCOperationNumberToOperationNumber(acceptor.log_truncation_point))
 }
 
-predicate VotedMinimum(acceptor:AcceptorState)
+ghost predicate VotedMinimum(acceptor:AcceptorState)
 {
   forall v :: v in acceptor.votes.v ==> v.n >= acceptor.minVotedOpn.n
 }
 
-predicate AcceptorIsValid(acceptor:AcceptorState)
+ghost predicate AcceptorIsValid(acceptor:AcceptorState)
 {
   && ReplicaConstantsState_IsValid(acceptor.constants)
   && acceptor.constants.all.config.replica_ids == acceptor.constants.all.config.replica_ids
@@ -72,7 +72,7 @@ predicate AcceptorIsValid(acceptor:AcceptorState)
   && |acceptor.last_checkpointed_operation| == |acceptor.constants.all.config.replica_ids|
 }
 
-predicate NextAcceptorState_InitPostconditions(acceptor:AcceptorState, rcs:ReplicaConstantsState)
+ghost predicate NextAcceptorState_InitPostconditions(acceptor:AcceptorState, rcs:ReplicaConstantsState)
   requires ReplicaConstantsState_IsValid(rcs)
 {
   && AcceptorIsValid(acceptor)
@@ -81,7 +81,7 @@ predicate NextAcceptorState_InitPostconditions(acceptor:AcceptorState, rcs:Repli
   && LAcceptorInit(AbstractifyAcceptorStateToAcceptor(acceptor), AbstractifyReplicaConstantsStateToLReplicaConstants(rcs))
 }
 
-predicate ConstantsStayConstant(acceptor:AcceptorState, acceptor':AcceptorState)
+ghost predicate ConstantsStayConstant(acceptor:AcceptorState, acceptor':AcceptorState)
 //  requires AcceptorIsAbstractable(acceptor)
 //  requires AcceptorIsAbstractable(acceptor')
 //  requires ReplicaConstantsStateIsAbstractable(acceptor.constants)
@@ -91,7 +91,7 @@ predicate ConstantsStayConstant(acceptor:AcceptorState, acceptor':AcceptorState)
   acceptor.constants == acceptor'.constants
 }
 
-predicate CommonAcceptorPreconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate CommonAcceptorPreconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && AcceptorIsValid(acceptor)
   && AcceptorIsAbstractable(acceptor)
@@ -101,7 +101,7 @@ predicate CommonAcceptorPreconditions(acceptor:AcceptorState, in_msg:CMessage, s
   && PaxosEndPointIsValid(sender, acceptor.constants.all.config)
 }
 
-predicate CommonAcceptorPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, packets_sent:CBroadcast)
+ghost predicate CommonAcceptorPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, packets_sent:CBroadcast)
   requires AcceptorIsValid(acceptor)
   requires AcceptorIsAbstractable(acceptor)
 {
@@ -112,13 +112,13 @@ predicate CommonAcceptorPostconditions(acceptor:AcceptorState, acceptor':Accepto
   && (packets_sent.CBroadcast? ==> packets_sent.src == acceptor.constants.all.config.replica_ids[acceptor.constants.my_index])
 }
 
-predicate NextAcceptorState_Phase1Preconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate NextAcceptorState_Phase1Preconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && CommonAcceptorPreconditions(acceptor, in_msg, sender)
   && in_msg.CMessage_1a?
 }
 
-predicate NextAcceptorState_Phase1Postconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint, packets_sent:CBroadcast)
+ghost predicate NextAcceptorState_Phase1Postconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint, packets_sent:CBroadcast)
 {
   && NextAcceptorState_Phase1Preconditions(acceptor, in_msg, sender)
   && CommonAcceptorPostconditions(acceptor, acceptor', packets_sent)
@@ -129,14 +129,14 @@ predicate NextAcceptorState_Phase1Postconditions(acceptor:AcceptorState, accepto
       AbstractifyCBroadcastToRlsPacketSeq(packets_sent))
 }
 
-predicate NextAcceptorState_Phase2Preconditions_AlwaysEnabled(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate NextAcceptorState_Phase2Preconditions_AlwaysEnabled(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && CommonAcceptorPreconditions(acceptor, in_msg, sender)
   && in_msg.CMessage_2a?
   && CPaxosConfigurationIsAbstractable(acceptor.constants.all.config)
 }
 
-predicate NextAcceptorState_Phase2Preconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate NextAcceptorState_Phase2Preconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && NextAcceptorState_Phase2Preconditions_AlwaysEnabled(acceptor, in_msg, sender)
   && CBallotIsNotGreaterThan(acceptor.maxBallot, in_msg.bal_2a)
@@ -145,7 +145,7 @@ predicate NextAcceptorState_Phase2Preconditions(acceptor:AcceptorState, in_msg:C
   && sender in acceptor.constants.all.config.replica_ids
 }
 
-predicate NextAcceptorState_Phase2Postconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint, packets_sent:CBroadcast)
+ghost predicate NextAcceptorState_Phase2Postconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint, packets_sent:CBroadcast)
 {
   && NextAcceptorState_Phase2Preconditions(acceptor, in_msg, sender)
   && CommonAcceptorPostconditions(acceptor, acceptor', packets_sent)
@@ -156,14 +156,14 @@ predicate NextAcceptorState_Phase2Postconditions(acceptor:AcceptorState, accepto
       AbstractifyCBroadcastToRlsPacketSeq(packets_sent))
 }
 
-predicate NextAcceptorState_ProcessHeartbeatPreconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate NextAcceptorState_ProcessHeartbeatPreconditions(acceptor:AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && CommonAcceptorPreconditions(acceptor, in_msg, sender)
   && in_msg.CMessage_Heartbeat?
   && CPaxosConfigurationIsAbstractable(acceptor.constants.all.config)
 }
 
-predicate NextAcceptorState_ProcessHeartbeatPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint)
+ghost predicate NextAcceptorState_ProcessHeartbeatPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, in_msg:CMessage, sender:EndPoint)
 {
   && NextAcceptorState_ProcessHeartbeatPreconditions(acceptor, in_msg, sender)
   && AcceptorIsValid(acceptor')
@@ -175,14 +175,14 @@ predicate NextAcceptorState_ProcessHeartbeatPostconditions(acceptor:AcceptorStat
       AbstractifyCMessageToRslPacket(acceptor.constants.all.config.replica_ids[acceptor.constants.my_index], sender, in_msg))
 }
 
-predicate NextAcceptorState_TruncateLogPreconditions(acceptor:AcceptorState, opn:COperationNumber)
+ghost predicate NextAcceptorState_TruncateLogPreconditions(acceptor:AcceptorState, opn:COperationNumber)
 {
   && AcceptorIsValid(acceptor)
   && AcceptorIsAbstractable(acceptor)
   //&& opn.n > acceptor.log_truncation_point.n
 }
 
-predicate NextAcceptorState_TruncateLogPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, opn:COperationNumber)
+ghost predicate NextAcceptorState_TruncateLogPostconditions(acceptor:AcceptorState, acceptor':AcceptorState, opn:COperationNumber)
 {
   && NextAcceptorState_TruncateLogPreconditions(acceptor, opn)
   && AcceptorIsValid(acceptor')

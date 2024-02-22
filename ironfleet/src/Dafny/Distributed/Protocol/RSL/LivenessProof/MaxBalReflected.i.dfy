@@ -27,7 +27,7 @@ import opened Temporal__Temporal_s
 import opened Collections__Seqs_i
 import opened Environment_s
 
-predicate MaxBalReflectedInvariant(
+ghost predicate MaxBalReflectedInvariant(
     ps:RslState
     )
 {

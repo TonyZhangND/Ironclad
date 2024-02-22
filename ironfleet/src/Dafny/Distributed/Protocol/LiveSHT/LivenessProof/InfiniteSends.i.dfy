@@ -27,7 +27,7 @@ import opened Temporal__Rules_i
 import opened Temporal__Temporal_s
 import opened Temporal__WF1_i
 
-predicate RecipientSequenceNumberBelow(
+ghost predicate RecipientSequenceNumberBelow(
     ss:LSHT_State,
     src_idx:int,
     dst_idx:int,
@@ -40,7 +40,7 @@ predicate RecipientSequenceNumberBelow(
     && TombstoneTableLookup(ss.config.hostIds[src_idx], ss.hosts[dst_idx].host.sd.receiveState) < seqno
 }
 
-function RecipientSequenceNumberBelowTemporal(
+ghost function RecipientSequenceNumberBelowTemporal(
     b:Behavior<LSHT_State>,
     src_idx:int,
     dst_idx:int,

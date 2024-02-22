@@ -31,7 +31,7 @@ import opened Temporal__Temporal_s
 import opened Collections__Maps2_s
 import opened Environment_s
 
-predicate ViewInfoInObserverConsistent(ps:RslState, idx:int, observer_idx:int)
+ghost predicate ViewInfoInObserverConsistent(ps:RslState, idx:int, observer_idx:int)
   requires 0 <= idx < |ps.replicas|
   requires 0 <= observer_idx < |ps.replicas|
 {
@@ -39,7 +39,7 @@ predicate ViewInfoInObserverConsistent(ps:RslState, idx:int, observer_idx:int)
     ==> ViewPlusLe(ViewPlus(CurrentViewOfHost(ps, observer_idx), true), CurrentViewPlusOfHost(ps, idx))
 }
 
-predicate ViewInfoInPacketConsistent(ps:RslState, idx:int, p:RslPacket)
+ghost predicate ViewInfoInPacketConsistent(ps:RslState, idx:int, p:RslPacket)
   requires 0 <= idx < |ps.replicas|
 {
   0 <= idx < |ps.constants.config.replica_ids| && p.src == ps.constants.config.replica_ids[idx] && p.msg.RslMessage_Heartbeat?
@@ -47,7 +47,7 @@ predicate ViewInfoInPacketConsistent(ps:RslState, idx:int, p:RslPacket)
       && ViewPlusLe(ViewPlus(p.msg.bal_heartbeat, p.msg.suspicious), CurrentViewPlusOfHost(ps, idx))
 }
 
-predicate ViewInfoConsistent(ps:RslState, idx:int)
+ghost predicate ViewInfoConsistent(ps:RslState, idx:int)
   requires 0 <= idx < |ps.replicas|
 {
   && IsValidBallot(CurrentViewOfHost(ps, idx), ps.constants)
@@ -55,34 +55,34 @@ predicate ViewInfoConsistent(ps:RslState, idx:int)
   && (forall p :: p in ps.environment.sentPackets ==> ViewInfoInPacketConsistent(ps, idx, p))
 }
 
-predicate ViewInfoStateInv(ps:RslState)
+ghost predicate ViewInfoStateInv(ps:RslState)
 {
   forall idx :: 0 <= idx < |ps.replicas| ==> ViewInfoConsistent(ps, idx)
 }
 
-predicate AllSuspectorsValidStateInv(ps:RslState)
+ghost predicate AllSuspectorsValidStateInv(ps:RslState)
 {
   forall idx, suspector_idx
     :: 0 <= idx < |ps.replicas| && suspector_idx in ps.replicas[idx].replica.proposer.election_state.current_view_suspectors
     ==> 0 <= suspector_idx < |ps.replicas|
 }
 
-predicate AllQuorumMembersViewPlusLe(ps:RslState, quorum:set<int>, v:ViewPlus)
+ghost predicate AllQuorumMembersViewPlusLe(ps:RslState, quorum:set<int>, v:ViewPlus)
 {
   forall idx :: idx in quorum && 0 <= idx < |ps.replicas| ==> ViewPlusLe(CurrentViewPlusOfHost(ps, idx), v)
 }
 
-predicate AllReplicasViewPlusLe(ps:RslState, v:ViewPlus)
+ghost predicate AllReplicasViewPlusLe(ps:RslState, v:ViewPlus)
 {
   forall idx :: 0 <= idx < |ps.replicas| ==> ViewPlusLe(CurrentViewPlusOfHost(ps, idx), v)
 }
 
-predicate NoMemberBeyondViewUntilAQuorumMemberSuspectsIt(ps:RslState, quorum:set<int>, v:Ballot)
+ghost predicate NoMemberBeyondViewUntilAQuorumMemberSuspectsIt(ps:RslState, quorum:set<int>, v:Ballot)
 {
   AllQuorumMembersViewPlusLe(ps, quorum, ViewPlus(v, false)) ==> AllReplicasViewPlusLe(ps, ViewPlus(v, true))
 }
 
-predicate HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTime(
+ghost predicate HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTime(
   ps:RslState,
   replica_index:int,
   view:Ballot,
@@ -94,7 +94,7 @@ predicate HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTime(
   && ps.replicas[replica_index].replica.nextHeartbeatTime == nextHeartbeatTime
 }
 
-function{:opaque} HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTimeTemporal(
+ghost function{:opaque} HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTimeTemporal(
   b:Behavior<RslState>,
   replica_index:int,
   view:Ballot,
@@ -108,7 +108,7 @@ function{:opaque} HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTimeTemporal
   stepmap(imap i :: HostSuspectsOrInLaterViewWithSpecificNextHeartbeatTime(b[i], replica_index, view, nextHeartbeatTime))
 }
 
-predicate HostSentSuspicion(
+ghost predicate HostSentSuspicion(
   ps:RslState,
   sid:NodeIdentity,
   oid:NodeIdentity,
@@ -125,7 +125,7 @@ predicate HostSentSuspicion(
   && LIoOpSend(p) in ps.environment.nextStep.ios
 }
 
-predicate HostSentSuspicionOrInLaterView(
+ghost predicate HostSentSuspicionOrInLaterView(
   ps:RslState,
   suspector_idx:int,
   observer_idx:int,
@@ -139,7 +139,7 @@ predicate HostSentSuspicionOrInLaterView(
      || exists p :: HostSentSuspicion(ps, ps.constants.config.replica_ids[suspector_idx], ps.constants.config.replica_ids[observer_idx], view, p))
 }
 
-function{:opaque} HostSentSuspicionOrInLaterViewTemporal(
+ghost function{:opaque} HostSentSuspicionOrInLaterViewTemporal(
   b:Behavior<RslState>,
   suspector_idx:int,
   observer_idx:int,
@@ -153,7 +153,7 @@ function{:opaque} HostSentSuspicionOrInLaterViewTemporal(
   stepmap(imap i :: HostSentSuspicionOrInLaterView(b[i], suspector_idx, observer_idx, view))
 }
 
-predicate SuspicionPropagatedToObserver(
+ghost predicate SuspicionPropagatedToObserver(
   ps:RslState,
   suspector_idx:int,
   observer_idx:int,
@@ -169,7 +169,7 @@ predicate SuspicionPropagatedToObserver(
         && suspector_idx in ps.replicas[observer_idx].replica.proposer.election_state.current_view_suspectors))
 }
 
-function{:opaque} SuspicionPropagatedToObserverTemporal(
+ghost function{:opaque} SuspicionPropagatedToObserverTemporal(
   b:Behavior<RslState>,
   suspector_idx:int,
   observer_idx:int,

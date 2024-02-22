@@ -8,7 +8,7 @@ datatype NotaryRequest = InvalidRequest_ctor()
                          | GetQuoteRequest_ctor(nonce_external:seq<int>)
                          | AdvanceCounterRequest_ctor(message:seq<int>)
 
-static predicate RequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
+static ghost predicate RequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
 {
     if |data| == 0 then
         request.InvalidRequest_ctor?
@@ -20,7 +20,7 @@ static predicate RequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
         request.InvalidRequest_ctor?
 }
 
-static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
+static ghost predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
     requires |data| > 0;
     requires data[0] == 1;
 {
@@ -31,7 +31,7 @@ static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:NotaryReq
         && request.nonce_external == data[1..21]
 }
 
-static predicate AdvanceCounterRequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
+static ghost predicate AdvanceCounterRequestParsedCorrectly(data:seq<int>, request:NotaryRequest)
     requires |data| > 0;
     requires data[0] == 2;
 {
@@ -57,7 +57,7 @@ datatype NotaryResponse = NullResponse_ctor()
                                                   pcr_info_bytes:seq<int>, sig_bytes:seq<int>)
                           | AdvanceCounterResponse_ctor(advance_error_code:int, notary_statement:seq<int>, notary_attestation:seq<int>)
 
-static predicate ResponseFormedCorrectly(response:NotaryResponse, data:seq<int>)
+static ghost predicate ResponseFormedCorrectly(response:NotaryResponse, data:seq<int>)
 {
     match response
         case NullResponse_ctor =>

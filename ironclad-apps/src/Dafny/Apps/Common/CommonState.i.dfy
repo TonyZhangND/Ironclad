@@ -8,7 +8,7 @@ include "../../Libraries/Crypto/RSA/RSAPublicWrapper.i.dfy"
 
 datatype CommonStateImpl = CommonStateImplConstructor(sk:TPMSessionAndKey, key_pair:RSAKeyPairImpl, key_bits:nat)
 
-function {:autoReq} CommonStateImplToSpec (s:CommonStateImpl) : CommonState
+ghost function {:autoReq} CommonStateImplToSpec (s:CommonStateImpl) : CommonState
 {
     CommonStateConstructor(KeyPairImplToSpec(s.key_pair), s.key_bits)
 }
@@ -29,7 +29,7 @@ static lemma AModestKeyCanBeEncodedWithRFC4251(key_pair:RSAKeyPairSpec)
     lemma_rfc4251_sshrsa_encoding_premium(key_pair.pub.e, key_pair.pub.n);
 }
 
-static predicate KeyCanBeEncodedWithRFC4251(key_pair:RSAKeyPairSpec)
+static ghost predicate KeyCanBeEncodedWithRFC4251(key_pair:RSAKeyPairSpec)
     requires key_pair.pub.e < power2(power2(31));
     requires key_pair.pub.n < power2(power2(31));
     ensures key_pair.pub.e < power2(power2(34));
@@ -43,7 +43,7 @@ static predicate KeyCanBeEncodedWithRFC4251(key_pair:RSAKeyPairSpec)
     true
 }
 
-predicate CommonStateImplValid (s:CommonStateImpl)
+ghost predicate CommonStateImplValid (s:CommonStateImpl)
 {
     TPMSessionAndKeyValid(s.sk)
     && WellformedRSAKeyPairImpl(s.key_pair)
@@ -118,7 +118,7 @@ method GenerateKeyPair (key_bits:nat) returns (success:bool, key_pair:RSAKeyPair
     success := true;
 }
 
-static predicate KeyCanBeExtendedIntoPCR(key_pair:RSAKeyPairSpec)
+static ghost predicate KeyCanBeExtendedIntoPCR(key_pair:RSAKeyPairSpec)
 {
     key_pair.pub.e < power2(power2(31)) &&
     key_pair.pub.n < power2(power2(31)) &&

@@ -7,7 +7,7 @@ include "../../Libraries/Util/Halter.i.dfy"
 //- Request parsing
 //-//////////////////////////
 
-static predicate RequestValid (request:NotaryRequest)
+static ghost predicate RequestValid (request:NotaryRequest)
 {
     match request
         case InvalidRequest_ctor => true
@@ -79,7 +79,7 @@ static method ParseAdvanceCounterRequestPacket (data:seq<int>) returns (request:
 //- Response forming
 //-//////////////////////////
 
-static predicate WellformedResponse (response:NotaryResponse)
+static ghost predicate WellformedResponse (response:NotaryResponse)
 {
     match response
         case NullResponse_ctor => true

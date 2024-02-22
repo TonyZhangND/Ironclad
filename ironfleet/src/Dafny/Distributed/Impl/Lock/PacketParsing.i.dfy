@@ -12,7 +12,7 @@ import opened Common__NetClient_i
 import opened Types_i
 import opened Message_i
 
-predicate NetPacketBound(data:seq<byte>) 
+ghost predicate NetPacketBound(data:seq<byte>) 
 {
     |data| < MaxPacketSize()
 }
@@ -21,10 +21,10 @@ predicate NetPacketBound(data:seq<byte>)
 //    Grammars for the Lock messages
 ////////////////////////////////////////////////////////////////////
 
-function method CMessageTransferGrammar() : G { GUint64 }
-function method CMessageLockedGrammar() : G { GUint64 }
+function CMessageTransferGrammar() : G { GUint64 }
+function CMessageLockedGrammar() : G { GUint64 }
 
-function method CMessageGrammar() : G 
+function CMessageGrammar() : G 
 { 
     GTaggedUnion([CMessageTransferGrammar(), CMessageLockedGrammar()])
 }
@@ -33,19 +33,19 @@ function method CMessageGrammar() : G
 //    Parsing
 ////////////////////////////////////////////////////////////////////
 
-function method ParseCMessageTransfer(val:V) : CMessage
+function ParseCMessageTransfer(val:V) : CMessage
     requires ValInGrammar(val, CMessageTransferGrammar());
 {
     CTransfer(val.u)
 }
 
-function method ParseCMessageLocked(val:V) : CMessage
+function ParseCMessageLocked(val:V) : CMessage
     requires ValInGrammar(val, CMessageLockedGrammar());
 {
     CLocked(val.u)
 }
 
-function method ParseCMessage(val:V) : CMessage
+function ParseCMessage(val:V) : CMessage
     requires ValInGrammar(val, CMessageGrammar());
 {
     if val.c == 0 then
@@ -54,7 +54,7 @@ function method ParseCMessage(val:V) : CMessage
         ParseCMessageLocked(val.val)
 }
 
-function DemarshallData(data:seq<byte>) : CMessage
+ghost function DemarshallData(data:seq<byte>) : CMessage
 {
     if Demarshallable(data, CMessageGrammar()) then
         var val := DemarshallFunc(data, CMessageGrammar());
@@ -139,19 +139,19 @@ method MarshallLockMessage(msg:CMessage) returns (data:array<byte>)
 //    Packet translation 
 ////////////////////////////////////////////////////////////////////
 
-function AbstractifyNetPacket(net:NetPacket) : LockPacket
+ghost function AbstractifyNetPacket(net:NetPacket) : LockPacket
 {
     LPacket(net.dst, net.src, AbstractifyCMessage(DemarshallData(net.msg)))
 }
 
-predicate CLockPacketValid(p:CLockPacket)
+ghost predicate CLockPacketValid(p:CLockPacket)
 {
       EndPointIsValidPublicKey(p.src)
     && EndPointIsValidPublicKey(p.dst)
     && !p.msg.CInvalid?
 }
 
-predicate OptionCLockPacketValid(opt_packet:Option<CLockPacket>)
+ghost predicate OptionCLockPacketValid(opt_packet:Option<CLockPacket>)
 {
     opt_packet.Some? ==> CLockPacketValid(opt_packet.v)
 }

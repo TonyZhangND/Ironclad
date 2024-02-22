@@ -14,19 +14,19 @@ datatype ReplicaConstantsState = ReplicaConstantsState(
   my_index:uint64,
   all:ConstantsState)
 
-predicate ReplicaConstantsStateIsAbstractable(rc:ReplicaConstantsState)
+ghost predicate ReplicaConstantsStateIsAbstractable(rc:ReplicaConstantsState)
 {
   && ConstantsStateIsAbstractable(rc.all)
   && ReplicaIndexValid(rc.my_index, rc.all.config)
 }
 
-function AbstractifyReplicaConstantsStateToLReplicaConstants(rc:ReplicaConstantsState) : LReplicaConstants
+ghost function AbstractifyReplicaConstantsStateToLReplicaConstants(rc:ReplicaConstantsState) : LReplicaConstants
   requires ReplicaConstantsStateIsAbstractable(rc)
 {
   LReplicaConstants(rc.my_index as int, AbstractifyConstantsStateToLConstants(rc.all))
 }
 
-predicate ReplicaConstantsState_IsValid(rcs:ReplicaConstantsState)
+ghost predicate ReplicaConstantsState_IsValid(rcs:ReplicaConstantsState)
 {
   && ConstantsStateIsValid(rcs.all)
   && ReplicaConstantsStateIsAbstractable(rcs)

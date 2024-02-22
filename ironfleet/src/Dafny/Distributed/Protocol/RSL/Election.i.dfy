@@ -46,7 +46,7 @@ datatype ElectionState = ElectionState(
 // BALLOT MATH
 //////////////////////
 
-function ComputeSuccessorView(b:Ballot, c:LConstants):Ballot
+ghost function ComputeSuccessorView(b:Ballot, c:LConstants):Ballot
 {
   if b.proposer_id + 1 < |c.config.replica_ids| then
     Ballot(b.seqno, b.proposer_id + 1)
@@ -58,7 +58,7 @@ function ComputeSuccessorView(b:Ballot, c:LConstants):Ballot
 // SEQUENCE MATH
 //////////////////////
 
-function BoundRequestSequence(s:seq<Request>, lengthBound:UpperBound):seq<Request>
+ghost function BoundRequestSequence(s:seq<Request>, lengthBound:UpperBound):seq<Request>
 {
   if lengthBound.UpperBoundFinite? && 0 <= lengthBound.n < |s| then s[..lengthBound.n] else s
 }
@@ -67,17 +67,17 @@ function BoundRequestSequence(s:seq<Request>, lengthBound:UpperBound):seq<Reques
 // REQUESTS
 //////////////////////
 
-predicate RequestsMatch(r1:Request, r2:Request)
+ghost predicate RequestsMatch(r1:Request, r2:Request)
 {
   r1.Request? && r2.Request? && r1.client == r2.client && r1.seqno == r2.seqno
 }
 
-predicate RequestSatisfiedBy(r1:Request, r2:Request)
+ghost predicate RequestSatisfiedBy(r1:Request, r2:Request)
 {
   r1.Request? && r2.Request? && r1.client == r2.client && r1.seqno <= r2.seqno
 }
 
-function RemoveAllSatisfiedRequestsInSequence(s:seq<Request>, r:Request):seq<Request>
+ghost function RemoveAllSatisfiedRequestsInSequence(s:seq<Request>, r:Request):seq<Request>
 {
   if |s| == 0 then
     []
@@ -91,7 +91,7 @@ function RemoveAllSatisfiedRequestsInSequence(s:seq<Request>, r:Request):seq<Req
 // INITIALIZATION
 //////////////////////
 
-predicate ElectionStateInit(
+ghost predicate ElectionStateInit(
   es:ElectionState,
   c:LReplicaConstants
   )
@@ -110,7 +110,7 @@ predicate ElectionStateInit(
 // ACTIONS
 //////////////////////
 
-predicate ElectionStateProcessHeartbeat(
+ghost predicate ElectionStateProcessHeartbeat(
   es:ElectionState,
   es':ElectionState,
   p:RslPacket,
@@ -136,7 +136,7 @@ predicate ElectionStateProcessHeartbeat(
       es' == es
 }
 
-predicate ElectionStateCheckForViewTimeout(
+ghost predicate ElectionStateCheckForViewTimeout(
   es:ElectionState,
   es':ElectionState,
   clock:int
@@ -157,7 +157,7 @@ predicate ElectionStateCheckForViewTimeout(
                requests_received_this_epoch := [])
 }
 
-predicate ElectionStateCheckForQuorumOfViewSuspicions(
+ghost predicate ElectionStateCheckForQuorumOfViewSuspicions(
   es:ElectionState,
   es':ElectionState,
   clock:int
@@ -175,7 +175,7 @@ predicate ElectionStateCheckForQuorumOfViewSuspicions(
                requests_received_this_epoch := [])
 }
 
-predicate ElectionStateReflectReceivedRequest(
+ghost predicate ElectionStateReflectReceivedRequest(
   es:ElectionState,
   es':ElectionState,
   req:Request
@@ -188,7 +188,7 @@ predicate ElectionStateReflectReceivedRequest(
     es' == es.(requests_received_this_epoch := BoundRequestSequence(es.requests_received_this_epoch + [req], es.constants.all.params.max_integer_val))
 }
 
-function RemoveExecutedRequestBatch(reqs:seq<Request>, batch:RequestBatch):seq<Request>
+ghost function RemoveExecutedRequestBatch(reqs:seq<Request>, batch:RequestBatch):seq<Request>
   decreases |batch|
 {
   if |batch| == 0 then
@@ -197,7 +197,7 @@ function RemoveExecutedRequestBatch(reqs:seq<Request>, batch:RequestBatch):seq<R
     RemoveExecutedRequestBatch(RemoveAllSatisfiedRequestsInSequence(reqs, batch[0]), batch[1..])
 }
 
-predicate ElectionStateReflectExecutedRequestBatch(
+ghost predicate ElectionStateReflectExecutedRequestBatch(
   es:ElectionState,
   es':ElectionState,
   batch:RequestBatch

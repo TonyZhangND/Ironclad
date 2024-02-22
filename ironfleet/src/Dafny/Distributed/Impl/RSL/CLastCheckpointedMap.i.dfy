@@ -21,12 +21,12 @@ type CLastCheckpointedMap = seq<COperationNumber>
 // Refining a CLastCheckpointedMap
 ////////////////////////////////////////////////////////////
 
-predicate CLastCheckpointedMapIsAbstractable(s:CLastCheckpointedMap)
+ghost predicate CLastCheckpointedMapIsAbstractable(s:CLastCheckpointedMap)
 {
   forall ep :: ep in s ==> COperationNumberIsAbstractable(ep)
 }
 
-function {:opaque} AbstractifyCLastCheckpointedMapToOperationNumberSequence(s:CLastCheckpointedMap) : seq<OperationNumber>
+ghost function {:opaque} AbstractifyCLastCheckpointedMapToOperationNumberSequence(s:CLastCheckpointedMap) : seq<OperationNumber>
   ensures |AbstractifyCLastCheckpointedMapToOperationNumberSequence(s)| == |s|
   ensures forall i :: 0 <= i < |s| ==> AbstractifyCOperationNumberToOperationNumber(s[i]) == AbstractifyCLastCheckpointedMapToOperationNumberSequence(s)[i]
 {
@@ -58,7 +58,7 @@ method SeqToArray<T(0)>(s:seq<T>) returns (a:array<T>)
   }
 }
 
-predicate IsNthHighestValueInSequenceOfCOperationNumbers(v:COperationNumber, s:seq<COperationNumber>, n:uint64)
+ghost predicate IsNthHighestValueInSequenceOfCOperationNumbers(v:COperationNumber, s:seq<COperationNumber>, n:uint64)
 {
   && 0 < n as int <= |s|
   && v in s
@@ -66,7 +66,7 @@ predicate IsNthHighestValueInSequenceOfCOperationNumbers(v:COperationNumber, s:s
   && CountMatchesInSeq(s, (x:COperationNumber) => x.n >= v.n) >= n as int
 }
 
-predicate IsNthHighestValueInMultisetOfCOperationNumbers(v:COperationNumber, m:multiset<COperationNumber>, n:uint64)
+ghost predicate IsNthHighestValueInMultisetOfCOperationNumbers(v:COperationNumber, m:multiset<COperationNumber>, n:uint64)
 {
   && 0 < n as int <= |m|
   && v in m
@@ -114,7 +114,7 @@ lemma lemma_SortedSequenceMatchCount(s:seq<COperationNumber>, k:int)
     calc {
       CountMatchesInSeq(s, f1);
       CountMatchesInSeq(s', f1);
-        { Lemma_CountMatchesInSeqSameForSameFunctions(s', f1, f1'); }
+        { Lemma_CountMatchesInSeqSameForSameghost functions(s', f1, f1'); }
       CountMatchesInSeq(s', f1');
       < k;
     }
@@ -122,7 +122,7 @@ lemma lemma_SortedSequenceMatchCount(s:seq<COperationNumber>, k:int)
     calc {
       CountMatchesInSeq(s, f2);
       >= CountMatchesInSeq(s', f2);
-        { Lemma_CountMatchesInSeqSameForSameFunctions(s', f2, f2'); }
+        { Lemma_CountMatchesInSeqSameForSameghost functions(s', f2, f2'); }
       CountMatchesInSeq(s', f2');
       >= k;
     }
@@ -165,10 +165,10 @@ method ComputeNthHighestValue(cm:CLastCheckpointedMap, n:uint64) returns (opn:CO
 
   ghost var f1 := (x:COperationNumber) => x.n > s[|s|-(n as int)].n;
   ghost var f2 := (x:COperationNumber) => x.n > opn.n;
-  Lemma_CountMatchesInSeqSameForSameFunctions(s, f1, f2);
+  Lemma_CountMatchesInSeqSameForSameghost functions(s, f1, f2);
   ghost var f1' := (x:COperationNumber) => x.n >= s[|s|-(n as int)].n;
   ghost var f2' := (x:COperationNumber) => x.n >= opn.n;
-  Lemma_CountMatchesInSeqSameForSameFunctions(s, f1', f2');
+  Lemma_CountMatchesInSeqSameForSameghost functions(s, f1', f2');
 
   lemma_SortedSequenceMatchCount(s, n as int);
   assert IsNthHighestValueInSequenceOfCOperationNumbers(opn, s, n);

@@ -11,12 +11,12 @@ include "../../Drivers/TPM/tpm-wrapper.i.dfy"
 
 datatype PassHashStateImpl = PassHashStateImplConstructor(secret:seq<int>);
 
-static function PassHashStateImplToSpec(s:PassHashStateImpl):PassHashState
+static ghost function PassHashStateImplToSpec(s:PassHashStateImpl):PassHashState
 {
     PassHashStateConstructor(s.secret)
 }
 
-static predicate PassHashStateImplValid(s:PassHashStateImpl)
+static ghost predicate PassHashStateImplValid(s:PassHashStateImpl)
 {
     IsByteSeq(s.secret) &&
     32 <= |s.secret| <= 2048

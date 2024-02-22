@@ -19,14 +19,14 @@ datatype LLearner = LLearner(
   unexecuted_learner_state:LearnerState
   )
 
-predicate LLearnerInit(l:LLearner, c:LReplicaConstants)
+ghost predicate LLearnerInit(l:LLearner, c:LReplicaConstants)
 {
   && l.constants == c
   && l.max_ballot_seen == Ballot(0,0)
   && l.unexecuted_learner_state == map[]
 }
 
-predicate LLearnerProcess2b(s:LLearner, s':LLearner, packet:RslPacket)
+ghost predicate LLearnerProcess2b(s:LLearner, s':LLearner, packet:RslPacket)
   requires packet.msg.RslMessage_2b?
 {
   var m := packet.msg;
@@ -48,7 +48,7 @@ predicate LLearnerProcess2b(s:LLearner, s':LLearner, packet:RslPacket)
     s' == s.(unexecuted_learner_state := s.unexecuted_learner_state[opn := tup'])
 }
 
-predicate LLearnerForgetDecision(s:LLearner, s':LLearner, opn:OperationNumber)
+ghost predicate LLearnerForgetDecision(s:LLearner, s':LLearner, opn:OperationNumber)
 {
   if opn in s.unexecuted_learner_state then
     s' == s.(unexecuted_learner_state := RemoveElt(s.unexecuted_learner_state, opn))
@@ -56,7 +56,7 @@ predicate LLearnerForgetDecision(s:LLearner, s':LLearner, opn:OperationNumber)
     s' == s
 }
 
-predicate LLearnerForgetOperationsBefore(s:LLearner, s':LLearner, ops_complete:OperationNumber)
+ghost predicate LLearnerForgetOperationsBefore(s:LLearner, s':LLearner, ops_complete:OperationNumber)
 {
   s' == s.(unexecuted_learner_state := (map op | op in s.unexecuted_learner_state && op >= ops_complete :: s.unexecuted_learner_state[op]))
 }

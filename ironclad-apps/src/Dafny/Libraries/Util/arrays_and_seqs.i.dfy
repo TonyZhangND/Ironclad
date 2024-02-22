@@ -9,14 +9,14 @@ include "../Math/power.i.dfy"
 include "../base.s.dfy"
 //-include "../assembly.s.dfy"
 
-static predicate IsWordArray(a: array<int>)
+static ghost predicate IsWordArray(a: array<int>)
     reads a;
 {
     a != null &&
     forall i :: 0 <= i < a.Length ==> Word32(a[i])
 }
 
-static function {:opaque} GetArrayBit(a: array<int>, b:int) : int
+static ghost function {:opaque} GetArrayBit(a: array<int>, b:int) : int
     requires IsWordArray(a);
     requires 0 <= b < a.Length * 32;
     ensures IsBit(GetArrayBit(a, b));

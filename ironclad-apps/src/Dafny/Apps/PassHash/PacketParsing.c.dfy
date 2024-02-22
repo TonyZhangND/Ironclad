@@ -7,7 +7,7 @@ include "PassHash.s.dfy"
 datatype PassHashRequest = InvalidRequest_ctor()
                          | PerformHashRequest_ctor(message:seq<int>, salt:seq<int>)
 
-static predicate RequestParsedCorrectly(data:seq<int>, request:PassHashRequest)
+static ghost predicate RequestParsedCorrectly(data:seq<int>, request:PassHashRequest)
     requires IsByteSeq(data);
 {
     if |data| == 0 then
@@ -18,7 +18,7 @@ static predicate RequestParsedCorrectly(data:seq<int>, request:PassHashRequest)
         request.InvalidRequest_ctor?
 }
 
-static predicate PerformHashRequestParsedCorrectly(data:seq<int>, request:PassHashRequest)
+static ghost predicate PerformHashRequestParsedCorrectly(data:seq<int>, request:PassHashRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 1;
@@ -45,7 +45,7 @@ static predicate PerformHashRequestParsedCorrectly(data:seq<int>, request:PassHa
 datatype PassHashResponse = NullResponse_ctor()
                           | PerformHashResponse_ctor(hash_error_code:int, passhash_hash:seq<int>);
 
-static predicate ResponseFormedCorrectly(response:PassHashResponse, data:seq<int>)
+static ghost predicate ResponseFormedCorrectly(response:PassHashResponse, data:seq<int>)
 {
     match response
         case NullResponse_ctor =>

@@ -12,7 +12,7 @@ module LiveSHT__Unsendable_i {
     import opened SHT__Keys_i
     import opened Common__GenericMarshalling_i
 
-    predicate IosReflectIgnoringUnDemarshallable(ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate IosReflectIgnoringUnDemarshallable(ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
            |ios| == 1
         && ios[0].LIoOpReceive?
@@ -21,7 +21,7 @@ module LiveSHT__Unsendable_i {
     }
 
 
-    predicate IosReflectIgnoringUnParseable(s:LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate IosReflectIgnoringUnParseable(s:LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
         ios == []
      && (   s.host.receivedPacket.Some? 
@@ -32,14 +32,14 @@ module LiveSHT__Unsendable_i {
               && ValidPhysicalAddress(s.host.receivedPacket.v.msg.dst)))
     }
     
-    predicate HostNextIgnoreUnsendableReceive(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate HostNextIgnoreUnsendableReceive(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
         s.nextActionIndex == 0
      && s' == s.(nextActionIndex := 1)
      && IosReflectIgnoringUnDemarshallable(ios) 
     }
 
-    predicate IgnoreSchedulerUpdate(s:LScheduler, s':LScheduler) 
+    ghost predicate IgnoreSchedulerUpdate(s:LScheduler, s':LScheduler) 
     {
         if ShouldProcessReceivedMessage(s.host) then
             s' == s.(nextActionIndex := 2, host := s.host.(receivedPacket := None))
@@ -47,14 +47,14 @@ module LiveSHT__Unsendable_i {
             s' == s.(nextActionIndex := 2)
     }
     
-    predicate HostNextIgnoreUnsendableProcess(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate HostNextIgnoreUnsendableProcess(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
         s.nextActionIndex == 1
      && IgnoreSchedulerUpdate(s, s')
      && IosReflectIgnoringUnParseable(s, ios)
     }
     
-    predicate HostNextIgnoreUnsendable(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    ghost predicate HostNextIgnoreUnsendable(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
     {
         HostNextIgnoreUnsendableReceive(s, s', ios) || HostNextIgnoreUnsendableProcess(s, s', ios)
     }

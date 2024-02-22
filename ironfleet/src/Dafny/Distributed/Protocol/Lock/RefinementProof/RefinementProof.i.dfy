@@ -33,7 +33,7 @@ module RefinementProof_i {
         assert config[0] in UniqueSeqToSet(config);
     }
 
-    predicate IsValidBehavior(glb:seq<GLS_State>, config:Config)
+    ghost predicate IsValidBehavior(glb:seq<GLS_State>, config:Config)
     {
         |glb| > 0
      && GLS_Init(glb[0], config)

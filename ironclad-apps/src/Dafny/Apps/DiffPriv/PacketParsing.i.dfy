@@ -10,7 +10,7 @@ datatype QueryParametersImpl = QueryParametersImpl_ctor(program_encoding:seq<int
                                                         answer_units:int, answer_min:int, answer_max:int,
                                                         alpha_num:int, alpha_den:int, beta_num:int, beta_den:int)
 
-static predicate QueryParametersImplValid (q:QueryParametersImpl)
+static ghost predicate QueryParametersImplValid (q:QueryParametersImpl)
 {
     (forall i :: 0 <= i < |q.program_encoding| ==> Word32(q.program_encoding[i])) &&
     Word32(q.row_min) &&
@@ -26,7 +26,7 @@ static predicate QueryParametersImplValid (q:QueryParametersImpl)
     q.beta_den != 0
 }
 
-static function QueryParametersImplToSpec(q:QueryParametersImpl) : QueryParameters
+static ghost function QueryParametersImplToSpec(q:QueryParametersImpl) : QueryParameters
     requires QueryParametersImplValid(q);
 {
     QueryParameters_ctor(q.program_encoding, q.row_min, q.row_max, q.answer_units, q.answer_min, q.answer_max,
@@ -43,7 +43,7 @@ datatype DiffPrivRequestImpl = InvalidRequestImpl_ctor()
                              | AddRowRequestImpl_ctor(request_ciphertext:seq<int>)
                              | QueryRequestImpl_ctor(q:QueryParametersImpl)
 
-static predicate WellformedDiffPrivRequest(request:DiffPrivRequestImpl)
+static ghost predicate WellformedDiffPrivRequest(request:DiffPrivRequestImpl)
 {
     match request
         case InvalidRequestImpl_ctor => true
@@ -53,7 +53,7 @@ static predicate WellformedDiffPrivRequest(request:DiffPrivRequestImpl)
         case QueryRequestImpl_ctor(q) => QueryParametersImplValid(q)
 }
 
-static function DiffPrivRequestImplToSpec(request:DiffPrivRequestImpl) : DiffPrivRequest
+static ghost function DiffPrivRequestImplToSpec(request:DiffPrivRequestImpl) : DiffPrivRequest
     requires WellformedDiffPrivRequest(request);
 {
     match request
@@ -267,7 +267,7 @@ static method ParseQueryRequestPacket (data:seq<int>) returns (request:DiffPrivR
 //- Response forming
 //-//////////////////////////
 
-static predicate WellformedResponse (response:DiffPrivResponse)
+static ghost predicate WellformedResponse (response:DiffPrivResponse)
 {
     match response
         case NullResponse_ctor => true

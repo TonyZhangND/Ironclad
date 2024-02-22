@@ -19,13 +19,13 @@ datatype TrIncState = TrIncStateConstructor(counters:seq<TrIncCounter>);
 //- Helpers
 //-///////////////////////////////////////////////////
 
-static predicate TrIncStateValid(state:TrIncState)
+static ghost predicate TrIncStateValid(state:TrIncState)
 {
     Word32(|state.counters|) &&
     (forall i :: 0 <= i < |state.counters| ==> WellformedRSAPubKeySpec(state.counters[i].public_key))
 }
 
-static function {:autoReq} TrIncCounterAdvanceStatement(counter_index:nat, old_counter_value:nat, new_counter_value:nat,
+static ghost function {:autoReq} TrIncCounterAdvanceStatement(counter_index:nat, old_counter_value:nat, new_counter_value:nat,
                                                         message:seq<int>) : seq<int>
 {
     [34] /* counter advance */ + rfc4251_word32_encoding(counter_index) + rfc4251_mpint_encoding(old_counter_value)
@@ -36,19 +36,19 @@ static function {:autoReq} TrIncCounterAdvanceStatement(counter_index:nat, old_c
 //- Specifications for correct method operation
 //-///////////////////////////////////////////////////
 
-//- This function is used to ensure that TrInc initialization operates correctly.
+//- This ghost function is used to ensure that TrInc initialization operates correctly.
 //- It should initialize the counter set to be empty.
 
-static predicate {:autoReq} TrIncInitializeValid(state:TrIncState)
+static ghost predicate {:autoReq} TrIncInitializeValid(state:TrIncState)
 {
     |state.counters| == 0
 }
 
-//- This function is used to ensure that TrIncCreateCounter operates correctly.
+//- This ghost function is used to ensure that TrIncCreateCounter operates correctly.
 //- That method is supposed to create a new counter with the given public key.
 //- It returns the index of the new counter.
 
-static predicate {:autoReq} TrIncCreateCounterValid(in_state:TrIncState, out_state:TrIncState, common_state:CommonState,
+static ghost predicate {:autoReq} TrIncCreateCounterValid(in_state:TrIncState, out_state:TrIncState, common_state:CommonState,
                                                     public_key_encoding_in:seq<int>, counter_index_out:nat)
     requires IsByteSeq(public_key_encoding_in);
 {
@@ -59,12 +59,12 @@ static predicate {:autoReq} TrIncCreateCounterValid(in_state:TrIncState, out_sta
         counter_index_out == |in_state.counters|
 }
 
-//- This function is used to ensure that TrIncAdvanceCounter operates
+//- This ghost function is used to ensure that TrIncAdvanceCounter operates
 //- correctly.  That method is supposed to advance the given counter to the
 //- given new counter value.  It should then return an attestation that the
 //- counter was advanced.
 
-static predicate {:autoReq} TrIncAdvanceCounterValid(in_state:TrIncState, out_state:TrIncState, common_state:CommonState,
+static ghost predicate {:autoReq} TrIncAdvanceCounterValid(in_state:TrIncState, out_state:TrIncState, common_state:CommonState,
                                                      counter_index_in:nat, new_counter_value_encoding_in:seq<int>,
                                                      message_in:seq<int>, request_attestation_in:seq<int>,
                                                      TrInc_statement_out:seq<int>, TrInc_attestation_out:seq<int>)

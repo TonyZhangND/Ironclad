@@ -506,7 +506,7 @@ method BitShiftLeft_Array(x:array<int>, b:nat) returns (xb:array<int>)
     }
 }
 
-predicate FatNatBitCount(X:seq<int>, e:nat)
+ghost predicate FatNatBitCount(X:seq<int>, e:nat)
     requires IsWordSeq(X);
 {
     true

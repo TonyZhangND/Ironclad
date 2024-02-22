@@ -55,7 +55,7 @@ import opened Collections__Maps2_s
 import opened Collections__Maps2_i
 import opened Environment_s
 
-predicate AcceptorSent1bInView(
+ghost predicate AcceptorSent1bInView(
     ps:RslState,
     ps':RslState,
     view:Ballot,
@@ -79,7 +79,7 @@ predicate AcceptorSent1bInView(
      && LAcceptorProcess1a(s, s', ios[0].r, ExtractSentPacketsFromIos(ios))
 }
 
-function{:opaque} AcceptorSent1bInViewTemporal(
+ghost function{:opaque} AcceptorSent1bInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot,
   idx:int
@@ -91,7 +91,7 @@ function{:opaque} AcceptorSent1bInViewTemporal(
   stepmap(imap i :: AcceptorSent1bInView(b[i], b[nextstep(i)], view, idx))
 }
 
-function PrimaryHas1bFromAcceptorOrIsPastPhase1Temporal(
+ghost function PrimaryHas1bFromAcceptorOrIsPastPhase1Temporal(
   b:Behavior<RslState>,
   view:Ballot,
   idx:int
@@ -433,7 +433,7 @@ lemma lemma_StablePeriodStartedLeadsToPrimaryGetting1bFromAcceptorForever(
                                                      f);
 }
 
-function{:opaque} PrimaryHas1bFromAllLiveAcceptorsOrIsPastPhase1TemporalSet(
+ghost function{:opaque} PrimaryHas1bFromAllLiveAcceptorsOrIsPastPhase1TemporalSet(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot
@@ -490,7 +490,7 @@ lemma lemma_PrimaryHas1bFromAllLiveAcceptorsLeadsToPrimaryEnteringPhase2WF1Req2(
            var xs := PrimaryHas1bFromAllLiveAcceptorsOrIsPastPhase1TemporalSet(b, asp.live_quorum, view);
            var P := always(andset(xs));
            var Q := or(PrimaryInState2Temporal(b, view), not(NoReplicaBeyondViewTemporal(b, view)));
-           var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
+           var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
            sat(i, TemporalWF1Req2(P, Q, Action))
 {
   var primary_idx := view.proposer_id;
@@ -499,7 +499,7 @@ lemma lemma_PrimaryHas1bFromAllLiveAcceptorsLeadsToPrimaryEnteringPhase2WF1Req2(
   var z := not(NoReplicaBeyondViewTemporal(b, view));
   var P := always(andset(xs));
   var Q := or(y, z);
-  var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
+  var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
 
   if sat(i, P) && !sat(i, Q) && sat(i, Action)
   {
@@ -567,7 +567,7 @@ lemma lemma_PrimaryHas1bFromAllLiveAcceptorsLeadsToPrimaryEnteringPhase2(
   var z := not(NoReplicaBeyondViewTemporal(b, view));
   var P := always(andset(xs));
   var Q := or(y, z);
-  var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
+  var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterPhase2, primary_idx);
 
   forall i | start_step <= i
     ensures sat(i, TemporalWF1Req1(P, Q))

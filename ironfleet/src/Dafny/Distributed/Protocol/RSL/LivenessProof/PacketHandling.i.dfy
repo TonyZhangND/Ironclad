@@ -42,7 +42,7 @@ import opened Environment_s
 import opened EnvironmentSynchrony_s
 import opened Concrete_NodeIdentity_i
 
-predicate AllPacketsProcessedWithin(
+ghost predicate AllPacketsProcessedWithin(
   b:Behavior<RslState>,
   i:int,
   processing_period:int,
@@ -56,7 +56,7 @@ predicate AllPacketsProcessedWithin(
       sat(i, eventuallynextwithin(PacketProcessedTemporal(b, p), processing_period, PaxosTimeMap(b)))
 }
 
-function{:opaque} AllPacketsProcessedWithinTemporal(
+ghost function{:opaque} AllPacketsProcessedWithinTemporal(
   b:Behavior<RslState>,
   processing_period:int,
   sources:set<NodeIdentity>,
@@ -257,7 +257,7 @@ lemma lemma_AllPacketsReceivedInTime(
   processing_sync_start, processing_bound := Lemma_EventuallyAllPacketsAlwaysReceivedInTime(asp.synchrony_start, asp.latency_bound, sources, destinations, eb, asp.burst_size, receive_period);
 }
 
-predicate PacketProcessingSynchronousOneStep(
+ghost predicate PacketProcessingSynchronousOneStep(
   b:Behavior<RslState>,
   i:int,
   processing_bound:int,
@@ -271,7 +271,7 @@ predicate PacketProcessingSynchronousOneStep(
       ==> sat(i, next(eventuallynextwithin(PacketProcessedTemporal(b, p), processing_bound, PaxosTimeMap(b))))
 }
 
-function{:opaque} PacketProcessingSynchronousTemporal(
+ghost function{:opaque} PacketProcessingSynchronousTemporal(
   b:Behavior<RslState>,
   processing_bound:int,
   sources:set<NodeIdentity>,
@@ -285,7 +285,7 @@ function{:opaque} PacketProcessingSynchronousTemporal(
   stepmap(imap i :: PacketProcessingSynchronousOneStep(b, i, processing_bound, sources, destinations))
 }
 
-predicate PacketProcessingSynchronous(
+ghost predicate PacketProcessingSynchronous(
   b:Behavior<RslState>,
   asp:AssumptionParameters,
   start_step:int,

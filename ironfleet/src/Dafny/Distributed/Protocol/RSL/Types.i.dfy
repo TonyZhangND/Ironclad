@@ -21,13 +21,13 @@ type Votes = map<OperationNumber, Vote>
 datatype LearnerTuple = LearnerTuple(received_2b_message_senders:set<NodeIdentity>, candidate_learned_value:RequestBatch)
 type LearnerState = map<OperationNumber, LearnerTuple>
 
-predicate BalLt(ba:Ballot, bb:Ballot)
+ghost predicate BalLt(ba:Ballot, bb:Ballot)
 {
   || ba.seqno < bb.seqno
   || (ba.seqno==bb.seqno && ba.proposer_id < bb.proposer_id)
 }
 
-predicate BalLeq(ba:Ballot, bb:Ballot)
+ghost predicate BalLeq(ba:Ballot, bb:Ballot)
 {
   || ba.seqno < bb.seqno
   || (ba.seqno==bb.seqno && ba.proposer_id <= bb.proposer_id)

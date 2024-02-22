@@ -20,7 +20,7 @@ import opened Concrete_NodeIdentity_i`Spec
 import opened SHT__Delegations_i
 import opened Environment_s
 
-function {:opaque} ExtractSentPacketsFromIos(ios:seq<LSHTIo>) : seq<LSHTPacket>
+ghost function {:opaque} ExtractSentPacketsFromIos(ios:seq<LSHTIo>) : seq<LSHTPacket>
     ensures forall p :: p in ExtractSentPacketsFromIos(ios) <==> LIoOpSend(p) in ios;
 {
     if |ios| == 0 then
@@ -32,12 +32,12 @@ function {:opaque} ExtractSentPacketsFromIos(ios:seq<LSHTIo>) : seq<LSHTPacket>
 
 }
 
-predicate ReceivePacket_Wrapper(s:Host, s':Host, pkt:Packet, sent_packets:set<Packet>)
+ghost predicate ReceivePacket_Wrapper(s:Host, s':Host, pkt:Packet, sent_packets:set<Packet>)
 {
     exists ack :: ReceivePacket(s, s', pkt, sent_packets, ack)
 }
 
-predicate LHost_ReceivePacketWithoutReadingClock(s:Host, s':Host, ios:seq<LSHTIo>)
+ghost predicate LHost_ReceivePacketWithoutReadingClock(s:Host, s':Host, ios:seq<LSHTIo>)
     requires |ios| >= 1;
     requires ios[0].LIoOpReceive?;
     requires DelegationMapComplete(s.delegationMap);
@@ -47,7 +47,7 @@ predicate LHost_ReceivePacketWithoutReadingClock(s:Host, s':Host, ios:seq<LSHTIo
     ReceivePacket_Wrapper(s, s', pkt, sent_packets)
 }
 
-predicate LHost_ReceivePacket_Next(s:Host, s':Host, ios:seq<LSHTIo>)
+ghost predicate LHost_ReceivePacket_Next(s:Host, s':Host, ios:seq<LSHTIo>)
 {
        |ios| >= 1
     && if ios[0].LIoOpTimeoutReceive? then
@@ -62,28 +62,28 @@ predicate LHost_ReceivePacket_Next(s:Host, s':Host, ios:seq<LSHTIo>)
        )
 }
 
-function LHost_NumActions() : int
+ghost function LHost_NumActions() : int
 {
     3
 }
 
 datatype LScheduler = LScheduler(host:Host, nextActionIndex:int, resendCount:int)
 
-predicate LScheduler_Init(s:LScheduler, me:NodeIdentity, rootIdentity:NodeIdentity, hostIds:seq<NodeIdentity>, params:Parameters)
+ghost predicate LScheduler_Init(s:LScheduler, me:NodeIdentity, rootIdentity:NodeIdentity, hostIds:seq<NodeIdentity>, params:Parameters)
 {
        Host_Init(s.host, me, rootIdentity, hostIds, params)
     && s.nextActionIndex == 0
     && s.resendCount == 0
 }
 
-predicate LHost_ProcessReceivedPacket_Next(s:Host, s':Host, ios:seq<LSHTIo>)
+ghost predicate LHost_ProcessReceivedPacket_Next(s:Host, s':Host, ios:seq<LSHTIo>)
 {
        DelegationMapComplete(s.delegationMap)
     && (forall io {:trigger io in ios} :: io in ios ==> io.LIoOpSend?)
     && ProcessReceivedPacket(s, s', ExtractPacketsFromLSHTPackets(ExtractSentPacketsFromIos(ios)))
 }
 
-predicate LHost_NoReceive_Next(s:Host, s':Host, ios:seq<LSHTIo>)
+ghost predicate LHost_NoReceive_Next(s:Host, s':Host, ios:seq<LSHTIo>)
 {
        DelegationMapComplete(s.delegationMap)
     && (forall io {:trigger io in ios} :: io in ios ==> io.LIoOpSend?)
@@ -91,7 +91,7 @@ predicate LHost_NoReceive_Next(s:Host, s':Host, ios:seq<LSHTIo>)
 }
 
 /*
-predicate LHost_Next_ReadClock_MaybeReSendUnAckedPackets(s:Host, s':Host, clock:BoundedClock, ios:seq<LSHTIo>)
+ghost predicate LHost_Next_ReadClock_MaybeReSendUnAckedPackets(s:Host, s':Host, clock:BoundedClock, ios:seq<LSHTIo>)
 {
     if clock.max < s.nextHeartbeatTime then
         s' == s && sent_packets == []
@@ -105,7 +105,7 @@ predicate LHost_Next_ReadClock_MaybeReSendUnAckedPackets(s:Host, s':Host, clock:
         && s' == s[nextHeartbeatTime := s'.nextHeartbeatTime]
 }*/
 
-predicate LHost_NoReceive_Next_Wrapper(s:LScheduler, s':LScheduler, ios:seq<LSHTIo>)
+ghost predicate LHost_NoReceive_Next_Wrapper(s:LScheduler, s':LScheduler, ios:seq<LSHTIo>)
 {
        DelegationMapComplete(s.host.delegationMap)
      && s'.resendCount == (s.resendCount + 1) % 100000000
@@ -116,7 +116,7 @@ predicate LHost_NoReceive_Next_Wrapper(s:LScheduler, s':LScheduler, ios:seq<LSHT
            && s' == s.(resendCount := s'.resendCount, nextActionIndex := s'.nextActionIndex))
 }
 
-predicate LScheduler_Next(s:LScheduler, s':LScheduler, ios:seq<LSHTIo>)
+ghost predicate LScheduler_Next(s:LScheduler, s':LScheduler, ios:seq<LSHTIo>)
 {
        s'.nextActionIndex == (s.nextActionIndex + 1) % LHost_NumActions()
     && s'.host.constants == s.host.constants

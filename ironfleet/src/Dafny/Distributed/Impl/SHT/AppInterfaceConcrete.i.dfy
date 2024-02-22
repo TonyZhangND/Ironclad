@@ -9,15 +9,15 @@ export Spec
     provides lemma_ValidKey_grammer, lemma_ValidValue_grammer
 export All reveals *
 
-function method Key_grammar() : G { GUint64 }  
-function method Value_grammar() : G { GByteArray  }
+function Key_grammar() : G { GUint64 }  
+function Value_grammar() : G { GByteArray  }
 
-function method parse_Key(val:V) : Key
+function parse_Key(val:V) : Key
 {
     val.u
 }
 
-function method parse_Value(val:V) : Value
+function parse_Value(val:V) : Value
 {
     val.b
 }
@@ -56,7 +56,7 @@ lemma lemma_ValidValue_grammer()
 {
 }
 
-//function method KeyRangeSize(kr:KeyRange) : uint64
+//function KeyRangeSize(kr:KeyRange) : uint64
 //{
 //    if KeyPlusLe(kr.khi, kr.klo) then 0
 //    else

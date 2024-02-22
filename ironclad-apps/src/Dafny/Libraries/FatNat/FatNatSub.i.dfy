@@ -1,6 +1,6 @@
 include "FatNatCommon.i.dfy"
 
-predicate FNSubRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, i:int)
+ghost predicate FNSubRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, i:int)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);
@@ -12,7 +12,7 @@ predicate FNSubRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryi
         == DigitAt(b,i) + DigitAt(c,i) + DigitAt(carryin,i)
 }
 
-predicate FNSubRelation(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>)
+ghost predicate FNSubRelation(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);
@@ -141,7 +141,7 @@ lemma lemma_FNSubtraction(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:se
 }
 
 //- Need to be able to talk about just the assembled part of c.
-predicate FNSubRelation_inductive(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, j:int)
+ghost predicate FNSubRelation_inductive(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, j:int)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);

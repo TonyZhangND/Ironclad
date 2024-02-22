@@ -7,15 +7,15 @@ include "../../Libraries/Util/integer_sequences.i.dfy"
 include "../CPU/assembly_premium.i.dfy"
 include "../IO/io_mem.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_TPM_TAG_RSP_COMMAND() : seq<int>
-static function method{:CompiledSpec} CompiledSpec_TPM_TAG_RSP_AUTH1_COMMAND() : seq<int>
+static function{:CompiledSpec} CompiledSpec_TPM_TAG_RSP_COMMAND() : seq<int>
+static function{:CompiledSpec} CompiledSpec_TPM_TAG_RSP_AUTH1_COMMAND() : seq<int>
 /*
-static function method{:CompiledSpec} CompiledSpec_TPM_TAG_NV_DATA_PUBLIC() : seq<int>
-static function method{:CompiledSpec} CompiledSpec_TPM_TAG_NV_ATTRIBUTES() : seq<int>
+static function{:CompiledSpec} CompiledSpec_TPM_TAG_NV_DATA_PUBLIC() : seq<int>
+static function{:CompiledSpec} CompiledSpec_TPM_TAG_NV_ATTRIBUTES() : seq<int>
 */
-static function method{:CompiledSpec} CompiledSpec_TPM_SUCCESS() : int
-static function method{:CompiledSpec} CompiledSpec_PCR_SELECTION_covering_PCRs_17_and_18() : seq<int>
-static function method{:CompiledSpec} CompiledSpec_PCR_SELECTION_covering_PCRs_17_through_19() : seq<int>
+static function{:CompiledSpec} CompiledSpec_TPM_SUCCESS() : int
+static function{:CompiledSpec} CompiledSpec_PCR_SELECTION_covering_PCRs_17_and_18() : seq<int>
+static function{:CompiledSpec} CompiledSpec_PCR_SELECTION_covering_PCRs_17_through_19() : seq<int>
 
 
 /***************************************************************************

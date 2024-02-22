@@ -35,13 +35,13 @@ datatype CLearnerState =
     recv2b:bool,
     recvCp:CPacket)
 
-predicate CLearnerTupleIsValid(tuple:CLearnerTuple) 
+ghost predicate CLearnerTupleIsValid(tuple:CLearnerTuple) 
 {
   && SeqIsUnique(tuple.received_2b_message_senders)
   && ValidRequestBatch(tuple.candidate_learned_value)
 }
 
-predicate LearnerState_IsValid(learner:CLearnerState)
+ghost predicate LearnerState_IsValid(learner:CLearnerState)
 {
   && LearnerState_IsAbstractable(learner)
   && (forall o :: o in learner.unexecuted_ops ==> CLearnerTupleIsValid(learner.unexecuted_ops[o]))
@@ -49,13 +49,13 @@ predicate LearnerState_IsValid(learner:CLearnerState)
   && ReplicaConstantsStateIsAbstractable(learner.rcs)
 }
 
-predicate LearnerTupleIsAbstractable(tuple:CLearnerTuple)
+ghost predicate LearnerTupleIsAbstractable(tuple:CLearnerTuple)
 {
   && SeqOfEndPointsIsAbstractable(tuple.received_2b_message_senders)
   && CRequestBatchIsAbstractable(tuple.candidate_learned_value)
 }
 
-function AbstractifyCLearnerTupleToLearnerTuple(tuple:CLearnerTuple) : LearnerTuple
+ghost function AbstractifyCLearnerTupleToLearnerTuple(tuple:CLearnerTuple) : LearnerTuple
   ensures LearnerTupleIsAbstractable(tuple) ==> AbstractifyCLearnerTupleToLearnerTuple(tuple) == LearnerTuple(SeqToSet(AbstractifyEndPointsToNodeIdentities(tuple.received_2b_message_senders)), AbstractifyCRequestBatchToRequestBatch(tuple.candidate_learned_value))
 {
   if (LearnerTupleIsAbstractable(tuple)) then 
@@ -66,13 +66,13 @@ function AbstractifyCLearnerTupleToLearnerTuple(tuple:CLearnerTuple) : LearnerTu
     var lt:LearnerTuple :| (true); lt
 }
 
-predicate CLearnerTuplesAreAbstractable(tuples:map<COperationNumber,CLearnerTuple>)
+ghost predicate CLearnerTuplesAreAbstractable(tuples:map<COperationNumber,CLearnerTuple>)
 {
   && (forall opn :: opn in tuples ==> COperationNumberIsAbstractable(opn))
   && (forall opn :: opn in tuples ==> LearnerTupleIsAbstractable(tuples[opn]))
 }
 
-function RefineOperationNumberToCOperationNumber(o:OperationNumber) : COperationNumber 
+ghost function RefineOperationNumberToCOperationNumber(o:OperationNumber) : COperationNumber 
   // requires 0 <= o < 0x1_0000_0000_0000_0000
   ensures (0 <= o < 0x1_0000_0000_0000_0000) ==> RefineOperationNumberToCOperationNumber(o) == COperationNumber(o as uint64)
 {
@@ -82,7 +82,7 @@ function RefineOperationNumberToCOperationNumber(o:OperationNumber) : COperation
     var co:COperationNumber :| (true); co
 }
 
-function {:opaque} AbstractifyCLearnerTuplesToLearnerTuples(m:map<COperationNumber,CLearnerTuple>) : map<OperationNumber,LearnerTuple>
+ghost function {:opaque} AbstractifyCLearnerTuplesToLearnerTuples(m:map<COperationNumber,CLearnerTuple>) : map<OperationNumber,LearnerTuple>
   requires CLearnerTuplesAreAbstractable(m)
   ensures  var rm  := AbstractifyCLearnerTuplesToLearnerTuples(m);
            forall k :: k in rm ==> (exists ck :: ck in m && AbstractifyCOperationNumberToOperationNumber(ck) == k)
@@ -114,14 +114,14 @@ lemma lemma_AbstractifyCLearnerTuplesToLearnerTuples_properties(m:map<COperation
   lemma_AbstractifyMap_properties(m, AbstractifyCOperationNumberToOperationNumber, AbstractifyCLearnerTupleToLearnerTuple, RefineOperationNumberToCOperationNumber);
 }
 
-predicate LearnerState_IsAbstractable(learner:CLearnerState)
+ghost predicate LearnerState_IsAbstractable(learner:CLearnerState)
 {
   && CBallotIsAbstractable(learner.max_ballot_seen)
   && ReplicaConstantsStateIsAbstractable(learner.rcs)
   && CLearnerTuplesAreAbstractable(learner.unexecuted_ops)
 }
 
-function AbstractifyLearnerStateToLLearner(learner:CLearnerState) : LLearner
+ghost function AbstractifyLearnerStateToLLearner(learner:CLearnerState) : LLearner
   requires LearnerState_IsAbstractable(learner)
 {
   var rcs := AbstractifyReplicaConstantsStateToLReplicaConstants(learner.rcs);
@@ -130,13 +130,13 @@ function AbstractifyLearnerStateToLLearner(learner:CLearnerState) : LLearner
   LLearner(rcs, ballot, unexecuted_ops)
 }
 
-function LearnerState_EndPoint(learner:CLearnerState) : EndPoint
+ghost function LearnerState_EndPoint(learner:CLearnerState) : EndPoint
   requires LearnerState_IsValid(learner)
 {
   learner.rcs.all.config.replica_ids[learner.rcs.my_index]
 }
 
-function LearnerState_Config(learner:CLearnerState) : CPaxosConfiguration
+ghost function LearnerState_Config(learner:CLearnerState) : CPaxosConfiguration
   requires LearnerState_IsValid(learner)
 {
   learner.rcs.all.config
@@ -170,19 +170,19 @@ method LearnerState_Init(rcs:ReplicaConstantsState) returns (learner:CLearnerSta
   assert LLearnerInit(AbstractifyLearnerStateToLLearner(learner), AbstractifyReplicaConstantsStateToLReplicaConstants(learner.rcs));
 }
 
-predicate LearnerState_CommonPreconditions(learner:CLearnerState)
+ghost predicate LearnerState_CommonPreconditions(learner:CLearnerState)
 {
   LearnerState_IsValid(learner)
 }
 
-predicate LearnerState_CommonPostconditions(learner:CLearnerState, learner':CLearnerState)
+ghost predicate LearnerState_CommonPostconditions(learner:CLearnerState, learner':CLearnerState)
 {
   && LearnerState_CommonPreconditions(learner)
   && LearnerState_IsValid(learner')
   && learner.rcs == learner'.rcs
 }
 
-predicate LearnerState_Process2b__Preconditions(learner:CLearnerState, executor:ExecutorState, packet:CPacket)
+ghost predicate LearnerState_Process2b__Preconditions(learner:CLearnerState, executor:ExecutorState, packet:CPacket)
 {
   && LearnerState_CommonPreconditions(learner)
   && ExecutorState_CommonPreconditions(executor)
@@ -190,33 +190,33 @@ predicate LearnerState_Process2b__Preconditions(learner:CLearnerState, executor:
   && packet.msg.CMessage_2b?
 }
 
-predicate LearnerState_Process2b__Postconditions(learner:CLearnerState, executor:ExecutorState, packet:CPacket, learner':CLearnerState)
+ghost predicate LearnerState_Process2b__Postconditions(learner:CLearnerState, executor:ExecutorState, packet:CPacket, learner':CLearnerState)
 {
   && LearnerState_Process2b__Preconditions(learner, executor, packet)
   && LearnerState_CommonPostconditions(learner, learner')
   && LLearnerProcess2b(AbstractifyLearnerStateToLLearner(learner), AbstractifyLearnerStateToLLearner(learner'), AbstractifyCPacketToRslPacket(packet))
 }
 
-predicate LearnerState_ForgetDecision__Preconditions(learner:CLearnerState, opn:COperationNumber)
+ghost predicate LearnerState_ForgetDecision__Preconditions(learner:CLearnerState, opn:COperationNumber)
 {
   && LearnerState_CommonPreconditions(learner)
   && COperationNumberIsAbstractable(opn)
 }
 
-predicate LearnerState_ForgetDecision__Postconditions(learner:CLearnerState, opn:COperationNumber, learner':CLearnerState)
+ghost predicate LearnerState_ForgetDecision__Postconditions(learner:CLearnerState, opn:COperationNumber, learner':CLearnerState)
 {
   && LearnerState_ForgetDecision__Preconditions(learner, opn)
   && LearnerState_CommonPostconditions(learner, learner')
   && LLearnerForgetDecision(AbstractifyLearnerStateToLLearner(learner), AbstractifyLearnerStateToLLearner(learner'), AbstractifyCOperationNumberToOperationNumber(opn))
 }
 
-predicate LearnerState_ForgetOperationsBefore__Preconditions(learner:CLearnerState, opn:COperationNumber)
+ghost predicate LearnerState_ForgetOperationsBefore__Preconditions(learner:CLearnerState, opn:COperationNumber)
 {
   && LearnerState_CommonPreconditions(learner)
   && COperationNumberIsAbstractable(opn)
 }
 
-predicate LearnerState_ForgetOperationsBefore__Postconditions(learner:CLearnerState, opn:COperationNumber, learner':CLearnerState)
+ghost predicate LearnerState_ForgetOperationsBefore__Postconditions(learner:CLearnerState, opn:COperationNumber, learner':CLearnerState)
 {
   && LearnerState_ForgetOperationsBefore__Preconditions(learner, opn)
   && LearnerState_CommonPostconditions(learner, learner')

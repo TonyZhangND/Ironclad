@@ -11,7 +11,7 @@ include "../../FatNat/BigNatToFatNatAdaptor.i.dfy"
 include "../../FatNat/FatNatMod.i.dfy"
 
 
-static function K(x:seq<int>) : int
+static ghost function K(x:seq<int>) : int
     requires IsWordSeq(x);
 {
     BEWordSeqToInt(x)

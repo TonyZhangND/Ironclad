@@ -16,7 +16,7 @@ import opened LiveSHT__Environment_i
 import opened SHT__SHTConcreteConfiguration_i
 import opened SHT__CMessage_i
 
-predicate NetEventIsAbstractable(evt:NetEvent)
+ghost predicate NetEventIsAbstractable(evt:NetEvent)
 {
     match evt
         case LIoOpSend(s) => NetPacketIsAbstractable(s)
@@ -25,7 +25,7 @@ predicate NetEventIsAbstractable(evt:NetEvent)
         case LIoOpReadClock(t) => true
 }
 
-function AbstractifyNetEventToLSHTIo(evt:NetEvent) : LSHTIo
+ghost function AbstractifyNetEventToLSHTIo(evt:NetEvent) : LSHTIo
     requires NetEventIsAbstractable(evt);
 {
     match evt
@@ -36,12 +36,12 @@ function AbstractifyNetEventToLSHTIo(evt:NetEvent) : LSHTIo
 }
 
 
-predicate NetEventLogIsAbstractable(rawlog:seq<NetEvent>)
+ghost predicate NetEventLogIsAbstractable(rawlog:seq<NetEvent>)
 {
     forall i :: 0<=i<|rawlog| ==> NetEventIsAbstractable(rawlog[i])
 }
 
-function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<LSHTIo>
+ghost function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<LSHTIo>
     requires NetEventLogIsAbstractable(rawlog);
     ensures |AbstractifyRawLogToIos(rawlog)| == |rawlog|;
     ensures forall i {:trigger AbstractifyNetEventToLSHTIo(rawlog[i])} {:trigger AbstractifyRawLogToIos(rawlog)[i]} :: 0<=i<|rawlog| ==> AbstractifyRawLogToIos(rawlog)[i] == AbstractifyNetEventToLSHTIo(rawlog[i]);
@@ -58,13 +58,13 @@ lemma lemma_AbstractifyRawLogToIos_properties(rawlog:seq<NetEvent>, ios:seq<LSHT
     reveal_AbstractifyRawLogToIos();
 }
 
-predicate RawIoConsistentWithSpecIO(rawlog:seq<NetEvent>, ios:seq<LSHTIo>)
+ghost predicate RawIoConsistentWithSpecIO(rawlog:seq<NetEvent>, ios:seq<LSHTIo>)
 {
        NetEventLogIsAbstractable(rawlog)
     && AbstractifyRawLogToIos(rawlog) == ios
 }
 
-predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
+ghost predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
 {
     forall io :: io in rawlog && io.LIoOpSend? ==> NetPacketBound(io.s.msg) && CSingleMessageMarshallable(SHTDemarshallData(io.s.msg))
 }
@@ -156,7 +156,7 @@ method ReadClock(netClient:NetClient) returns (clock:CBoundedClock, ghost clockE
 }
 */
 
-predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
+ghost predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
 {
        event.LIoOpSend?
     && NetPacketIsAbstractable(event.s)
@@ -164,14 +164,14 @@ predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
     && AbstractifyCPacketToShtPacket(cpacket) == AbstractifyNetPacketToShtPacket(event.s)
 }
 
-predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packets:seq<CPacket>)
+ghost predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packets:seq<CPacket>)
 {
        |netEventLog| == |packets| 
     && (forall i :: 0 <= i < |packets| ==> SendLogEntryReflectsPacket(netEventLog[i], packets[i]))
 }
 
 /*
-predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadcast, index:int)
+ghost predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadcast, index:int)
     requires CBroadcastIsAbstractable(broadcast);
     requires broadcast.CBroadcast?;
     requires 0<=|netEventLog|<=|broadcast.dsts|
@@ -181,7 +181,7 @@ predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadca
    && AbstractifyCBroadcastToRlsPacketSeq(broadcast)[index] == AbstractifyCPacketToShtPacket(netEventLog[index].sendPacket)
 }
 
-predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
+ghost predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
     requires CBroadcastIsAbstractable(broadcast);
     requires broadcast.CBroadcast?;
 {
@@ -191,7 +191,7 @@ predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CB
 */
 
 /*
-predicate SendLogReflectsBroadcast(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
+ghost predicate SendLogReflectsBroadcast(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
     requires CBroadcastIsAbstractable(broadcast);
 {
     if broadcast.CBroadcastNop? then netEventLog == []

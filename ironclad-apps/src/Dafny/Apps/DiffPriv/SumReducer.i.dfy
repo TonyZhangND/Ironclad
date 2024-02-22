@@ -117,7 +117,7 @@ static method ComputeSum (db:seq<Row>, program:seq<Operation>, row_min:int, row_
 //- Helpers
 //-////////////////////////////////////
 
-static function method SaturatingAdd(x:int, y:int):int
+static function SaturatingAdd(x:int, y:int):int
     requires Word32(x);
     requires Word32(y);
     ensures Word32(SaturatingAdd(x, y));
@@ -127,7 +127,7 @@ static function method SaturatingAdd(x:int, y:int):int
     if x + y <= 0xFFFFFFFF then x + y else 0xFFFFFFFF
 }
 
-static function method ClipWord32 (value:int, min:int, max:int) : int
+static function ClipWord32 (value:int, min:int, max:int) : int
     requires Word32(value);
     requires Word32(min);
     requires Word32(max);

@@ -1,7 +1,7 @@
 include "sha_common.s.dfy"
 include "hmac_common.s.dfy"
 
-static function method{:opaque} K_SHA256(t: int) : int
+static function{:opaque} K_SHA256(t: int) : int
     requires 0 <= t <= 63;
     ensures Word32(K_SHA256(t));
 {
@@ -26,7 +26,7 @@ static function method{:opaque} K_SHA256(t: int) : int
 */
 }
 
-static function method{:opaque} InitialH_SHA256(j: int) : int
+static function{:opaque} InitialH_SHA256(j: int) : int
     requires 0 <= j <= 7;
     ensures Word32(InitialH_SHA256(j));
 {
@@ -47,19 +47,19 @@ static function method{:opaque} InitialH_SHA256(j: int) : int
 datatype atoh_Type = atoh_c(a:int, b:int, c:int, d:int, e:int, f:int, g:int, h:int);
 datatype SHA256Trace = SHA256Trace_c(M:seq<seq<int>>, H:seq<seq<int>>, W:seq<seq<int>>, atoh:seq<seq<atoh_Type>>);
 
-static predicate IsAToHWordSeqOfLen(vs:seq<atoh_Type>, len:int)
+static ghost predicate IsAToHWordSeqOfLen(vs:seq<atoh_Type>, len:int)
 {
     |vs| == len &&
     forall i :: 0 <= i < len ==> Word32(vs[i].a) && Word32(vs[i].b) && Word32(vs[i].c) && Word32(vs[i].d) &&
                                  Word32(vs[i].e) && Word32(vs[i].f) && Word32(vs[i].g) && Word32(vs[i].h)
 }
 
-static function ConvertAtoHToSeq(v:atoh_Type) : seq<int>
+static ghost function ConvertAtoHToSeq(v:atoh_Type) : seq<int>
 {
     [v.a, v.b, v.c, v.d, v.e, v.f, v.g, v.h]
 }
 
-static predicate IsCompleteSHA256Trace(z:SHA256Trace)
+static ghost predicate IsCompleteSHA256Trace(z:SHA256Trace)
 {
     (forall i :: 0 <= i < |z.M| ==> IsWordSeqOfLen(z.M[i], 16)) &&
     |z.H| == |z.M| + 1 &&
@@ -69,7 +69,7 @@ static predicate IsCompleteSHA256Trace(z:SHA256Trace)
     (forall blk :: 0 <= blk <= |z.M| ==> IsWordSeqOfLen(z.H[blk], 8))
 }
 
-static predicate SHA256TraceHasCorrectHs(z:SHA256Trace)
+static ghost predicate SHA256TraceHasCorrectHs(z:SHA256Trace)
     requires IsCompleteSHA256Trace(z);
 {
     (forall j :: 0 <= j < 8 ==> z.H[0][j] == InitialH_SHA256(j)) &&
@@ -77,7 +77,7 @@ static predicate SHA256TraceHasCorrectHs(z:SHA256Trace)
         0 <= blk < |z.M| && 0 <= j < 8 ==> z.H[blk+1][j] == Add32(ConvertAtoHToSeq(z.atoh[blk][64])[j], z.H[blk][j]))
 }
 
-static predicate SHA256TraceHasCorrectWs(z:SHA256Trace)
+static ghost predicate SHA256TraceHasCorrectWs(z:SHA256Trace)
     requires IsCompleteSHA256Trace(z);
 {
     forall blk ::
@@ -88,7 +88,7 @@ static predicate SHA256TraceHasCorrectWs(z:SHA256Trace)
                                                       z.W[blk][t-16]))
 }
 
-static predicate SHA256TraceHasCorrectatohs(z:SHA256Trace)
+static ghost predicate SHA256TraceHasCorrectatohs(z:SHA256Trace)
     requires IsCompleteSHA256Trace(z);
 {
     forall blk :: 0 <= blk < |z.M| ==>
@@ -108,12 +108,12 @@ static predicate SHA256TraceHasCorrectatohs(z:SHA256Trace)
             z.atoh[blk][t+1].a == Add32(T1, T2))
 }
 
-static predicate {:autoReq} SHA256TraceIsCorrect(z:SHA256Trace)
+static ghost predicate {:autoReq} SHA256TraceIsCorrect(z:SHA256Trace)
 {
     SHA256TraceHasCorrectHs(z) && SHA256TraceHasCorrectWs(z) && SHA256TraceHasCorrectatohs(z)
 }
 
-static predicate {:autoReq} IsSHA256(messageBits:seq<int>, hash:seq<int>)
+static ghost predicate {:autoReq} IsSHA256(messageBits:seq<int>, hash:seq<int>)
 {
     exists z:SHA256Trace ::
         IsCompleteSHA256Trace(z) &&
@@ -122,19 +122,19 @@ static predicate {:autoReq} IsSHA256(messageBits:seq<int>, hash:seq<int>)
         hash == z.H[|z.M|]
 }
 
-static function {:axiom} SHA256(messageBits:seq<int>) : seq<int>
+static ghost function {:axiom} SHA256(messageBits:seq<int>) : seq<int>
     requires IsBitSeq(messageBits);
     requires |messageBits| < power2(64);
     ensures IsWordSeqOfLen(SHA256(messageBits), 8);
 
-static lemma {:axiom} lemma_SHA256IsAFunction(messageBits:seq<int>, hash:seq<int>)
+static lemma {:axiom} lemma_SHA256IsAghost function(messageBits:seq<int>, hash:seq<int>)
     requires IsBitSeq(messageBits);
     requires |messageBits| < power2(64);
     requires IsWordSeqOfLen(hash, 8);
     requires IsSHA256(messageBits, hash);
     ensures SHA256(messageBits) == hash;
 
-static function {:autoReq} HMAC_SHA256(k:seq<int>, m:seq<int>) : seq<int>
+static ghost function {:autoReq} HMAC_SHA256(k:seq<int>, m:seq<int>) : seq<int>
 {
     SHA256(SeqXor(k, Opad(512)) + BEWordSeqToBitSeq(SHA256(SeqXor(k, Ipad(512)) + m)))
 }

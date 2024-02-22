@@ -12,7 +12,7 @@ import opened Temporal__Rules_i
 import opened Temporal__Induction_i
 import opened Collections__Maps2_s
 
-predicate LEnvironmentInvariant<IdType, MessageType>(
+ghost predicate LEnvironmentInvariant<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>
   )
 {
@@ -112,7 +112,7 @@ lemma Lemma_IfOpSeqIsCompatibleWithReductionAndFirstIsntReceiveThenNoneAreReceiv
   }
 }
 
-predicate HostQueueDecomposition<IdType, MessageType>(
+ghost predicate HostQueueDecomposition<IdType, MessageType>(
   hostQueue:seq<LPacket<IdType, MessageType>>,
   hostQueue':seq<LPacket<IdType, MessageType>>,
   s1:seq<LPacket<IdType, MessageType>>,

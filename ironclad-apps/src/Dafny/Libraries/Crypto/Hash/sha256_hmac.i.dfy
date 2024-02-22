@@ -67,7 +67,7 @@ method HMAC_SHA256_impl_Array(key: array<int>, data: array<int>, len: int) retur
     assert data[..] == old(data[..]);
     lemma_2toX();
     reveal_Mod32_const();
-    lemma_SHA256IsAFunction(SeqXor_premium(BEWordSeqToBitSeq_premium(key[..]), Ipad_premium(512)) + BEWordSeqToBitSeq_premium(data[..])[..len],
+    lemma_SHA256IsAghost function(SeqXor_premium(BEWordSeqToBitSeq_premium(key[..]), Ipad_premium(512)) + BEWordSeqToBitSeq_premium(data[..])[..len],
                             inner_hash[..]);
     assert inner_hash[..] == SHA256(SeqXor_premium(BEWordSeqToBitSeq_premium(key[..]), Ipad_premium(512)) + BEWordSeqToBitSeq_premium(data[..])[..len]);
     ghost var old_inner_hash := inner_hash[..];

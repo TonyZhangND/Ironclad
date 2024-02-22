@@ -291,7 +291,7 @@ method FatNatRandomPower2(c:nat) returns (R:array<int>, ghost randoms:seq<int>)
     assert J(R) < power2(c);
 }
 //-
-static predicate CandidateSeedWorksheetValid_incremental(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet, last_succeeds:bool)
+static ghost predicate CandidateSeedWorksheetValid_incremental(req:SelectRandomRequest, worksheet:CandidateSeedWorksheet, last_succeeds:bool)
 {
     (forall i :: 0<=i<|worksheet.rows| ==> CandidateSeedWorksheetRowValid(req, worksheet.rows[i]))
     //- all but last row fail

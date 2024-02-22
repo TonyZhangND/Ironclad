@@ -13,12 +13,12 @@ datatype SHT_State = SHT_State(
     network:Network,
     hosts:map<NodeIdentity,Host>)
 
-predicate SHT_MapsComplete(s:SHT_State)
+ghost predicate SHT_MapsComplete(s:SHT_State)
 {
     (forall id {:auto_trigger} :: id in s.config.hostIds <==> id in s.hosts)
 }
 
-predicate SHT_Init(c:SHTConfiguration, s:SHT_State) {
+ghost predicate SHT_Init(c:SHTConfiguration, s:SHT_State) {
        SHT_MapsComplete(s) 
     && WFSHTConfiguration(c)
     && s.config == c
@@ -27,7 +27,7 @@ predicate SHT_Init(c:SHTConfiguration, s:SHT_State) {
             Host_Init(s.hosts[id], id, s.config.rootIdentity, s.config.hostIds, s.config.params))
 }
 
-predicate SHT_NextPred(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
+ghost predicate SHT_NextPred(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
     requires SHT_MapsComplete(s);
     requires SHT_MapsComplete(s');
 {
@@ -40,7 +40,7 @@ predicate SHT_NextPred(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Pack
     && (forall oid {:auto_trigger} :: oid in s.config.hostIds && oid!=id ==> s'.hosts[oid]==s.hosts[oid])
 }
 
-predicate SHT_NextExternal(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
+ghost predicate SHT_NextExternal(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<Packet>, out:set<Packet>)
     requires SHT_MapsComplete(s);
     requires SHT_MapsComplete(s');
 {
@@ -51,7 +51,7 @@ predicate SHT_NextExternal(s:SHT_State, s':SHT_State, id:NodeIdentity, recv:set<
     && s'.hosts == s.hosts
 }
 
-predicate SHT_Next(s:SHT_State, s':SHT_State)
+ghost predicate SHT_Next(s:SHT_State, s':SHT_State)
 {
        SHT_MapsComplete(s)
     && SHT_MapsComplete(s')

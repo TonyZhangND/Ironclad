@@ -2,7 +2,7 @@ include "seqs_and_ints.i.dfy"
 
 //- Reason about the lengths of sequences with no preceding zeros
 
-static predicate IsCanonicalDigitSeq(pv:nat, inseq:seq<int>)
+static ghost predicate IsCanonicalDigitSeq(pv:nat, inseq:seq<int>)
 {
     IsDigitSeq(pv, inseq)
     && (|inseq|>0 ==> inseq[0]!=0)

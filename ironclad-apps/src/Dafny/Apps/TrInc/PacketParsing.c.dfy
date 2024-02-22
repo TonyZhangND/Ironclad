@@ -9,7 +9,7 @@ datatype TrIncRequest = InvalidRequest_ctor()
                         | CreateCounterRequest_ctor(public_key_encoding:seq<int>)
                         | AdvanceCounterRequest_ctor(counter_index:nat, new_counter_value_encoding:seq<int>, message:seq<int>, request_attestation:seq<int>)
 
-static predicate RequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
+static ghost predicate RequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
     requires IsByteSeq(data);
 {
     if |data| == 0 then
@@ -24,7 +24,7 @@ static predicate RequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
         request.InvalidRequest_ctor?
 }
 
-static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:TrIncRequest)
+static ghost predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:TrIncRequest)
     requires |data| > 0;
     requires data[0] == 1;
 {
@@ -35,7 +35,7 @@ static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:TrIncRequ
         && request.nonce_external == data[1..21]
 }
 
-static predicate CreateCounterRequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
+static ghost predicate CreateCounterRequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 2;
@@ -53,7 +53,7 @@ static predicate CreateCounterRequestParsedCorrectly (data:seq<int>, request:TrI
     )
 }
 
-static predicate AdvanceCounterRequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
+static ghost predicate AdvanceCounterRequestParsedCorrectly (data:seq<int>, request:TrIncRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 3;
@@ -86,7 +86,7 @@ datatype TrIncResponse = NullResponse_ctor()
                          | CreateCounterResponse_ctor(create_error_code:int, counter_index:nat)
                          | AdvanceCounterResponse_ctor(advance_error_code:int, TrInc_statement:seq<int>, TrInc_attestation:seq<int>)
 
-static function ResponseFormedCorrectly (response:TrIncResponse, data:seq<int>) : bool
+static ghost function ResponseFormedCorrectly (response:TrIncResponse, data:seq<int>) : bool
     requires IsByteSeq(data);
 {
     match response

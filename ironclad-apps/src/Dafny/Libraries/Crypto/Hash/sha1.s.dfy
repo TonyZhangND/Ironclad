@@ -5,7 +5,7 @@ include "hmac_common.s.dfy"
 //- Constants
 //-///////////////////////////////////////////////////
 
-static function method{:opaque} K_SHA1(n: int) : int
+static function{:opaque} K_SHA1(n: int) : int
     requires 0 <= n <= 79;
     ensures Word32(K_SHA1(n));
 {
@@ -20,7 +20,7 @@ static function method{:opaque} K_SHA1(n: int) : int
         0xca62c1d6
 }
 
-static function method{:opaque} InitialH_SHA1(index: int) : int
+static function{:opaque} InitialH_SHA1(index: int) : int
     requires 0 <= index <= 4;
     ensures Word32(InitialH_SHA1(index));
 {
@@ -44,18 +44,18 @@ static function method{:opaque} InitialH_SHA1(index: int) : int
 datatype atoe_Type = atoe_c(a:int, b:int, c:int, d:int, e:int);
 datatype SHA1Trace = SHA1Trace_c(M:seq<seq<int>>, H:seq<seq<int>>, W:seq<seq<int>>, atoe:seq<seq<atoe_Type>>);
 
-static predicate IsAtoEWordSeqOfLen(vs:seq<atoe_Type>, len:int)
+static ghost predicate IsAtoEWordSeqOfLen(vs:seq<atoe_Type>, len:int)
 {
     |vs| == len &&
     forall i :: 0 <= i < len ==> Word32(vs[i].a) && Word32(vs[i].b) && Word32(vs[i].c) && Word32(vs[i].d) && Word32(vs[i].e)
 }
 
-static function ConvertAtoEToSeq(v:atoe_Type) : seq<int>
+static ghost function ConvertAtoEToSeq(v:atoe_Type) : seq<int>
 {
     [v.a, v.b, v.c, v.d, v.e]
 }
 
-static predicate IsCompleteSHA1Trace(z:SHA1Trace)
+static ghost predicate IsCompleteSHA1Trace(z:SHA1Trace)
 {
     (forall i :: 0 <= i < |z.M| ==> IsWordSeqOfLen(z.M[i], 16)) &&
     |z.H| == |z.M| + 1 &&
@@ -65,14 +65,14 @@ static predicate IsCompleteSHA1Trace(z:SHA1Trace)
     (forall blk :: 0 <= blk <= |z.M| ==> IsWordSeqOfLen(z.H[blk], 5))
 }
 
-static predicate SHA1TraceHasCorrectHs(z:SHA1Trace)
+static ghost predicate SHA1TraceHasCorrectHs(z:SHA1Trace)
     requires IsCompleteSHA1Trace(z);
 {
     (forall j :: 0 <= j < 5 ==> z.H[0][j] == InitialH_SHA1(j)) &&
     (forall blk {:trigger TBlk(blk)} :: TBlk(blk) ==> forall j :: 0 <= blk < |z.M| && 0 <= j < 5 ==> z.H[blk+1][j] == Add32(ConvertAtoEToSeq(z.atoe[blk][80])[j], z.H[blk][j]))
 }
 
-static predicate SHA1TraceHasCorrectWs(z:SHA1Trace)
+static ghost predicate SHA1TraceHasCorrectWs(z:SHA1Trace)
     requires IsCompleteSHA1Trace(z);
 {
     forall blk ::
@@ -83,7 +83,7 @@ static predicate SHA1TraceHasCorrectWs(z:SHA1Trace)
                 RotateLeft(BitwiseXor(BitwiseXor(BitwiseXor(z.W[blk][t-3], z.W[blk][t-8]), z.W[blk][t-14]), z.W[blk][t-16]), 1))
 }
 
-static predicate SHA1TraceHasCorrectatoes(z:SHA1Trace)
+static ghost predicate SHA1TraceHasCorrectatoes(z:SHA1Trace)
     requires IsCompleteSHA1Trace(z);
 {
     forall blk :: 0 <= blk < |z.M| ==>
@@ -101,12 +101,12 @@ static predicate SHA1TraceHasCorrectatoes(z:SHA1Trace)
             z.atoe[blk][t+1].a == T)
 }
 
-static predicate {:autoReq} SHA1TraceIsCorrect(z:SHA1Trace)
+static ghost predicate {:autoReq} SHA1TraceIsCorrect(z:SHA1Trace)
 {
     SHA1TraceHasCorrectHs(z) && SHA1TraceHasCorrectWs(z) && SHA1TraceHasCorrectatoes(z)
 }
 
-static predicate {:autoReq} IsSHA1(messageBits:seq<int>, hash:seq<int>)
+static ghost predicate {:autoReq} IsSHA1(messageBits:seq<int>, hash:seq<int>)
     requires IsBitSeq(messageBits);
 {
     exists z:SHA1Trace ::
@@ -116,12 +116,12 @@ static predicate {:autoReq} IsSHA1(messageBits:seq<int>, hash:seq<int>)
         hash == z.H[|z.M|]
 }
 
-static function {:axiom} SHA1(messageBits:seq<int>) : seq<int>
+static ghost function {:axiom} SHA1(messageBits:seq<int>) : seq<int>
     requires IsBitSeq(messageBits);
     requires |messageBits| < power2(64);
     ensures IsWordSeqOfLen(SHA1(messageBits), 5);
 
-static lemma {:axiom} lemma_SHA1IsAFunction(messageBits:seq<int>, hash:seq<int>)
+static lemma {:axiom} lemma_SHA1IsAghost function(messageBits:seq<int>, hash:seq<int>)
     requires IsBitSeq(messageBits);
     requires |messageBits| < power2(64);
     requires IsWordSeqOfLen(hash, 5);
@@ -133,7 +133,7 @@ static lemma {:axiom} lemma_SHA1IsAFunction(messageBits:seq<int>, hash:seq<int>)
 //- http://csrc.nist.gov/publications/fips/fips198-1/FIPS-198-1_final.pdf
 //-///////////////////////////////////////////////////////////////////////////////
 
-static function {:autoReq} HMAC_SHA1(k: seq<int>, m: seq<int>) : seq<int>
+static ghost function {:autoReq} HMAC_SHA1(k: seq<int>, m: seq<int>) : seq<int>
     requires |k|==512;
 {
     SHA1(SeqXor(k, Opad(|k|)) + BEWordSeqToBitSeq(SHA1(SeqXor(k, Ipad(|k|)) + m)))

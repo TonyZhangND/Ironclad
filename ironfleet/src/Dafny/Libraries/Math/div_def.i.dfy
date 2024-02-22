@@ -5,7 +5,7 @@
 
 module Math__div_def_i {
 /*
-function mod(x:int, m:int) : int
+ghost function mod(x:int, m:int) : int
   requires m > 0
   decreases if x < 0 then (m - x) else x
 {
@@ -18,35 +18,35 @@ function mod(x:int, m:int) : int
 }
 */
 
-function div(x:int, d:int) : int
+ghost function div(x:int, d:int) : int
   requires d != 0
 {
   x/d
 }
 
-function mod(x:int, d:int) : int
+ghost function mod(x:int, d:int) : int
   requires d != 0
 {
   x%d
 }
 
-function div_recursive(x:int, d:int) : int
+ghost function div_recursive(x:int, d:int) : int
   requires d != 0
 { INTERNAL_div_recursive(x,d) }
 
-function mod_recursive(x:int, d:int) : int
+ghost function mod_recursive(x:int, d:int) : int
   requires d > 0
 { INTERNAL_mod_recursive(x,d) }
 
-function mod_boogie(x:int, y:int) : int
+ghost function mod_boogie(x:int, y:int) : int
   requires y != 0
 { x % y } //- INTERNAL_mod_boogie(x,y) }
 
-function div_boogie(x:int, y:int) : int
+ghost function div_boogie(x:int, y:int) : int
   requires y != 0
 { x / y } //-{ INTERNAL_div_boogie(x,y) }
 
-function my_div_recursive(x:int, d:int) : int
+ghost function my_div_recursive(x:int, d:int) : int
   requires d != 0
 {
   if d > 0 then
@@ -55,7 +55,7 @@ function my_div_recursive(x:int, d:int) : int
     -1 * my_div_pos(x, -1*d)
 }
 
-function my_div_pos(x:int, d:int) : int
+ghost function my_div_pos(x:int, d:int) : int
   requires d >  0
   decreases if x < 0 then (d - x) else x
 {
@@ -67,7 +67,7 @@ function my_div_pos(x:int, d:int) : int
     1 + my_div_pos(x-d, d)
 }
 
-function my_mod_recursive(x:int, m:int) : int
+ghost function my_mod_recursive(x:int, m:int) : int
   requires m > 0
   decreases if x < 0 then (m - x) else x
 {
@@ -81,13 +81,13 @@ function my_mod_recursive(x:int, m:int) : int
 
 
 //- Kept for legacy reasons:
-//-static function INTERNAL_mod_boogie(x:int, m:int) : int   { x % y }
-function INTERNAL_mod_recursive(x:int, m:int) : int  
+//-static ghost function INTERNAL_mod_boogie(x:int, m:int) : int   { x % y }
+ghost function INTERNAL_mod_recursive(x:int, m:int) : int  
   requires m > 0
 { my_mod_recursive(x, m) }
 
-//-static function INTERNAL_div_boogie(x:int, m:int) : int   { x / m }
-function INTERNAL_div_recursive(x:int, d:int) : int 
+//-static ghost function INTERNAL_div_boogie(x:int, m:int) : int   { x / m }
+ghost function INTERNAL_div_recursive(x:int, d:int) : int 
   requires d != 0
 { my_div_recursive(x, d) }
 

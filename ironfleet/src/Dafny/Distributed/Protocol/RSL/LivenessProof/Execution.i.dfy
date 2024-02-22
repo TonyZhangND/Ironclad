@@ -26,7 +26,7 @@ import opened EnvironmentSynchrony_s
 import opened Collections__Maps2_s
 import opened Common__UpperBound_s
 
-predicate ReplySentToClientWithSeqno(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int, ios:seq<RslIo>, batch_idx:int)
+ghost predicate ReplySentToClientWithSeqno(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int, ios:seq<RslIo>, batch_idx:int)
 {
   && 0 <= idx < |ps.replicas|
   && 0 <= idx < |ps'.replicas|
@@ -43,12 +43,12 @@ predicate ReplySentToClientWithSeqno(ps:RslState, ps':RslState, client:NodeIdent
      && s.executor.next_op_to_execute.v[batch_idx].seqno == seqno
 }
 
-predicate RequestWithSeqnoExecuted(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int)
+ghost predicate RequestWithSeqnoExecuted(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int)
 {
   exists ios, batch_idx :: ReplySentToClientWithSeqno(ps, ps', client, seqno, idx, ios, batch_idx)
 }
 
-function {:opaque} RequestWithSeqnoExecutedTemporal(b:Behavior<RslState>, client:NodeIdentity, seqno:int, idx:int):temporal
+ghost function {:opaque} RequestWithSeqnoExecutedTemporal(b:Behavior<RslState>, client:NodeIdentity, seqno:int, idx:int):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, RequestWithSeqnoExecutedTemporal(b, client, seqno, idx))} ::
              sat(i, RequestWithSeqnoExecutedTemporal(b, client, seqno, idx)) <==> RequestWithSeqnoExecuted(b[i], b[nextstep(i)], client, seqno, idx)
@@ -56,7 +56,7 @@ function {:opaque} RequestWithSeqnoExecutedTemporal(b:Behavior<RslState>, client
   stepmap(imap i :: RequestWithSeqnoExecuted(b[i], b[nextstep(i)], client, seqno, idx))
 }
 
-predicate ReplySentToClientAtLeastSeqno(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int, ios:seq<RslIo>, batch_idx:int)
+ghost predicate ReplySentToClientAtLeastSeqno(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int, ios:seq<RslIo>, batch_idx:int)
 {
   && 0 <= idx < |ps.replicas|
   && 0 <= idx < |ps'.replicas|
@@ -73,12 +73,12 @@ predicate ReplySentToClientAtLeastSeqno(ps:RslState, ps':RslState, client:NodeId
      && s.executor.next_op_to_execute.v[batch_idx].seqno >= seqno
 }
 
-predicate RequestAtLeastSeqnoExecuted(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int)
+ghost predicate RequestAtLeastSeqnoExecuted(ps:RslState, ps':RslState, client:NodeIdentity, seqno:int, idx:int)
 {
   exists ios, batch_idx :: ReplySentToClientAtLeastSeqno(ps, ps', client, seqno, idx, ios, batch_idx)
 }
 
-function {:opaque} RequestAtLeastSeqnoExecutedTemporal(b:Behavior<RslState>, client:NodeIdentity, seqno:int, idx:int):temporal
+ghost function {:opaque} RequestAtLeastSeqnoExecutedTemporal(b:Behavior<RslState>, client:NodeIdentity, seqno:int, idx:int):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, RequestAtLeastSeqnoExecutedTemporal(b, client, seqno, idx))} ::
              sat(i, RequestAtLeastSeqnoExecutedTemporal(b, client, seqno, idx)) <==> RequestAtLeastSeqnoExecuted(b[i], b[nextstep(i)], client, seqno, idx)

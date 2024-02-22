@@ -9,7 +9,7 @@ datatype RSAPubKeyImpl_internal = RSAPubKeyImpl_c_internal(
     nReciprocal:FNDivReciprocal
     );
 
-predicate {:heap} WellformedRSAPubKeyImpl_internal(pub:RSAPubKeyImpl_internal)
+ghost predicate {:heap} WellformedRSAPubKeyImpl_internal(pub:RSAPubKeyImpl_internal)
     reads pub.n;
     reads pub.e;
     reads if pub.nReciprocal.FNDivKnownReciprocal? then pub.nReciprocal.TwoTo32wDividedByD else pub.n;
@@ -30,7 +30,7 @@ datatype RSAKeyPairImpl_internal = RSAKeyPairImpl_c_internal(
     d:array<int>     //- private key exponent
     );
 
-predicate {:heap} WellformedRSAKeyPairImpl_internal(p:RSAKeyPairImpl_internal)
+ghost predicate {:heap} WellformedRSAKeyPairImpl_internal(p:RSAKeyPairImpl_internal)
     reads p.pub.n;
     reads p.pub.e;
     reads p.d;
@@ -41,7 +41,7 @@ predicate {:heap} WellformedRSAKeyPairImpl_internal(p:RSAKeyPairImpl_internal)
 //-    && FrumpyBigNat(p.d)
 }
 
-function {:heap} PubKeyImplToSpec_internal(pubkey:RSAPubKeyImpl_internal) : RSAPubKeySpec
+ghost function {:heap} PubKeyImplToSpec_internal(pubkey:RSAPubKeyImpl_internal) : RSAPubKeySpec
     requires WellformedRSAPubKeyImpl_internal(pubkey);
     reads pubkey.n;
     reads pubkey.e;
@@ -50,7 +50,7 @@ function {:heap} PubKeyImplToSpec_internal(pubkey:RSAPubKeyImpl_internal) : RSAP
     RSAPublicKeySpec_c(J(pubkey.n), pubkey.size, J(pubkey.e))
 }
 
-function {:heap} KeyPairImplToSpec_internal(key:RSAKeyPairImpl_internal) : RSAKeyPairSpec
+ghost function {:heap} KeyPairImplToSpec_internal(key:RSAKeyPairImpl_internal) : RSAKeyPairSpec
     requires WellformedRSAKeyPairImpl_internal(key);
     reads key.d;
     reads key.pub.n;

@@ -7,9 +7,9 @@ include "../../Drivers/CPU/assembly_premium.i.dfy"
 //- RoundUpToMultiple
 //-//////////////////////////////////////
 
-static function method{:CompiledSpec} CompiledSpec_RoundUpToMultiple (x:int, m:int) : int
-static function method{:CompiledSpec} CompiledSpec_DivideRoundingUp (x:int, m:int) : int
-static function method{:CompiledSpec} CompiledSpec_DivideRoundingUp_premium (x:int, m:int) : int
+static function{:CompiledSpec} CompiledSpec_RoundUpToMultiple (x:int, m:int) : int
+static function{:CompiledSpec} CompiledSpec_DivideRoundingUp (x:int, m:int) : int
+static function{:CompiledSpec} CompiledSpec_DivideRoundingUp_premium (x:int, m:int) : int
 
 static lemma lemma_RoundUpToMultiple_properties(x:int, m:int)
     requires m > 0;
@@ -65,7 +65,7 @@ static lemma lemma_RoundUpToMultiple_properties(x:int, m:int)
     }
 }
 
-static function RoundUpToMultiple_premium(x:int, m:int) : int
+static ghost function RoundUpToMultiple_premium(x:int, m:int) : int
     requires m > 0;
     requires x >= 0;
     ensures RoundUpToMultiple(x, m) % m == 0;
@@ -270,7 +270,7 @@ static lemma Lemma_DivideRoundingUpEquivalentFormula (x:int, m:int)
     }
 }
 
-static function method DivideRoundingUp_premium (x:int, m:int) : int
+static function DivideRoundingUp_premium (x:int, m:int) : int
     requires x >= 0;
     requires m > 0;
     ensures DivideRoundingUp_premium(x, m) == DivideRoundingUp(x, m);

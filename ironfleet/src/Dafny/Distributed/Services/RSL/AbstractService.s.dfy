@@ -34,7 +34,7 @@ datatype ServiceState' = ServiceState'(
 
 type ServiceState = ServiceState'
 
-predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
+ghost predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
 {
   && s.serverAddresses == serverAddresses
   && s.app == AppInitialize()
@@ -42,7 +42,7 @@ predicate Service_Init(s:ServiceState, serverAddresses:set<EndPoint>)
   && s.replies == {}
 }
 
-predicate ServiceExecutesAppRequest(s:ServiceState, s':ServiceState, req:AppRequestMessage)
+ghost predicate ServiceExecutesAppRequest(s:ServiceState, s':ServiceState, req:AppRequestMessage)
 {
   && |req.request| <= MaxAppRequestSize()
   && s'.serverAddresses == s.serverAddresses
@@ -51,7 +51,7 @@ predicate ServiceExecutesAppRequest(s:ServiceState, s':ServiceState, req:AppRequ
   && s'.replies == s.replies + { AppReplyMessage(req.client, req.seqno, AppHandleRequest(s.app, req.request).1) }
 }
 
-predicate StateSequenceReflectsBatchExecution(s:ServiceState, s':ServiceState, intermediate_states:seq<ServiceState>,
+ghost predicate StateSequenceReflectsBatchExecution(s:ServiceState, s':ServiceState, intermediate_states:seq<ServiceState>,
                                               batch:seq<AppRequestMessage>)
 {
   && |intermediate_states| == |batch| + 1
@@ -60,12 +60,12 @@ predicate StateSequenceReflectsBatchExecution(s:ServiceState, s':ServiceState, i
   && forall i :: 0 <= i < |batch| ==> ServiceExecutesAppRequest(intermediate_states[i], intermediate_states[i+1], batch[i])
 }
 
-predicate Service_Next(s:ServiceState, s':ServiceState)
+ghost predicate Service_Next(s:ServiceState, s':ServiceState)
 {
   exists intermediate_states, batch :: StateSequenceReflectsBatchExecution(s, s', intermediate_states, batch)
 }
 
-function Uint64ToBytes(u:uint64) : seq<byte>
+ghost function Uint64ToBytes(u:uint64) : seq<byte>
 {
   [( u/0x1000000_00000000)        as byte,
    ((u/  0x10000_00000000)%0x100) as byte,
@@ -77,7 +77,7 @@ function Uint64ToBytes(u:uint64) : seq<byte>
    ( u                    %0x100) as byte]
 }
 
-function MarshallServiceRequest(seqno:int, request:AppRequest) : seq<byte>
+ghost function MarshallServiceRequest(seqno:int, request:AppRequest) : seq<byte>
 {
   if 0 <= seqno < 0x1_0000_0000_0000_0000 && |request| <= MaxAppRequestSize() then
         [ 0, 0, 0, 0, 0, 0, 0, 0] // MarshallMesssage_Request magic number
@@ -88,7 +88,7 @@ function MarshallServiceRequest(seqno:int, request:AppRequest) : seq<byte>
       [ 1 ]
 }
 
-function MarshallServiceReply(seqno:int, reply:AppReply) : seq<byte>
+ghost function MarshallServiceReply(seqno:int, reply:AppReply) : seq<byte>
 {
   if 0 <= seqno < 0x1_0000_0000_0000_0000 && |reply| <= MaxAppReplySize() then
       [ 0, 0, 0, 0, 0, 0, 0, 6] // MarshallMesssage_Reply magic number
@@ -99,7 +99,7 @@ function MarshallServiceReply(seqno:int, reply:AppReply) : seq<byte>
     [ 1 ]
 }
 
-predicate Service_Correspondence(concretePkts:set<LPacket<EndPoint, seq<byte>>>, serviceState:ServiceState) 
+ghost predicate Service_Correspondence(concretePkts:set<LPacket<EndPoint, seq<byte>>>, serviceState:ServiceState) 
 {
   && (forall p, seqno, reply :: p in concretePkts && p.src in serviceState.serverAddresses && p.msg == MarshallServiceReply(seqno, reply) ==>
              AppReplyMessage(p.dst, seqno, reply) in serviceState.replies)

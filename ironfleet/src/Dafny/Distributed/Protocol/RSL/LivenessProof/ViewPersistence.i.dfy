@@ -52,7 +52,7 @@ import opened Collections__Sets_i
 import opened Environment_s
 import opened EnvironmentSynchrony_s
 
-predicate NoLiveReplicaSuspectsViewBefore(
+ghost predicate NoLiveReplicaSuspectsViewBefore(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot,
@@ -70,7 +70,7 @@ predicate NoLiveReplicaSuspectsViewBefore(
             && es.epoch_end_time >= endTime))
 }
 
-function{:opaque} NoLiveReplicaSuspectsViewBeforeTemporal(
+ghost function{:opaque} NoLiveReplicaSuspectsViewBeforeTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot,
@@ -252,7 +252,7 @@ lemma lemma_LaterViewWithPrimaryExists(
   }
 }
 
-predicate SomeReplicaInLiveQuorumReachedView(
+ghost predicate SomeReplicaInLiveQuorumReachedView(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot
@@ -261,7 +261,7 @@ predicate SomeReplicaInLiveQuorumReachedView(
   exists idx :: idx in live_quorum && 0 <= idx < |ps.replicas| && BalLeq(view, CurrentViewOfHost(ps, idx))
 }
 
-function{:opaque} SomeReplicaInLiveQuorumReachedViewTemporal(
+ghost function{:opaque} SomeReplicaInLiveQuorumReachedViewTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot

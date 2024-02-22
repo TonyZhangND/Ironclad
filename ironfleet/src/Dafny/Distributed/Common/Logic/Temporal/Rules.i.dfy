@@ -9,7 +9,7 @@ import opened Collections__Maps2_i
 // DEFINITIONS
 ///////////////////
     
-function{:opaque} eventualStep(start:int, x:temporal):(step:int)
+ghost function{:opaque} eventualStep(start:int, x:temporal):(step:int)
   requires sat(start, eventual(x))
   ensures  sat(step, x)
   ensures  TLe(start, step)
@@ -19,7 +19,7 @@ function{:opaque} eventualStep(start:int, x:temporal):(step:int)
   end
 }
 
-function{:opaque} earliestStepBetween(start:int, end:int, x:temporal):(pos:int)
+ghost function{:opaque} earliestStepBetween(start:int, end:int, x:temporal):(pos:int)
   requires sat(end, x)
   requires TLe(start, end)
   ensures  sat(pos, x)
@@ -32,7 +32,7 @@ function{:opaque} earliestStepBetween(start:int, end:int, x:temporal):(pos:int)
   else earliestStepBetween(start + 1, end, x)
 }
 
-function{:opaque} earliestStep(start:int, x:temporal):(step:int)
+ghost function{:opaque} earliestStep(start:int, x:temporal):(step:int)
   requires sat(start, eventual(x))
   ensures  sat(step, x)
   ensures  TLe(start, step)

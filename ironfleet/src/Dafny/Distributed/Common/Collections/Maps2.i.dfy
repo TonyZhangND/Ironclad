@@ -4,31 +4,31 @@ include "Maps2.s.dfy"
 module Collections__Maps2_i {
 import opened Collections__Maps2_s
 
-function maprange<KT,VT>(m:map<KT,VT>) : set<VT>
+ghost function maprange<KT,VT>(m:map<KT,VT>) : set<VT>
 {
   set k | k in m :: m[k]
 }
 
 type imap2<!K1, !K2, V> = imap<K1, imap<K2, V>>
 
-predicate imap2total<K1(!new), K2(!new), V>(m:imap2<K1, K2, V>)
+ghost predicate imap2total<K1(!new), K2(!new), V>(m:imap2<K1, K2, V>)
 {
   imaptotal(m) && forall k1 :: imaptotal(m[k1])
 }
 
-predicate imaptotal_(f:imap<int, int>) { imaptotal(f) } // TODO: remove hack when opaque/generic bug is fixed
+ghost predicate imaptotal_(f:imap<int, int>) { imaptotal(f) } // TODO: remove hack when opaque/generic bug is fixed
 
-predicate monotonic(f:imap<int, int>)
+ghost predicate monotonic(f:imap<int, int>)
 {
   forall i1, i2 :: i1 in f && i2 in f && i1 <= i2 ==> f[i1] <= f[i2]
 }
 
-predicate monotonic_from(start:int, f:imap<int, int>)
+ghost predicate monotonic_from(start:int, f:imap<int, int>)
 {
   forall i1, i2 :: i1 in f && i2 in f && start <= i1 <= i2 ==> f[i1] <= f[i2]
 }
 
-predicate behaviorMonotonic<S>(b:imap<int, S>, f:imap<S, int>)
+ghost predicate behaviorMonotonic<S>(b:imap<int, S>, f:imap<S, int>)
   requires imaptotal(b)
   requires imaptotal(f)
 {
@@ -65,7 +65,7 @@ lemma Lemma_imap2equiv<K1, K2, V>(f:imap2<K1, K2, V>, g:imap2<K1, K2, V>)
 {
 }
 
-predicate TLe(i:int, j:int) { i <= j }
+ghost predicate TLe(i:int, j:int) { i <= j }
 
 lemma Lemma_imapInductionRange(start:int, end:int, f:imap<int, bool>)
   requires TLe(start, end)

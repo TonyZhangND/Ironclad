@@ -28,7 +28,7 @@ import opened Collections__Seqs_s
 import opened Collections__Sets_i
 
 // Same as x == y, but triggers extensional equality on fields and provides better error diagnostics
-predicate Eq_ElectionState(x:ElectionState, y:ElectionState)
+ghost predicate Eq_ElectionState(x:ElectionState, y:ElectionState)
 {
   && x.constants == y.constants
   && x.current_view == y.current_view
@@ -60,13 +60,13 @@ method CComputeSuccessorView(cb:CBallot, constants:ConstantsState) returns(cb':C
   }
 }
 
-function ElectionStateUpdateValueSetsToReflectNextEpoch(es:ElectionState):ElectionState
+ghost function ElectionStateUpdateValueSetsToReflectNextEpoch(es:ElectionState):ElectionState
 {
   es.(requests_received_this_epoch := [],
       requests_received_prev_epochs := es.requests_received_prev_epochs + es.requests_received_this_epoch)
 }
 
-//function method CElectionStateValueSetsReflectNewView(es:CElectionState):CElectionState
+//function CElectionStateValueSetsReflectNewView(es:CElectionState):CElectionState
 //  requires CElectionStateIsAbstractable(es)
 //  ensures CElectionStateIsAbstractable(CElectionStateValueSetsReflectNewView(es))
 //  ensures ElectionStateUpdateValueSetsToReflectNextEpoch(AbstractifyCElectionStateToElectionState(es)) 
@@ -81,7 +81,7 @@ function ElectionStateUpdateValueSetsToReflectNextEpoch(es:ElectionState):Electi
 // SEQUENCE MATH
 //////////////////////
 
-function method BoundCRequestSequence(s:seq<CRequest>, lengthBound:uint64):(bool,seq<CRequest>)
+function BoundCRequestSequence(s:seq<CRequest>, lengthBound:uint64):(bool,seq<CRequest>)
   requires |s| < 0x1_0000_0000_0000_0000
 {
   if 0 <= lengthBound < (|s| as uint64) then (true, s[..lengthBound]) else (false,s)
@@ -171,7 +171,7 @@ method BoundCRequestHeaders(s:seq<CRequest>, ghost headers:set<CRequestHeader>, 
 // REQUESTS
 //////////////////////
 
-function {:fuel 5,6} RemoveAllSatisfiedCRequestsInSequence(s:seq<CRequest>, r:CRequest):seq<CRequest>
+ghost function {:fuel 5,6} RemoveAllSatisfiedCRequestsInSequence(s:seq<CRequest>, r:CRequest):seq<CRequest>
   ensures  forall r' :: r' in RemoveAllSatisfiedCRequestsInSequence(s, r) ==> r' in s
 {
   if |s| == 0 then
@@ -182,7 +182,7 @@ function {:fuel 5,6} RemoveAllSatisfiedCRequestsInSequence(s:seq<CRequest>, r:CR
     [s[0]] + RemoveAllSatisfiedCRequestsInSequence(s[1..], r)
 }
 
-function {:fuel 5,6} RemoveAllSatisfiedCRequestsInSequenceAlt(s:seq<CRequest>, r:CRequest):seq<CRequest>
+ghost function {:fuel 5,6} RemoveAllSatisfiedCRequestsInSequenceAlt(s:seq<CRequest>, r:CRequest):seq<CRequest>
 {
   if |s| == 0 then
     []
@@ -215,7 +215,7 @@ lemma lemma_RemoveAllSatisfiedCRequestsInSequenceUpdate(s:seq<CRequest>, r:CRequ
   lemma_RemoveAllSatisfiedCRequestsInSequenceAltEquivalent(s', r);
 }
 
-function HeadersFromPrefix(s:seq<CRequest>, i:int):set<CRequestHeader>
+ghost function HeadersFromPrefix(s:seq<CRequest>, i:int):set<CRequestHeader>
   requires 0 <= i <= |s|
 {
   set j | 0 <= j < i :: CRequestHeader(s[j].client, s[j].seqno)
@@ -883,7 +883,7 @@ lemma lemma_HeadersMatchAddition(requests:seq<CRequest>, headers:set<CRequestHea
   assert !(header in headers);
 }
 
-function ExtractHeader(req:CRequest) : CRequestHeader
+ghost function ExtractHeader(req:CRequest) : CRequestHeader
 {
   CRequestHeader(req.client, req.seqno)
 }

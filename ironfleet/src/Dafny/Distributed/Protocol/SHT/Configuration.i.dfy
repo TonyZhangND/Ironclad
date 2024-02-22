@@ -12,12 +12,12 @@ datatype SHTConfiguration = SHTConfiguration(
     rootIdentity:NodeIdentity,
     params:Parameters)
 
-predicate HostsDistinct(hostIds:seq<NodeIdentity>, i:int, j:int)
+ghost predicate HostsDistinct(hostIds:seq<NodeIdentity>, i:int, j:int)
 {
     0 <= i < |hostIds| && 0 <= j < |hostIds| && hostIds[i] == hostIds[j] ==> i == j
 }
 
-predicate WFSHTConfiguration(c:SHTConfiguration)
+ghost predicate WFSHTConfiguration(c:SHTConfiguration)
 {
        0 < |c.hostIds|
     && c.rootIdentity in c.hostIds

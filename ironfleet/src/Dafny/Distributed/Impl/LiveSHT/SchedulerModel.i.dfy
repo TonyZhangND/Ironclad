@@ -18,7 +18,7 @@ import opened LiveSHT__NetSHT_i
 import opened LiveSHT__Environment_i
 import opened Common__NodeIdentity_i
 
-predicate AllIosAreSends(ios:seq<LSHTIo>)
+ghost predicate AllIosAreSends(ios:seq<LSHTIo>)
 {
     forall i :: 0<=i<|ios| ==> ios[i].LIoOpSend?
 }
@@ -47,14 +47,14 @@ lemma MapSentPacketSeqToIos_ExtractSentPacketsFromIos_equivalence(sent_packets:s
     }
 }
 
-function MapSentPacketToIos(sent_packet:CPacket) : seq<LSHTIo>
+ghost function MapSentPacketToIos(sent_packet:CPacket) : seq<LSHTIo>
     requires OutboundPacketsIsValid(sent_packet);
 {
     [LIoOpSend(AbstractifyCPacketToLSHTPacket(sent_packet))]
 }
 
 
-function {:opaque} MapSentPacketSeqToIos(sent_packets:seq<CPacket>) : seq<LSHTIo>
+ghost function {:opaque} MapSentPacketSeqToIos(sent_packets:seq<CPacket>) : seq<LSHTIo>
     requires OutboundPacketsSeqIsValid(sent_packets);
     //requires forall i :: 0 <= i < |sent_packets| ==> CPacketIsSendable(sent_packets[i]) && sent_packets[i].msg.CSingleMessage? && CSingleMessageMarshallable(sent_packets[i].msg)
     ensures |MapSentPacketSeqToIos(sent_packets)| == |sent_packets|;

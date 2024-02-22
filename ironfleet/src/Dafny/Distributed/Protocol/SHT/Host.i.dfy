@@ -41,48 +41,48 @@ datatype Host = Host(
     ghost receivedRequests:seq<AppRequest>
     )
 
-function LSHTPacketToPacket(lp:LSHTPacket) : Packet
+ghost function LSHTPacketToPacket(lp:LSHTPacket) : Packet
 {
     Packet(lp.dst, lp.src, lp.msg)
 }
 
-predicate ValidKeyPlus(key:KeyPlus)
+ghost predicate ValidKeyPlus(key:KeyPlus)
 {
     key.KeyZero? || key.KeyInf? || ValidKey(key.k)
 }
 
-predicate ValidOptionalValue(opt:OptionalValue)
+ghost predicate ValidOptionalValue(opt:OptionalValue)
 {
     opt.ValueAbsent? || ValidValue(opt.v)
 }
 
-predicate ValidKeyRange(kr:KeyRange)
+ghost predicate ValidKeyRange(kr:KeyRange)
 {
     ValidKeyPlus(kr.klo) && ValidKeyPlus(kr.khi)
 }
 
-function ExtractPacketsFromLSHTPackets(seqPackets:seq<LSHTPacket>) : set<Packet>
+ghost function ExtractPacketsFromLSHTPackets(seqPackets:seq<LSHTPacket>) : set<Packet>
     ensures forall p :: p in seqPackets <==> Packet(p.dst, p.src, p.msg) in ExtractPacketsFromLSHTPackets(seqPackets)
 {
     MapSeqToSet(seqPackets, LSHTPacketToPacket)
 }
 
-predicate DelegationMap_InitTrigger(k:Key)
+ghost predicate DelegationMap_InitTrigger(k:Key)
 {
   true
 }
 
-function DelegationMap_Init(rootIdentity:NodeIdentity) : DelegationMap {
+ghost function DelegationMap_Init(rootIdentity:NodeIdentity) : DelegationMap {
     imap k {:trigger DelegationMap_InitTrigger(k)} :: rootIdentity
 }
 
-function method HashtableLookup(h:Hashtable, k:Key) : OptionalValue
+function HashtableLookup(h:Hashtable, k:Key) : OptionalValue
 {
     if k in h then ValuePresent(h[k]) else ValueAbsent()
 }
 
 // Initially, everybody thinks the root is in charge of every key.
-predicate Host_Init(s:Host, id:NodeIdentity, rootIdentity:NodeIdentity, hostIds:seq<NodeIdentity>, params:Parameters) {
+ghost predicate Host_Init(s:Host, id:NodeIdentity, rootIdentity:NodeIdentity, hostIds:seq<NodeIdentity>, params:Parameters) {
     s==Host(
         Constants(rootIdentity, hostIds, params),
         id,
@@ -94,7 +94,7 @@ predicate Host_Init(s:Host, id:NodeIdentity, rootIdentity:NodeIdentity, hostIds:
         [])
 }
 
-predicate NextGetRequest_Reply(s:Host, s':Host, src:NodeIdentity, seqno:int, k:Key, sm:SingleMessage<Message>, m:Message, out:set<Packet>, shouldSend:bool)
+ghost predicate NextGetRequest_Reply(s:Host, s':Host, src:NodeIdentity, seqno:int, k:Key, sm:SingleMessage<Message>, m:Message, out:set<Packet>, shouldSend:bool)
     requires DelegationMapComplete(s.delegationMap);
 {
     var owner := DelegateForKey(s.delegationMap, k);
@@ -115,7 +115,7 @@ predicate NextGetRequest_Reply(s:Host, s':Host, src:NodeIdentity, seqno:int, k:K
         && out == {}
 }
 
-predicate NextGetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextGetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -126,7 +126,7 @@ predicate NextGetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     && (exists sm,m,b :: NextGetRequest_Reply(s, s', pkt.src, pkt.msg.seqno, pkt.msg.m.k_getrequest, sm, m, out, b))
 }
 
-predicate NextSetRequest_Complete(s:Host, s':Host, src:NodeIdentity, seqno:int, reqm:Message, sm:SingleMessage<Message>, replym:Message, out:set<Packet>, shouldSend:bool)
+ghost predicate NextSetRequest_Complete(s:Host, s':Host, src:NodeIdentity, seqno:int, reqm:Message, sm:SingleMessage<Message>, replym:Message, out:set<Packet>, shouldSend:bool)
     requires DelegationMapComplete(s.delegationMap);
     requires reqm.SetRequest?;
 {
@@ -152,7 +152,7 @@ predicate NextSetRequest_Complete(s:Host, s':Host, src:NodeIdentity, seqno:int, 
         && out == {}
 }
 
-predicate NextSetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextSetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -162,7 +162,7 @@ predicate NextSetRequest(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     && s'.numDelegations == s.numDelegations  // UNCHANGED
 }
 
-predicate NextDelegate(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextDelegate(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -182,7 +182,7 @@ predicate NextDelegate(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     && s'.receivedRequests == s.receivedRequests
 }
 
-predicate NextShard(s:Host, s':Host, out:set<Packet>, kr:KeyRange, recipient:NodeIdentity, sm:SingleMessage<Message>, shouldSend:bool)
+ghost predicate NextShard(s:Host, s':Host, out:set<Packet>, kr:KeyRange, recipient:NodeIdentity, sm:SingleMessage<Message>, shouldSend:bool)
     requires DelegationMapComplete(s.delegationMap);
 {
        recipient != s.me  // HISTORY: proof caught this missing conjunct
@@ -203,9 +203,9 @@ predicate NextShard(s:Host, s':Host, out:set<Packet>, kr:KeyRange, recipient:Nod
          && s'.h == s.h
 }
 
-function max_hashtable_size():int { 62 }
+ghost function max_hashtable_size():int { 62 }
 
-predicate NextShard_Wrapper(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextShard_Wrapper(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -222,7 +222,7 @@ predicate NextShard_Wrapper(s:Host, s':Host, pkt:Packet, out:set<Packet>)
             exists sm,b :: NextShard(s, s', out, pkt.msg.m.kr, pkt.msg.m.recipient, sm, b)
 }
 
-predicate NextReply(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextReply(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -231,7 +231,7 @@ predicate NextReply(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     && s' == s.(receivedPacket := s'.receivedPacket)
 }
 
-predicate NextRedirect(s:Host, s':Host, pkt:Packet, out:set<Packet>)
+ghost predicate NextRedirect(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     requires pkt.msg.SingleMessage?;
     requires DelegationMapComplete(s.delegationMap);
 {
@@ -240,14 +240,14 @@ predicate NextRedirect(s:Host, s':Host, pkt:Packet, out:set<Packet>)
     && s' == s.(receivedPacket := s'.receivedPacket)
 }
 
-predicate ShouldProcessReceivedMessage(s:Host)
+ghost predicate ShouldProcessReceivedMessage(s:Host)
 {
     s.receivedPacket.Some?
  && s.receivedPacket.v.msg.SingleMessage?
  && ((s.receivedPacket.v.msg.m.Delegate? || s.receivedPacket.v.msg.m.Shard?) ==> s.numDelegations < s.constants.params.max_delegations - 2)
 }
 
-predicate Process_Message(s:Host, s':Host, out:set<Packet>)
+ghost predicate Process_Message(s:Host, s':Host, out:set<Packet>)
     requires DelegationMapComplete(s.delegationMap);
 {
     if ShouldProcessReceivedMessage(s) then
@@ -262,7 +262,7 @@ predicate Process_Message(s:Host, s':Host, out:set<Packet>)
         s' == s && out == {}
 }
 
-predicate ReceivePacket(s:Host, s':Host, pkt:Packet, out:set<Packet>, ack:Packet)
+ghost predicate ReceivePacket(s:Host, s':Host, pkt:Packet, out:set<Packet>, ack:Packet)
 {
     if s.receivedPacket.None? then    // No packet currently waiting to be processed
            ReceiveSingleMessage(s.sd, s'.sd, pkt, ack, out) // Record and possibly ack it
@@ -276,7 +276,7 @@ predicate ReceivePacket(s:Host, s':Host, pkt:Packet, out:set<Packet>, ack:Packet
 }
 
 
-predicate ProcessReceivedPacket(s:Host, s':Host, out:set<Packet>)
+ghost predicate ProcessReceivedPacket(s:Host, s':Host, out:set<Packet>)
     requires DelegationMapComplete(s.delegationMap);
 {
     if s.receivedPacket.Some? then 
@@ -289,12 +289,12 @@ predicate ProcessReceivedPacket(s:Host, s':Host, out:set<Packet>)
 // We could also just retransmit some, but not all, leaving it to the impl to decide.
 // For liveness, we have to retransmit some, and at the very least, retransmit in some order.
 // I suspect retransmitting them all will simplify things, however.
-predicate SpontaneouslyRetransmit(s:Host, s':Host, out:set<Packet>)
+ghost predicate SpontaneouslyRetransmit(s:Host, s':Host, out:set<Packet>)
 {
     (out == UnAckedMessages(s.sd, s.me) && s == s')
 }
 
-predicate Host_Next(s:Host, s':Host, recv:set<Packet>, out:set<Packet>)
+ghost predicate Host_Next(s:Host, s':Host, recv:set<Packet>, out:set<Packet>)
 {
        s'.constants == s.constants
     && s'.me == s.me

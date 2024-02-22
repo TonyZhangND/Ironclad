@@ -18,7 +18,7 @@ import opened Collections__Sets_i
 
 // Frustrating:
 // a set comprehension must produce a finite set, but Dafny's heuristics can't figure out how to produce a bounded set of values for 'h'
-//function RefinedDomain(s:SHT_State) : set<Key>
+//ghost function RefinedDomain(s:SHT_State) : set<Key>
 //    requires MapComplete(s);
 //{
 //    set h,k | FindHashTable(s,k)==h && k in h :: k
@@ -26,7 +26,7 @@ import opened Collections__Sets_i
 
 // Workaround: Add a finite bound for 'h'. This set doesn't
 // restrict RefinedDomain at all, but convinces Dafny it's finite.
-function AllHashTables(s:SHT_State) : set<Hashtable>
+ghost function AllHashTables(s:SHT_State) : set<Hashtable>
     requires MapComplete(s);
 {
     (set pkt | pkt in s.network && pkt.src in AllHostIdentities(s) 
@@ -36,7 +36,7 @@ function AllHashTables(s:SHT_State) : set<Hashtable>
 }
 
 // This definition is opaque because it is trigger-happy (alternating quantifiers)
-function {:opaque} RefinedDomain(s:SHT_State) : set<Key>
+ghost function {:opaque} RefinedDomain(s:SHT_State) : set<Key>
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -45,7 +45,7 @@ function {:opaque} RefinedDomain(s:SHT_State) : set<Key>
     set h,k | (h in AllHashTables(s)) && FindHashTable(s,k)==h && (k in h) :: k
 }
 
-/*function Refinement(s:SHT_State) : Hashtable
+/*ghost function Refinement(s:SHT_State) : Hashtable
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);
@@ -57,7 +57,7 @@ function {:opaque} RefinedDomain(s:SHT_State) : set<Key>
     map k | k in RefinedDomain(s) :: FindHashTable(s,k)[k]
 }*/
 
-function Refinement(s:SHT_State) : ServiceState
+ghost function Refinement(s:SHT_State) : ServiceState
     requires MapComplete(s);
     requires PacketsHaveSaneHeaders(s);
     requires AllDelegationsToKnownHosts(s);

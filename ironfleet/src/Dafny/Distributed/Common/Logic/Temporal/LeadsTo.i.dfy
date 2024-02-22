@@ -17,24 +17,24 @@ import opened Math__mul_i
 // DEFINITIONS
 //////////////////
 
-function leadsto(x:temporal, y:temporal):temporal
+ghost function leadsto(x:temporal, y:temporal):temporal
 {
   always(imply(x, eventual(y)))
 }
 
-function leadstowithin(x:temporal, y:temporal, t:int, timefun:imap<int, int>):temporal
+ghost function leadstowithin(x:temporal, y:temporal, t:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
 {
   always(imply(x, eventuallywithin(y, t, timefun)))
 }
 
-function leadstonextwithin(x:temporal, action:temporal, t:int, timefun:imap<int, int>):temporal
+ghost function leadstonextwithin(x:temporal, action:temporal, t:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
 {
   always(imply(x, eventuallynextwithin(action, t, timefun)))
 }
 
-function leadstonextwithinnext(x:temporal, action:temporal, t:int, timefun:imap<int, int>):temporal
+ghost function leadstonextwithinnext(x:temporal, action:temporal, t:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
 {
   always(imply(x, next(eventuallynextwithin(action, t, timefun))))

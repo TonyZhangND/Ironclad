@@ -8,7 +8,7 @@ include "integer_sequences.s.dfy"
 //- Little-endian
 //-////////////////////////////////////////////////////////////////////////////
 
-static function {:opaque} LEDigitSeqToInt_private(place_value:int, digits:seq<int>) : int
+static ghost function {:opaque} LEDigitSeqToInt_private(place_value:int, digits:seq<int>) : int
     decreases |digits|;
 {
     if (digits==[]) then
@@ -17,7 +17,7 @@ static function {:opaque} LEDigitSeqToInt_private(place_value:int, digits:seq<in
         LEDigitSeqToInt_private(place_value, digits[1..])*place_value + digits[0]
 }
 
-static function LEDigitSeqToInt(place_value:int, digits:seq<int>) : int
+static ghost function LEDigitSeqToInt(place_value:int, digits:seq<int>) : int
     requires IsDigitSeq(place_value, digits);
 {
     LEDigitSeqToInt_private(place_value, digits)

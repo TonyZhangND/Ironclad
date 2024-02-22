@@ -4,13 +4,13 @@ include "MillerRabin.i.dfy"
 
 
 
-static predicate PrimeGenerationWorksheetValid_precondition(worksheet:PrimeGenerationWorksheet)
+static ghost predicate PrimeGenerationWorksheetValid_precondition(worksheet:PrimeGenerationWorksheet)
 {
     0 < |worksheet.rows|
 //-    && CandidateSeedWorksheetValid_precondition(worksheet.rows[|worksheet.rows|-1].candidate)
 }
 
-static predicate PrimeGenerationWorksheetValid_incremental(keybits:int, worksheet:PrimeGenerationWorksheet, last_succeeds:bool)
+static ghost predicate PrimeGenerationWorksheetValid_incremental(keybits:int, worksheet:PrimeGenerationWorksheet, last_succeeds:bool)
     requires 0<keybits;
 {
     //- each row locally valid
@@ -26,7 +26,7 @@ static predicate PrimeGenerationWorksheetValid_incremental(keybits:int, workshee
     && PrimeGenerationWorksheetConsumesRandoms(worksheet.rows) == worksheet.randoms
 }
 
-static function PrimeGenerationWorksheetAppend(keybits:int, worksheet:PrimeGenerationWorksheet, worksheet_row:PrimeGenerationWorksheetRow, last_accepted:bool) : PrimeGenerationWorksheet
+static ghost function PrimeGenerationWorksheetAppend(keybits:int, worksheet:PrimeGenerationWorksheet, worksheet_row:PrimeGenerationWorksheetRow, last_accepted:bool) : PrimeGenerationWorksheet
     requires 0<keybits;
 //-    requires PrimeGenerationWorksheetValid_precondition(worksheet);
     requires PrimeGenerationWorksheetValid_incremental(keybits, worksheet, false);

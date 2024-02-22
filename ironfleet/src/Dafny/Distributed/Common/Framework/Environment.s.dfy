@@ -24,7 +24,7 @@ datatype LEnvironment<IdType, MessageType(==)> = LEnvironment(time:int,
                                                               hostInfo:map<IdType, LHostInfo<IdType, MessageType>>,
                                                               nextStep:LEnvStep<IdType, MessageType>)
                                         
-predicate IsValidLIoOp<IdType, MessageType>(io:LIoOp, actor:IdType, e:LEnvironment<IdType, MessageType>)
+ghost predicate IsValidLIoOp<IdType, MessageType>(io:LIoOp, actor:IdType, e:LEnvironment<IdType, MessageType>)
 {
   match io
     case LIoOpSend(s) => s.src == actor
@@ -33,7 +33,7 @@ predicate IsValidLIoOp<IdType, MessageType>(io:LIoOp, actor:IdType, e:LEnvironme
     case LIoOpReadClock(t) => true
 }
 
-predicate LIoOpOrderingOKForAction<IdType, MessageType>(
+ghost predicate LIoOpOrderingOKForAction<IdType, MessageType>(
   io1:LIoOp<IdType, MessageType>,
   io2:LIoOp<IdType, MessageType>
   )
@@ -41,14 +41,14 @@ predicate LIoOpOrderingOKForAction<IdType, MessageType>(
   io1.LIoOpReceive? || io2.LIoOpSend?
 }
 
-predicate LIoOpSeqCompatibleWithReduction<IdType, MessageType>(
+ghost predicate LIoOpSeqCompatibleWithReduction<IdType, MessageType>(
   ios:seq<LIoOp<IdType, MessageType>>
   )
 {
   forall i {:trigger ios[i], ios[i+1]} :: 0 <= i < |ios| - 1 ==> LIoOpOrderingOKForAction(ios[i], ios[i+1])
 }
 
-predicate IsValidLEnvStep<IdType, MessageType>(e:LEnvironment<IdType, MessageType>, step:LEnvStep)
+ghost predicate IsValidLEnvStep<IdType, MessageType>(e:LEnvironment<IdType, MessageType>, step:LEnvStep)
 {
   match step
     case LEnvStepHostIos(actor, ios) => && (forall io :: io in ios ==> IsValidLIoOp(io, actor, e))
@@ -58,7 +58,7 @@ predicate IsValidLEnvStep<IdType, MessageType>(e:LEnvironment<IdType, MessageTyp
     case LEnvStepStutter => true
 }
 
-predicate LEnvironment_Init<IdType, MessageType>(
+ghost predicate LEnvironment_Init<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>
   )
 {
@@ -66,7 +66,7 @@ predicate LEnvironment_Init<IdType, MessageType>(
   && e.time >= 0
 }
 
-predicate LEnvironment_PerformIos<IdType, MessageType>(
+ghost predicate LEnvironment_PerformIos<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   e':LEnvironment<IdType, MessageType>,
   actor:IdType,
@@ -78,7 +78,7 @@ predicate LEnvironment_PerformIos<IdType, MessageType>(
   && e'.time == e.time
 }
 
-predicate LEnvironment_AdvanceTime<IdType, MessageType>(
+ghost predicate LEnvironment_AdvanceTime<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   e':LEnvironment<IdType, MessageType>
   )
@@ -88,7 +88,7 @@ predicate LEnvironment_AdvanceTime<IdType, MessageType>(
   && e'.sentPackets == e.sentPackets
 }
 
-predicate LEnvironment_Stutter<IdType, MessageType>(
+ghost predicate LEnvironment_Stutter<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   e':LEnvironment<IdType, MessageType>
   )
@@ -97,7 +97,7 @@ predicate LEnvironment_Stutter<IdType, MessageType>(
   && e'.sentPackets == e.sentPackets
 }
 
-predicate LEnvironment_Next<IdType, MessageType>(
+ghost predicate LEnvironment_Next<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   e':LEnvironment<IdType, MessageType>
   )
@@ -110,7 +110,7 @@ predicate LEnvironment_Next<IdType, MessageType>(
       case LEnvStepStutter => LEnvironment_Stutter(e, e')
 }
 
-function{:opaque} EnvironmentNextTemporal<IdType,MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>):temporal
+ghost function{:opaque} EnvironmentNextTemporal<IdType,MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>):temporal
   requires imaptotal(b)
   ensures forall i {:trigger sat(i, EnvironmentNextTemporal(b))} ::
               sat(i, EnvironmentNextTemporal(b)) <==> LEnvironment_Next(b[i], b[nextstep(i)])
@@ -118,7 +118,7 @@ function{:opaque} EnvironmentNextTemporal<IdType,MessageType>(b:Behavior<LEnviro
   stepmap(imap i :: LEnvironment_Next(b[i], b[nextstep(i)]))
 }
 
-predicate LEnvironment_BehaviorSatisfiesSpec<IdType, MessageType>(
+ghost predicate LEnvironment_BehaviorSatisfiesSpec<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>
   )
 {

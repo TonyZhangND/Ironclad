@@ -1,7 +1,7 @@
 include "../RandomNumberGen.s.dfy"
 include "../../Math/power.s.dfy"
 
-static function method Configure_MillerRabinStrength() : int { 8 }
+static function Configure_MillerRabinStrength() : int { 8 }
     //- According to HAC table 4.4,
     //- 512 bit key => 256 bit prime => 12 probes,
     //- 1024 bit key => 512 bit prime => 8 probes.
@@ -28,7 +28,7 @@ datatype MillerRabinWorksheet = MillerRabinWorksheet_c(
     is_probably_prime:bool,
     randoms:seq<int>);
 
-static function MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheet>) : seq<int>
+static ghost function MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheet>) : seq<int>
 {
     if (rows==[]) then
         []
@@ -36,7 +36,7 @@ static function MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksh
         MillerRabinWorksheetConsumesRandoms(rows[..|rows|-1]) + rows[|rows|-1].randoms
 }
 
-//-static predicate MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheet>, randoms:seq<int>)
+//-static ghost predicate MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksheet>, randoms:seq<int>)
 //-{
 //-    if (|rows|==0) then
 //-        |randoms|==0
@@ -46,14 +46,14 @@ static function MillerRabinWorksheetConsumesRandoms(rows:seq<CandidateSeedWorksh
 //-                |rows[0].randoms|..])
 //-}
 
-static predicate IsMillerRabinProbeSeed(n:int, req:SelectRandomRequest)
+static ghost predicate IsMillerRabinProbeSeed(n:int, req:SelectRandomRequest)
 {
     req.l == 2
     && req.h == n-2
     && SelectRandomRequestValid(req)
 }
 
-static predicate MillerRabinProbeConsistency(
+static ghost predicate MillerRabinProbeConsistency(
     n:int,
     probe_candidate:CandidateSeedWorksheet,
     probe_seed_req:SelectRandomRequest,
@@ -64,7 +64,7 @@ static predicate MillerRabinProbeConsistency(
     && probe.a == CandidateSeedWorksheetOutput(probe_candidate)
 }
 
-static predicate MillerRabinWorksheetValid(n:int, worksheet:MillerRabinWorksheet)
+static ghost predicate MillerRabinWorksheetValid(n:int, worksheet:MillerRabinWorksheet)
 {
     |worksheet.probes|==|worksheet.probe_candidates|
     && |worksheet.probes|==|worksheet.probe_seed_reqs|
@@ -83,25 +83,25 @@ datatype MRProblem = MRProblem_c(
     s:nat,
     d:nat)
 
-static predicate MRProblemEarlyReject(problem:MRProblem)
+static ghost predicate MRProblemEarlyReject(problem:MRProblem)
 {
     problem.n <= 3
     || problem.n%2 == 0
 }
 
-static predicate MRProblemNeedsProbes(problem:MRProblem)
+static ghost predicate MRProblemNeedsProbes(problem:MRProblem)
 {
     !MRProblemEarlyReject(problem)
 
     //- Input: k, a parameter that determines the accuracy of the test
     && problem.strength == Configure_MillerRabinStrength()
 
-    //- write n - 1 as 2^s·d with d odd by factoring powers of 2 from n - 1
+    //- write n - 1 as 2^sï¿½d with d odd by factoring powers of 2 from n - 1
     && problem.n-1 == power(2,problem.s)*problem.d
     && problem.d%2==1
 }
 
-static predicate MRProblemValid(problem:MRProblem)
+static ghost predicate MRProblemValid(problem:MRProblem)
 {
     MRProblemEarlyReject(problem)
     || MRProblemNeedsProbes(problem)
@@ -129,14 +129,14 @@ datatype MRProbe = MRProbe_c(
     a:nat,
     squares:seq<int>)
 
-static predicate MRProbeInit(problem:MRProblem, probe:MRProbe)
+static ghost predicate MRProbeInit(problem:MRProblem, probe:MRProbe)
     requires MRProblemNeedsProbes(problem);
     requires 0 < |probe.squares|;
 {
     probe.squares[0] == power(probe.a,problem.d) % problem.n
 }
 
-static predicate MRProbeChain(problem:MRProblem, probe:MRProbe, i:nat)
+static ghost predicate MRProbeChain(problem:MRProblem, probe:MRProbe, i:nat)
     requires MRProblemNeedsProbes(problem);
     requires 0 < i < |probe.squares|;
 {
@@ -144,7 +144,7 @@ static predicate MRProbeChain(problem:MRProblem, probe:MRProbe, i:nat)
 }
 
 //- If problem.s == 0, then 
-static predicate MRProbeValid(problem:MRProblem, probe:MRProbe)
+static ghost predicate MRProbeValid(problem:MRProblem, probe:MRProbe)
 {
     MRProblemNeedsProbes(problem)
     && 0<|probe.squares|
@@ -158,12 +158,12 @@ static predicate MRProbeValid(problem:MRProblem, probe:MRProbe)
         (0<i<|probe.squares|-1 ==> probe.squares[i]!=1))
 }
 
-static function MRProbeLimit(problem:MRProblem) : int
+static ghost function MRProbeLimit(problem:MRProblem) : int
 {
     if (problem.s==0) then 1 else problem.s
 }
 
-static predicate MRProbeSucceeds(problem:MRProblem, probe:MRProbe)
+static ghost predicate MRProbeSucceeds(problem:MRProblem, probe:MRProbe)
     requires MRProblemNeedsProbes(problem);
 {
     MRProbeValid(problem, probe)
@@ -178,7 +178,7 @@ static predicate MRProbeSucceeds(problem:MRProblem, probe:MRProbe)
         )
 }
 
-static predicate MRProbeFails(problem:MRProblem, probe:MRProbe)
+static ghost predicate MRProbeFails(problem:MRProblem, probe:MRProbe)
     requires MRProblemNeedsProbes(problem);
 {
     MRProbeValid(problem, probe)
@@ -200,7 +200,7 @@ static predicate MRProbeFails(problem:MRProblem, probe:MRProbe)
 
 
 
-static predicate MillerRabinSpecFails(problem:MRProblem, probes:seq<MRProbe>)
+static ghost predicate MillerRabinSpecFails(problem:MRProblem, probes:seq<MRProbe>)
     //- last probe fails
     //- didn't probe more than problem strength requires
 {
@@ -217,7 +217,7 @@ static predicate MillerRabinSpecFails(problem:MRProblem, probes:seq<MRProbe>)
     )
 }
 
-static predicate MillerRabinSpecSucceeds(problem:MRProblem, probes:seq<MRProbe>)
+static ghost predicate MillerRabinSpecSucceeds(problem:MRProblem, probes:seq<MRProbe>)
     //- all probes succeed
     //- probed exactly as many times as problem strength requires
 {
@@ -228,13 +228,13 @@ static predicate MillerRabinSpecSucceeds(problem:MRProblem, probes:seq<MRProbe>)
     && (forall i :: 0 <= i < |probes| ==> MRProbeSucceeds(problem, probes[i]))
 }
 
-static predicate MillerRabinSpecValid(problem:MRProblem, probes:seq<MRProbe>, result:bool)
+static ghost predicate MillerRabinSpecValid(problem:MRProblem, probes:seq<MRProbe>, result:bool)
 {
     (MillerRabinSpecSucceeds(problem, probes) && result)
     || (MillerRabinSpecFails(problem, probes) && !result)
 }
 
-static predicate IsProbablyPrime(n:nat,strength:nat)
+static ghost predicate IsProbablyPrime(n:nat,strength:nat)
 
 static lemma {:axiom} MillerRabinSpec(problem:MRProblem, probes:seq<MRProbe>)
     requires MRProblemValid(problem);

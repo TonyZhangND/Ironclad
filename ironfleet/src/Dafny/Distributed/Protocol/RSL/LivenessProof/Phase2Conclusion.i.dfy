@@ -39,7 +39,7 @@ import opened Collections__Maps2_s
 import opened Common__UpperBound_s
 import opened Math__mul_i
 
-predicate A2aPacketWithThePersistentClientRequestWasSentInThisViewAndAssignedAnEarlierOperationNumber(
+ghost predicate A2aPacketWithThePersistentClientRequestWasSentInThisViewAndAssignedAnEarlierOperationNumber(
   p:RslPacket,
   b:Behavior<RslState>,
   asp:AssumptionParameters,
@@ -65,7 +65,7 @@ predicate A2aPacketWithThePersistentClientRequestWasSentInThisViewAndAssignedAnE
   && LAllAcceptorsHadNoProposal(b[h.start_step + 1].replicas[h.view.proposer_id].replica.proposer.received_1b_packets, p.msg.opn_2a)
 }
 
-predicate ProposerReachedCertainNextOp(
+ghost predicate ProposerReachedCertainNextOp(
   ps:RslState,
   idx:int,
   opn:OperationNumber
@@ -75,7 +75,7 @@ predicate ProposerReachedCertainNextOp(
   && ps.replicas[idx].replica.proposer.next_operation_number_to_propose >= opn
 }
 
-function{:opaque} ProposerReachedCertainNextOpTemporal(
+ghost function{:opaque} ProposerReachedCertainNextOpTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:OperationNumber

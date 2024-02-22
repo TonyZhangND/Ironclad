@@ -9,7 +9,7 @@ import opened CmdLineParser_i
 import opened Common__NetClient_i
 import opened Common__SeqIsUniqueDef_i
 
-function lock_config_parsing(args:seq<seq<byte>>) : seq<EndPoint>
+ghost function lock_config_parsing(args:seq<seq<byte>>) : seq<EndPoint>
 {
   parse_end_points(args).1
 }

@@ -6,14 +6,14 @@ include "KeyGen.s.dfy"
 
 datatype PadMode = PadModeEncrypt() | PadModeSign();
 
-static function method BlockType(pad_mode:PadMode) : int
+static function BlockType(pad_mode:PadMode) : int
 {
     if (pad_mode.PadModeSign?) then 1 else 2
 }
 
-static function method SignaturePadByte() : int { 0xff }
+static function SignaturePadByte() : int { 0xff }
 
-static predicate PaddedMessageStartIndex(padded_msg:seq<int>, i:nat, pad_mode:PadMode, padding:seq<int>)
+static ghost predicate PaddedMessageStartIndex(padded_msg:seq<int>, i:nat, pad_mode:PadMode, padding:seq<int>)
 {
     IsByteSeq(padded_msg)
     && 0 < i <= |padded_msg|
@@ -27,7 +27,7 @@ static predicate PaddedMessageStartIndex(padded_msg:seq<int>, i:nat, pad_mode:Pa
     && padded_msg[i-1]==0
 }
 
-static predicate PKCS15_PaddingRelationWith(padded_msg:seq<int>, msg:seq<int>, pad_mode:PadMode, padding:seq<int>)
+static ghost predicate PKCS15_PaddingRelationWith(padded_msg:seq<int>, msg:seq<int>, pad_mode:PadMode, padding:seq<int>)
     requires IsByteSeq(padded_msg);
     requires IsByteSeq(msg);
 {
@@ -36,17 +36,17 @@ static predicate PKCS15_PaddingRelationWith(padded_msg:seq<int>, msg:seq<int>, p
     && padded_msg[|padding|+3..] == msg
 }
 
-static predicate PKCS15_PaddingRelation(padded_msg:seq<int>, msg:seq<int>, pad_mode:PadMode)
+static ghost predicate PKCS15_PaddingRelation(padded_msg:seq<int>, msg:seq<int>, pad_mode:PadMode)
     requires IsByteSeq(padded_msg);    
     requires IsByteSeq(msg);
 {
     exists padding:seq<int> :: PKCS15_PaddingRelationWith(padded_msg, msg, pad_mode, padding)
 }
 
-static function PadCount(msg:seq<int>, k:nat) : int
+static ghost function PadCount(msg:seq<int>, k:nat) : int
     { k - 3 - |msg| }
 
-static predicate NonzeroPad(padding:seq<int>)
+static ghost predicate NonzeroPad(padding:seq<int>)
 {
     forall i :: 0 <= i < |padding| ==> padding[i] != 0
 }
@@ -56,7 +56,7 @@ static predicate NonzeroPad(padding:seq<int>)
 
 
 
-static function PKCS15_EncryptionPad(msg:seq<int>, k:nat, padding:seq<int>) : seq<int>
+static ghost function PKCS15_EncryptionPad(msg:seq<int>, k:nat, padding:seq<int>) : seq<int>
     requires IsByteSeq(msg);
     requires IsByteSeq(padding);
     requires |padding| == PadCount(msg, k);
@@ -67,7 +67,7 @@ static function PKCS15_EncryptionPad(msg:seq<int>, k:nat, padding:seq<int>) : se
     [0, BlockType(PadModeEncrypt())] + padding + [0] + msg
 }
 
-static function PKCS15_SignaturePad(msg:seq<int>, k:nat) : seq<int>
+static ghost function PKCS15_SignaturePad(msg:seq<int>, k:nat) : seq<int>
     requires IsByteSeq(msg);
     requires PadCount(msg, k) >= 8;
     //- lemma proves PKCS15_PaddingRelation(PKCS15_SignaturePad(msg), msg, PadModeSign())
@@ -81,13 +81,13 @@ datatype RSAPubKeySpec = RSAPublicKeySpec_c(
     e:nat    //- public key exponent
     );
 
-static predicate KeyModulusMatchesSizeInBytes(n:nat, k:nat)
+static ghost predicate KeyModulusMatchesSizeInBytes(n:nat, k:nat)
 {
     (k>0 ==> power2(8*(k-1)) <= n)
     && n < power2(8*k)
 }
 
-static predicate WellformedRSAPubKeySpec(pubkey:RSAPubKeySpec)
+static ghost predicate WellformedRSAPubKeySpec(pubkey:RSAPubKeySpec)
 {
     0 < pubkey.n
     && KeyModulusMatchesSizeInBytes(pubkey.n, pubkey.size)
@@ -98,12 +98,12 @@ datatype RSAKeyPairSpec = RSAKeyPairSpec_c(
     d:nat    //- private key exponent
     );
 
-static predicate WellformedRSAKeyPairSpec(key:RSAKeyPairSpec)
+static ghost predicate WellformedRSAKeyPairSpec(key:RSAKeyPairSpec)
 {
     WellformedRSAPubKeySpec(key.pub)
 }
 
-static function {:autoReq} RSAEncryption(pubkey:RSAPubKeySpec, msg:seq<int>, padding:seq<int>) : seq<int>
+static ghost function {:autoReq} RSAEncryption(pubkey:RSAPubKeySpec, msg:seq<int>, padding:seq<int>) : seq<int>
     requires WellformedRSAPubKeySpec(pubkey);
 {
     var pad_msg :=
@@ -112,10 +112,10 @@ static function {:autoReq} RSAEncryption(pubkey:RSAPubKeySpec, msg:seq<int>, pad
     BEIntToByteSeq(power(pad_msg, pubkey.e) % pubkey.n)
 }
 
-//- predicate form is appropriate here, where we don't actually know
+//- ghost predicate form is appropriate here, where we don't actually know
 //- the value of the padding (and can't, until it's decrypted!)
 
-static predicate {:autoReq} RSADecryptionRelation(key:RSAKeyPairSpec, ciphertext:seq<int>, msg:seq<int>)
+static ghost predicate {:autoReq} RSADecryptionRelation(key:RSAKeyPairSpec, ciphertext:seq<int>, msg:seq<int>)
 {
     var cipher_n := BEByteSeqToInt(ciphertext);
 
@@ -126,16 +126,16 @@ static predicate {:autoReq} RSADecryptionRelation(key:RSAKeyPairSpec, ciphertext
         power(cipher_n, key.d) % key.pub.n == padded_msg_n)
 }
 
-static function {:autoReq} RSASignature(key:RSAKeyPairSpec, message:seq<int>) : seq<int>
+static ghost function {:autoReq} RSASignature(key:RSAKeyPairSpec, message:seq<int>) : seq<int>
     requires WellformedRSAKeyPairSpec(key);
 {
     var padded_nint := BEByteSeqToInt(PKCS15_SignaturePad(SHA256Digest(message), key.pub.size));
     BEIntToDigitSeq(power2(8), key.pub.size, power(padded_nint, key.d) % key.pub.n)
 }
 
-//- predicate form is appropriate here, because that's the actual output.
+//- ghost predicate form is appropriate here, because that's the actual output.
 
-static predicate {:autoReq} RSAVerificationRelation(pubkey:RSAPubKeySpec, message:seq<int>, signature:seq<int>)
+static ghost predicate {:autoReq} RSAVerificationRelation(pubkey:RSAPubKeySpec, message:seq<int>, signature:seq<int>)
 {
     var sig_n := BEByteSeqToInt(signature);
     var padded_msg_n := BEByteSeqToInt(PKCS15_SignaturePad(SHA256Digest(message), pubkey.size));
@@ -156,9 +156,9 @@ datatype RSAKeyGenerationWorksheetRow = RSAKeyGenerationWorksheetRow_c(
     accepted:bool,
     randoms:seq<int>);
 
-static function RSA_public_exponent() : int { 65537 }
+static ghost function RSA_public_exponent() : int { 65537 }
 
-static predicate {:autoReq} RSAKeyAccepted(row:RSAKeyGenerationWorksheetRow)
+static ghost predicate {:autoReq} RSAKeyAccepted(row:RSAKeyGenerationWorksheetRow)
 {
     var phi_n := (PrimeGenerationOutput(row.P)-1) * (PrimeGenerationOutput(row.Q)-1);
     if (phi_n < 0) then
@@ -167,7 +167,7 @@ static predicate {:autoReq} RSAKeyAccepted(row:RSAKeyGenerationWorksheetRow)
         is_gcd(phi_n, RSA_public_exponent(), 1)
 }
 
-static predicate {:autoReq} RSAKeyGenerationWorksheetRowValid(keybits:int, row:RSAKeyGenerationWorksheetRow)
+static ghost predicate {:autoReq} RSAKeyGenerationWorksheetRowValid(keybits:int, row:RSAKeyGenerationWorksheetRow)
 {
     var halfbits := keybits/2 + 2;
     PrimeGenerationWorksheetValid(halfbits, row.P)
@@ -188,7 +188,7 @@ datatype RSAKeyGenerationWorksheet = RSAKeyGenerationWorksheet_c(
     n:int
     );
 
-static function RSAKeyGenerationWorksheetConsumesRandoms(rows:seq<RSAKeyGenerationWorksheetRow>) : seq<int>
+static ghost function RSAKeyGenerationWorksheetConsumesRandoms(rows:seq<RSAKeyGenerationWorksheetRow>) : seq<int>
 {
     if (rows==[]) then
         []
@@ -196,7 +196,7 @@ static function RSAKeyGenerationWorksheetConsumesRandoms(rows:seq<RSAKeyGenerati
         RSAKeyGenerationWorksheetConsumesRandoms(rows[..|rows|-1]) + rows[|rows|-1].randoms
 }
 
-static predicate RSAKeyGenerationWorksheetSummaryValid(worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate RSAKeyGenerationWorksheetSummaryValid(worksheet:RSAKeyGenerationWorksheet)
     requires 0 < |worksheet.rows|;
 {
     var final := worksheet.rows[|worksheet.rows|-1];
@@ -210,7 +210,7 @@ static predicate RSAKeyGenerationWorksheetSummaryValid(worksheet:RSAKeyGeneratio
     && worksheet.n == worksheet.p*worksheet.q
 }
 
-static predicate {:autoReq} RSAKeyGenerationWorksheetValid(keybits:int, worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate {:autoReq} RSAKeyGenerationWorksheetValid(keybits:int, worksheet:RSAKeyGenerationWorksheet)
 {
     worksheet.keybits == keybits
     && (forall i :: 0 <= i < |worksheet.rows| ==> RSAKeyGenerationWorksheetRowValid(worksheet.keybits, worksheet.rows[i]))
@@ -220,7 +220,7 @@ static predicate {:autoReq} RSAKeyGenerationWorksheetValid(keybits:int, workshee
     && RSAKeyGenerationWorksheetSummaryValid(worksheet)
 }
 
-static predicate {:autoReq} RSAKeyConsistentWithWorksheet(requested_keybits:int, key:RSAKeyPairSpec, worksheet:RSAKeyGenerationWorksheet)
+static ghost predicate {:autoReq} RSAKeyConsistentWithWorksheet(requested_keybits:int, key:RSAKeyPairSpec, worksheet:RSAKeyGenerationWorksheet)
 {
     WellformedRSAKeyPairSpec(key)
     && RSAKeyGenerationWorksheetValid(requested_keybits, worksheet)
@@ -230,7 +230,7 @@ static predicate {:autoReq} RSAKeyConsistentWithWorksheet(requested_keybits:int,
     && (key.d * key.pub.e) % worksheet.phi == 1
 }
 
-static predicate {:autoReq} RSAKeyGenerationValid(requested_keybits:int, key:RSAKeyPairSpec, randoms:seq<int>)
+static ghost predicate {:autoReq} RSAKeyGenerationValid(requested_keybits:int, key:RSAKeyPairSpec, randoms:seq<int>)
 {
     exists worksheet:RSAKeyGenerationWorksheet ::
         RSAKeyConsistentWithWorksheet(requested_keybits, key, worksheet) && worksheet.randoms == randoms

@@ -2,25 +2,25 @@
 include "../../Libraries/Util/relational.s.dfy"
 include "../../Libraries/Util/bytes_and_words.s.dfy"
 
-function {:opaque} mod4(n:int):int { n % 4 }
-function {:opaque} mod16(n:int):int { n % 16 }
-function {:opaque} mod128(n:int):int { n % 128 }
-function {:opaque} div16(n:int):int { n / 16 }
+ghost function {:opaque} mod4(n:int):int { n % 4 }
+ghost function {:opaque} mod16(n:int):int { n % 16 }
+ghost function {:opaque} mod128(n:int):int { n % 128 }
+ghost function {:opaque} div16(n:int):int { n / 16 }
 
 /**************************************************
  * Spec for interacting with the network card
  **************************************************/
 
-//-function intel_NIC_device_vendor_id() : int { 0x107c8086 }
+//-ghost function intel_NIC_device_vendor_id() : int { 0x107c8086 }
 
 //- Track whether we've initialized the network card
 //- TODO: dafnycc support for: var net_init:bool;
 
-function IsValidPciId(id:int):bool
-function PciMemAddr(id:int):int     //- Region where the device's PCI config registers are mapped into memory
-function PciMemSize(id:int):int
-function DeviceMemAddr() : int      //- Region where devices are allowed to read/write
-function DeviceMemSize() : int
+ghost function IsValidPciId(id:int):bool
+ghost function PciMemAddr(id:int):int     //- Region where the device's PCI config registers are mapped into memory
+ghost function PciMemSize(id:int):int
+ghost function DeviceMemAddr() : int      //- Region where devices are allowed to read/write
+ghost function DeviceMemSize() : int
 
 /****************************************
    Connections to Verve's PCI interface

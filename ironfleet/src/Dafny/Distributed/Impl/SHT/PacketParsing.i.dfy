@@ -27,23 +27,23 @@ import opened Common__NetClient_i
 ////////////////////////////////////////////////////////////////////
 //    Grammars for the basic types
 ////////////////////////////////////////////////////////////////////
-function method OptionalValue_grammar() : G { GTaggedUnion([Value_grammar(), GTuple([])]) }
-function method KeyPlus_grammar() : G { GTaggedUnion([Key_grammar(), GUint64]) }
-function method KeyRange_grammar() : G { GTuple([KeyPlus_grammar(), KeyPlus_grammar()]) }
-function method Hashtable_grammar() : G { GArray(GTuple([Key_grammar(), Value_grammar()])) }
-function method EndPoint_grammar() : G { GByteArray }
+function OptionalValue_grammar() : G { GTaggedUnion([Value_grammar(), GTuple([])]) }
+function KeyPlus_grammar() : G { GTaggedUnion([Key_grammar(), GUint64]) }
+function KeyRange_grammar() : G { GTuple([KeyPlus_grammar(), KeyPlus_grammar()]) }
+function Hashtable_grammar() : G { GArray(GTuple([Key_grammar(), Value_grammar()])) }
+function EndPoint_grammar() : G { GByteArray }
 
 ////////////////////////////////////////////////////////////////////
 //    Grammars for the SHT messages 
 ////////////////////////////////////////////////////////////////////
-function method CMessage_GetRequest_grammar() : G { Key_grammar() }
-function method CMessage_SetRequest_grammar() : G { GTuple([Key_grammar(), OptionalValue_grammar()]) }
-function method CMessage_Reply_grammar() : G      { GTuple([Key_grammar(), OptionalValue_grammar()]) }
-function method CMessage_Redirect_grammar() : G   { GTuple([Key_grammar(), EndPoint_grammar()]) }
-function method CMessage_Shard_grammar() : G      { GTuple([KeyRange_grammar(), EndPoint_grammar()]) }
-function method CMessage_Delegate_grammar() : G   { GTuple([KeyRange_grammar(), Hashtable_grammar()]) }
+function CMessage_GetRequest_grammar() : G { Key_grammar() }
+function CMessage_SetRequest_grammar() : G { GTuple([Key_grammar(), OptionalValue_grammar()]) }
+function CMessage_Reply_grammar() : G      { GTuple([Key_grammar(), OptionalValue_grammar()]) }
+function CMessage_Redirect_grammar() : G   { GTuple([Key_grammar(), EndPoint_grammar()]) }
+function CMessage_Shard_grammar() : G      { GTuple([KeyRange_grammar(), EndPoint_grammar()]) }
+function CMessage_Delegate_grammar() : G   { GTuple([KeyRange_grammar(), Hashtable_grammar()]) }
 
-function method CMessage_grammar() : G { GTaggedUnion([
+function CMessage_grammar() : G { GTaggedUnion([
         CMessage_GetRequest_grammar(),
         CMessage_SetRequest_grammar(),
         CMessage_Reply_grammar(),
@@ -52,12 +52,12 @@ function method CMessage_grammar() : G { GTaggedUnion([
         CMessage_Delegate_grammar()
         ]) }
 
-function method CSingleMessage_grammar() : G { 
+function CSingleMessage_grammar() : G { 
     GTaggedUnion( [ GTuple([GUint64, EndPoint_grammar(), CMessage_grammar()]),  // CSingleMessage
                     GUint64])                                                   // Ack
 }
 
-predicate NetPacketBound(data:seq<byte>) 
+ghost predicate NetPacketBound(data:seq<byte>) 
 {
     |data| < MaxPacketSize()
 }
@@ -76,7 +76,7 @@ lemma lemma_CMessageGrammarValid()
     assert ValidGrammar(CMessage_Shard_grammar());
     assert ValidGrammar(CMessage_Delegate_grammar());
 }
-//function {:opaque} SHTDemarshallable(data:seq<byte>) : bool
+//ghost function {:opaque} SHTDemarshallable(data:seq<byte>) : bool
 //{
 //        |data| < 0x1_0000_0000_0000_0000
 //    && Demarshallable(data, CSingleMessage_grammar()) 
@@ -89,7 +89,7 @@ lemma lemma_CMessageGrammarValid()
 //    Parsing
 ////////////////////////////////////////////////////////////////////
 
-function method parse_OptionalValue(val:V) : OptionalValue
+function parse_OptionalValue(val:V) : OptionalValue
     requires ValInGrammar(val, OptionalValue_grammar());
 {
     if val.c == 0 then
@@ -98,7 +98,7 @@ function method parse_OptionalValue(val:V) : OptionalValue
         ValueAbsent()
 }
 
-function method parse_KeyPlus(val:V) : KeyPlus
+function parse_KeyPlus(val:V) : KeyPlus
     requires ValInGrammar(val, KeyPlus_grammar());
 {
     if val.c == 0 then
@@ -113,13 +113,13 @@ function method parse_KeyPlus(val:V) : KeyPlus
         KeyInf()
 }
 
-function method parse_KeyRange(val:V) : KeyRange
+function parse_KeyRange(val:V) : KeyRange
     requires ValInGrammar(val, KeyRange_grammar());
 {
     KeyRange(parse_KeyPlus(val.t[0]), parse_KeyPlus(val.t[1]))
 }
 
-function method parse_Hashtable(val:V) : Hashtable 
+function parse_Hashtable(val:V) : Hashtable 
     requires ValInGrammar(val, Hashtable_grammar());
     ensures  |parse_Hashtable(val)| <= |val.a|;
     ensures  ValidVal(val) ==> HashtableIs64Bit(parse_Hashtable(val));
@@ -137,49 +137,49 @@ function method parse_Hashtable(val:V) : Hashtable
         m
 }
 
-function method parse_EndPoint(val:V) : EndPoint
+function parse_EndPoint(val:V) : EndPoint
     requires ValInGrammar(val, EndPoint_grammar());
     ensures  EndPointIsAbstractable(parse_EndPoint(val));
 {
     EndPoint(val.b)
 }
 
-function method parse_Message_GetRequest(val:V) : CMessage
+function parse_Message_GetRequest(val:V) : CMessage
     requires ValInGrammar(val, CMessage_GetRequest_grammar());
     ensures  CMessageIsAbstractable(parse_Message_GetRequest(val));
 {
     CGetRequest(parse_Key(val))
 }
 
-function method parse_Message_SetRequest(val:V) : CMessage
+function parse_Message_SetRequest(val:V) : CMessage
     requires ValInGrammar(val, CMessage_SetRequest_grammar());
     ensures  CMessageIsAbstractable(parse_Message_SetRequest(val));
 {
     CSetRequest(parse_Key(val.t[0]), parse_OptionalValue(val.t[1]))
 }
 
-function method parse_Message_Reply(val:V) : CMessage
+function parse_Message_Reply(val:V) : CMessage
     requires ValInGrammar(val, CMessage_Reply_grammar());
     ensures  CMessageIsAbstractable(parse_Message_Reply(val));
 {
     CReply(parse_Key(val.t[0]), parse_OptionalValue(val.t[1]))
 }
 
-function method parse_Message_Redirect(val:V) : CMessage
+function parse_Message_Redirect(val:V) : CMessage
     requires ValInGrammar(val, CMessage_Redirect_grammar());
     ensures  CMessageIsAbstractable(parse_Message_Redirect(val));
 {
     CRedirect(parse_Key(val.t[0]), parse_EndPoint(val.t[1]))
 }
 
-function method parse_Message_Shard(val:V) : CMessage
+function parse_Message_Shard(val:V) : CMessage
     requires ValInGrammar(val, CMessage_Shard_grammar());
     ensures  CMessageIsAbstractable(parse_Message_Shard(val));
 {
     CShard(parse_KeyRange(val.t[0]), parse_EndPoint(val.t[1]))
 }
 
-function method parse_Message_Delegate(val:V) : CMessage
+function parse_Message_Delegate(val:V) : CMessage
     requires ValInGrammar(val, CMessage_Delegate_grammar());
     ensures  CMessageIsAbstractable(parse_Message_Delegate(val));
     ensures  parse_Message_Delegate(val).CDelegate?;
@@ -188,7 +188,7 @@ function method parse_Message_Delegate(val:V) : CMessage
     CDelegate(parse_KeyRange(val.t[0]), parse_Hashtable(val.t[1]))
 }
 
-function method parse_Message(val:V) : CMessage
+function parse_Message(val:V) : CMessage
     requires ValInGrammar(val, CMessage_grammar());
     ensures  CMessageIsAbstractable(parse_Message(val));
     ensures  ValidVal(val) ==> CMessageIs64Bit(parse_Message(val)); 
@@ -210,7 +210,7 @@ function method parse_Message(val:V) : CMessage
         parse_Message_GetRequest(val.val)
 }
 
-function method {:fuel ValidVal,2} parse_CSingleMessage(val:V) : CSingleMessage
+function {:fuel ValidVal,2} parse_CSingleMessage(val:V) : CSingleMessage
     requires ValInGrammar(val, CSingleMessage_grammar());
     ensures  CSingleMessageIsAbstractable(parse_CSingleMessage(val));
     ensures  ValidVal(val) ==> CSingleMessageIs64Bit(parse_CSingleMessage(val)); 
@@ -221,7 +221,7 @@ function method {:fuel ValidVal,2} parse_CSingleMessage(val:V) : CSingleMessage
         CAck(val.val.u)
 }
 
-function SHTDemarshallData(data:seq<byte>) : (result:CSingleMessage)
+ghost function SHTDemarshallData(data:seq<byte>) : (result:CSingleMessage)
   ensures result.CSingleMessage? ==> EndPointIsValidPublicKey(result.dst)
 {
     if Demarshallable(data, CSingleMessage_grammar()) then
@@ -260,14 +260,14 @@ method SHTDemarshallDataMethod(data:array<byte>) returns (msg:CSingleMessage)
 //    64-bit Limits
 ////////////////////////////////////////////////////////////////////
 
-predicate HashtableIs64Bit(h:Hashtable) { |h| < 0x1_0000_0000_0000_0000 }
+ghost predicate HashtableIs64Bit(h:Hashtable) { |h| < 0x1_0000_0000_0000_0000 }
 
-predicate CMessageIs64Bit(m:CMessage)
+ghost predicate CMessageIs64Bit(m:CMessage)
 {
     m.CDelegate? ==> HashtableIs64Bit(m.h)
 }
 
-predicate CSingleMessageIs64Bit(msg:CSingleMessage) 
+ghost predicate CSingleMessageIs64Bit(msg:CSingleMessage) 
 {
     msg.CSingleMessage? ==> CMessageIs64Bit(msg.m)
 }
@@ -277,13 +277,13 @@ predicate CSingleMessageIs64Bit(msg:CSingleMessage)
 ////////////////////////////////////////////////////////////////////
 
 
-predicate ValidHashtable(h:Hashtable)
+ghost predicate ValidHashtable(h:Hashtable)
 {
     |h| < max_hashtable_size()
     && (forall k :: k in h ==> ValidKey(k) && ValidValue(h[k]))
 }
  
-predicate MessageMarshallable(msg:CMessage) 
+ghost predicate MessageMarshallable(msg:CMessage) 
 {
     match msg
         case CGetRequest(k) => ValidKey(k)
@@ -294,7 +294,7 @@ predicate MessageMarshallable(msg:CMessage)
         case CDelegate(kr, h) => ValidKeyRange(kr) && ValidHashtable(h) && !EmptyKeyRange(msg.range)
 }
 
-predicate CSingleMessageMarshallable(msg:CSingleMessage) 
+ghost predicate CSingleMessageMarshallable(msg:CSingleMessage) 
 {
     msg.CAck? || (msg.CSingleMessage? && EndPointIsValidPublicKey(msg.dst) && MessageMarshallable(msg.m))
 }
@@ -428,17 +428,17 @@ method IsCSingleMessageMarshallable(msg:CSingleMessage) returns (b:bool)
 }
 
 
-function CMessageIsValid(msg:CMessage) : bool
+ghost function CMessageIsValid(msg:CMessage) : bool
 {
     MessageMarshallable(msg)
 }
 
-predicate CPacketIsMarshallable(cp:CPacket)
+ghost predicate CPacketIsMarshallable(cp:CPacket)
 {
     EndPointIsAbstractable(cp.src) && EndPointIsAbstractable(cp.dst) && CSingleMessageMarshallable(cp.msg) && (cp.msg.CSingleMessage? && cp.msg.m.CShard? ==> cp.msg.m.recipient != cp.dst)
 }
 
-predicate CPacketsIsMarshallable(cps:set<CPacket>)
+ghost predicate CPacketsIsMarshallable(cps:set<CPacket>)
 {
     forall cp :: cp in cps ==> CPacketIsMarshallable(cp)
 }
@@ -741,18 +741,18 @@ method MarshallCSingleMessage(c:CSingleMessage) returns (val:V)
 }
 
 ////////////////////////////////////////////////////////////////////////
-// These functions need to be here, rather than CMessageRefinements.i.dfy,
+// These ghost functions need to be here, rather than CMessageRefinements.i.dfy,
 // since they depend on SHTDemarshallData
 ////////////////////////////////////////////////////////////////////////
 
-function AbstractifyBufferToLSHTPacket(src:EndPoint, dst:EndPoint, data:seq<byte>) : LSHTPacket
+ghost function AbstractifyBufferToLSHTPacket(src:EndPoint, dst:EndPoint, data:seq<byte>) : LSHTPacket
 {
     LPacket(AbstractifyEndPointToNodeIdentity(dst),
            AbstractifyEndPointToNodeIdentity(src),
            AbstractifyCSingleMessageToSingleMessage(SHTDemarshallData(data)))
 }
 
-predicate BufferRefinementAgreesWithMessageRefinement(msg:CSingleMessage, marshalled:seq<byte>)
+ghost predicate BufferRefinementAgreesWithMessageRefinement(msg:CSingleMessage, marshalled:seq<byte>)
     requires CSingleMessageIsAbstractable(msg);
     requires CSingleMessageIsAbstractable(msg);
 {
@@ -762,33 +762,33 @@ predicate BufferRefinementAgreesWithMessageRefinement(msg:CSingleMessage, marsha
             == LPacket(AbstractifyEndPointToNodeIdentity(dst), AbstractifyEndPointToNodeIdentity(src), AbstractifyCSingleMessageToSingleMessage(msg)))
 }
 
-function AbstractifyCPacketToLSHTPacket(cp:CPacket) : LSHTPacket
+ghost function AbstractifyCPacketToLSHTPacket(cp:CPacket) : LSHTPacket
     requires CPacketIsAbstractable(cp);
 {
     LPacket(AbstractifyEndPointToNodeIdentity(cp.dst), AbstractifyEndPointToNodeIdentity(cp.src), AbstractifyCSingleMessageToSingleMessage(cp.msg))
 }
 
 
-function AbstractifyNetPacketToLSHTPacket(net:NetPacket) : LSHTPacket
+ghost function AbstractifyNetPacketToLSHTPacket(net:NetPacket) : LSHTPacket
     requires NetPacketIsAbstractable(net);
 {
     AbstractifyBufferToLSHTPacket(net.src, net.dst, net.msg)
 }
 
-function AbstractifyNetPacketToShtPacket(net:NetPacket) : Packet
+ghost function AbstractifyNetPacketToShtPacket(net:NetPacket) : Packet
     requires NetPacketIsAbstractable(net);
 {
     var lp:= AbstractifyNetPacketToLSHTPacket(net);
     Packet(lp.dst, lp.src, lp.msg)
 }
 
-predicate NetPacketIsAbstractable(net:NetPacket)
+ghost predicate NetPacketIsAbstractable(net:NetPacket)
 {
       EndPointIsAbstractable(net.src)
     && EndPointIsAbstractable(net.dst)
 }
 
-predicate NetPacketsIsAbstractable(netps:set<NetPacket>)
+ghost predicate NetPacketsIsAbstractable(netps:set<NetPacket>)
 {
     forall p :: p in netps ==> NetPacketIsAbstractable(p)
 }
@@ -846,50 +846,50 @@ method SHTMarshall(msg:CSingleMessage) returns (data:array<byte>)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Sendable predicates
+// Sendable ghost predicates
 
-predicate CPacketIsValid(cpacket:CPacket, params:CParameters)
+ghost predicate CPacketIsValid(cpacket:CPacket, params:CParameters)
 {
     CPacketIsAbstractable(cpacket) && CSingleMessageIsValid(cpacket.msg, params) && CSingleMessageMarshallable(cpacket.msg)
 }
 
-predicate CPacketIsSendable(cpacket:CPacket)
+ghost predicate CPacketIsSendable(cpacket:CPacket)
 {
     CPacketIsAbstractable(cpacket) && CSingleMessageMarshallable(cpacket.msg)
 }
 
-predicate CPacketSetIsSendable(cps:set<CPacket>)
+ghost predicate CPacketSetIsSendable(cps:set<CPacket>)
 {
     forall p :: p in cps ==> CPacketIsSendable(p)
 }
 
-predicate CPacketSeqIsSendable(cps:seq<CPacket>)
+ghost predicate CPacketSeqIsSendable(cps:seq<CPacket>)
 {
     forall i :: 0<=i<|cps| ==> CPacketIsSendable(cps[i])
 }
 
-predicate OutboundPacketsIsValid(out:CPacket)
+ghost predicate OutboundPacketsIsValid(out:CPacket)
 {
     CPacketIsSendable(out) && (out.msg.CSingleMessage? || out.msg.CAck?) && CSingleMessageMarshallable(out.msg)
 }
 
-predicate OutboundPacketsSeqIsValid(cpackets:seq<CPacket>)
+ghost predicate OutboundPacketsSeqIsValid(cpackets:seq<CPacket>)
 {
     forall i :: 0 <= i < |cpackets| ==> OutboundPacketsIsValid(cpackets[i])
 }
 
-predicate OutboundPacketsIsAbstractable(out:CPacket)
+ghost predicate OutboundPacketsIsAbstractable(out:CPacket)
 {
    CPacketIsAbstractable(out)
 }
 
-function AbstractifyOutboundPacketsToLSHTPacket(out:CPacket) : LSHTPacket
+ghost function AbstractifyOutboundPacketsToLSHTPacket(out:CPacket) : LSHTPacket
     requires OutboundPacketsIsAbstractable(out);
 {
     AbstractifyCPacketToLSHTPacket(out)
 }
 
-function {:opaque} AbstractifyOutboundPacketsToSeqOfLSHTPackets(out:seq<CPacket>) : seq<LSHTPacket>
+ghost function {:opaque} AbstractifyOutboundPacketsToSeqOfLSHTPackets(out:seq<CPacket>) : seq<LSHTPacket>
     requires forall i :: 0 <= i < |out| ==> CPacketIsAbstractable(out[i]);
     ensures |AbstractifyOutboundPacketsToSeqOfLSHTPackets(out)| == |out|;
     ensures forall i :: 0 <= i < |out| ==> AbstractifyOutboundPacketsToSeqOfLSHTPackets(out)[i] == AbstractifyCPacketToLSHTPacket(out[i]);
@@ -903,12 +903,12 @@ function {:opaque} AbstractifyOutboundPacketsToSeqOfLSHTPackets(out:seq<CPacket>
         
 }
 
-predicate OutboundPacketsHasCorrectSrc(out:CPacket, me:EndPoint)
+ghost predicate OutboundPacketsHasCorrectSrc(out:CPacket, me:EndPoint)
 {
     out.src == me
 }
 
-predicate OutboundPacketsSeqHasCorrectSrc(cpackets:seq<CPacket>, me:EndPoint)
+ghost predicate OutboundPacketsSeqHasCorrectSrc(cpackets:seq<CPacket>, me:EndPoint)
 {
     forall cpacket :: cpacket in cpackets ==> OutboundPacketsHasCorrectSrc(cpacket, me)
 }

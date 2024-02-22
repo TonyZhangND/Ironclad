@@ -6,13 +6,13 @@ module LiveRSL__StateMachine_i {
 import opened AppStateMachine_s
 import opened LiveRSL__Types_i
 
-function HandleRequest(state:AppState, request:Request) : (AppState, Reply)
+ghost function HandleRequest(state:AppState, request:Request) : (AppState, Reply)
 {
   var (new_state, reply) := AppHandleRequest(state, request.request);
   (new_state, Reply(request.client, request.seqno, reply))
 }
 
-function {:opaque} HandleRequestBatchHidden(state:AppState, batch:RequestBatch) : (seq<AppState>, seq<Reply>)
+ghost function {:opaque} HandleRequestBatchHidden(state:AppState, batch:RequestBatch) : (seq<AppState>, seq<Reply>)
   ensures var (states, replies) := HandleRequestBatchHidden(state, batch); 
           && |states| == |batch|+1
           && |replies| == |batch|
@@ -104,7 +104,7 @@ lemma lemma_HandleRequestBatchTriggerHappy(state:AppState, batch:RequestBatch, s
   lemma_HandleRequestBatchHidden(state, batch, states, replies);
 }
 
-function HandleRequestBatch(state:AppState, batch:RequestBatch) : (seq<AppState>, seq<Reply>)
+ghost function HandleRequestBatch(state:AppState, batch:RequestBatch) : (seq<AppState>, seq<Reply>)
 //  ensures var (states, replies) := HandleRequestBatch(state, batch); 
 //          && states[0] == state
 //          && |states| == |batch|+1 

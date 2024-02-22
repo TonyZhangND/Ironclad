@@ -33,7 +33,7 @@ datatype HostState = HostState(
     ghost receivedRequests:seq<AppRequest>
 )
 
-predicate HostStateIsAbstractable(host:HostState)
+ghost predicate HostStateIsAbstractable(host:HostState)
 {
        ConstantsStateIsAbstractable(host.constants)
     && EndPointIsAbstractable(host.me)
@@ -43,7 +43,7 @@ predicate HostStateIsAbstractable(host:HostState)
     && OptionCPacketIsAbstractable(host.receivedPacket)
 }
 
-function AbstractifyHostStateToHost(host:HostState) : Host
+ghost function AbstractifyHostStateToHost(host:HostState) : Host
     requires HostStateIsAbstractable(host)
 {
     Host(AbstractifyToConstants(host.constants),
@@ -56,7 +56,7 @@ function AbstractifyHostStateToHost(host:HostState) : Host
         host.receivedRequests)
 }
 
-predicate HostStateIsValid(host:HostState)
+ghost predicate HostStateIsValid(host:HostState)
 {
        HostStateIsAbstractable(host)
     && CDelegationMapIsValid(host.delegationMap)
@@ -75,7 +75,7 @@ predicate HostStateIsValid(host:HostState)
 }
 
 
-predicate InitHostStatePostconditions(constants:ConstantsState, host:HostState)
+ghost predicate InitHostStatePostconditions(constants:ConstantsState, host:HostState)
 {
        ConstantsStateIsAbstractable(constants)
     && HostStateIsAbstractable(host)
@@ -85,7 +85,7 @@ predicate InitHostStatePostconditions(constants:ConstantsState, host:HostState)
     && HostStateIsValid(host)
 }
 
-predicate HostState_common_preconditions(host:HostState, cpacket:CPacket)
+ghost predicate HostState_common_preconditions(host:HostState, cpacket:CPacket)
 {
        HostStateIsAbstractable(host)
     && CPacketIsAbstractable(cpacket)
@@ -93,7 +93,7 @@ predicate HostState_common_preconditions(host:HostState, cpacket:CPacket)
     && ValidPhysicalAddress(cpacket.src)
 }
 
-predicate HostState_common_postconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate HostState_common_postconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
 {
        HostState_common_preconditions(host, cpacket)
     && HostStateIsAbstractable(host')
@@ -107,7 +107,7 @@ predicate HostState_common_postconditions(host:HostState, cpacket:CPacket, host'
     && AbstractifySeqOfCPacketsToSetOfShtPackets(sent_packets) == ExtractPacketsFromLSHTPackets(AbstractifyOutboundPacketsToSeqOfLSHTPackets(sent_packets))
 }
 
-predicate NextGetRequestPreconditions(host:HostState, cpacket:CPacket)
+ghost predicate NextGetRequestPreconditions(host:HostState, cpacket:CPacket)
 {
        HostStateIsAbstractable(host)
     && CPacketIsAbstractable(cpacket)
@@ -119,7 +119,7 @@ predicate NextGetRequestPreconditions(host:HostState, cpacket:CPacket)
     && CSingleDeliveryAccountIsValid(host.sd, host.constants.params)
     && HostState_common_preconditions(host, cpacket)
 }
-predicate NextGetRequestPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate NextGetRequestPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
 {
        NextGetRequestPreconditions(host, cpacket)
     && HostStateIsAbstractable(host')
@@ -129,7 +129,7 @@ predicate NextGetRequestPostconditions(host:HostState, cpacket:CPacket, host':Ho
     && host'.receivedPacket == None
 }
 
-predicate NextSetRequestPreconditions(host:HostState, cpacket:CPacket)
+ghost predicate NextSetRequestPreconditions(host:HostState, cpacket:CPacket)
 {
        HostStateIsAbstractable(host)
     && CPacketIsAbstractable(cpacket)
@@ -141,7 +141,7 @@ predicate NextSetRequestPreconditions(host:HostState, cpacket:CPacket)
     //&& CSingleMessageMarshallable(cpacket.msg)
     && HostState_common_preconditions(host, cpacket)
 }
-predicate NextSetRequestPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate NextSetRequestPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
 {
        NextSetRequestPreconditions(host, cpacket)
     && HostStateIsAbstractable(host')
@@ -151,7 +151,7 @@ predicate NextSetRequestPostconditions(host:HostState, cpacket:CPacket, host':Ho
     && host'.receivedPacket == None
 }
 
-predicate NextDelegatePreconditions(host:HostState, cpacket:CPacket)
+ghost predicate NextDelegatePreconditions(host:HostState, cpacket:CPacket)
 {
        HostStateIsAbstractable(host)
     && CPacketIsAbstractable(cpacket)
@@ -169,7 +169,7 @@ predicate NextDelegatePreconditions(host:HostState, cpacket:CPacket)
     //&& host.numDelegations < host.constants.params.max_delegations - 2
 
 }
-predicate NextDelegatePostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate NextDelegatePostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
 {
        NextDelegatePreconditions(host, cpacket)
     && HostStateIsAbstractable(host')
@@ -178,7 +178,7 @@ predicate NextDelegatePostconditions(host:HostState, cpacket:CPacket, host':Host
     && host'.receivedPacket == None
 }
 
-predicate NextShardPreconditions(host:HostState, cpacket:CPacket)
+ghost predicate NextShardPreconditions(host:HostState, cpacket:CPacket)
 {
        HostStateIsAbstractable(host)
     && CPacketIsAbstractable(cpacket)
@@ -198,7 +198,7 @@ predicate NextShardPreconditions(host:HostState, cpacket:CPacket)
     //&& host.numDelegations < host.constants.params.max_delegations - 2
 }
 
-predicate NextShardPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate NextShardPostconditions(host:HostState, cpacket:CPacket, host':HostState, sent_packets:seq<CPacket>)
 {
        NextShardPreconditions(host, cpacket)
     && HostStateIsAbstractable(host')
@@ -208,14 +208,14 @@ predicate NextShardPostconditions(host:HostState, cpacket:CPacket, host':HostSta
     && host'.receivedPacket == None
 }
 
-predicate SpontaneouslyRetransmitPreconditions(host:HostState)
+ghost predicate SpontaneouslyRetransmitPreconditions(host:HostState)
 {
        HostStateIsAbstractable(host)
     && CSingleDeliveryAccountIsValid(host.sd, host.constants.params)
     && HostStateIsValid(host)
 }
 
-predicate SpontaneouslyRetransmitPostconditions(host:HostState, host':HostState, sent_packets:seq<CPacket>)
+ghost predicate SpontaneouslyRetransmitPostconditions(host:HostState, host':HostState, sent_packets:seq<CPacket>)
 {
        SpontaneouslyRetransmitPreconditions(host)
     && host' == host

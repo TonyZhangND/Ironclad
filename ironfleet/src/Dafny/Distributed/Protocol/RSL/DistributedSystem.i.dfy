@@ -20,18 +20,18 @@ datatype RslState = RslState(
   replicas:seq<LScheduler>
   )
 
-predicate RslMapsComplete(ps:RslState)
+ghost predicate RslMapsComplete(ps:RslState)
 {
   |ps.replicas| == |ps.constants.config.replica_ids|
 }
 
-predicate RslConstantsUnchanged(ps:RslState, ps':RslState)
+ghost predicate RslConstantsUnchanged(ps:RslState, ps':RslState)
 {
   && |ps'.replicas| == |ps.replicas|
   && ps'.constants == ps.constants
 }
 
-predicate RslInit(con:LConstants, ps:RslState)
+ghost predicate RslInit(con:LConstants, ps:RslState)
 {
   && WellFormedLConfiguration(con.config)
   && WFLParameters(con.params)
@@ -41,14 +41,14 @@ predicate RslInit(con:LConstants, ps:RslState)
   && (forall i :: 0 <= i < |con.config.replica_ids| ==> LSchedulerInit(ps.replicas[i], LReplicaConstants(i, con)))
 }
 
-predicate RslNextCommon(ps:RslState, ps':RslState)
+ghost predicate RslNextCommon(ps:RslState, ps':RslState)
 {
   && RslMapsComplete(ps)
   && RslConstantsUnchanged(ps, ps')
   && LEnvironment_Next(ps.environment, ps'.environment)
 }
 
-predicate RslNextOneReplica(ps:RslState, ps':RslState, idx:int, ios:seq<RslIo>)
+ghost predicate RslNextOneReplica(ps:RslState, ps':RslState, idx:int, ios:seq<RslIo>)
 {
   && RslNextCommon(ps, ps')
   && 0 <= idx < |ps.constants.config.replica_ids|
@@ -57,14 +57,14 @@ predicate RslNextOneReplica(ps:RslState, ps':RslState, idx:int, ios:seq<RslIo>)
   && ps'.replicas == ps.replicas[idx := ps'.replicas[idx]]
 }
 
-predicate RslNextEnvironment(ps:RslState, ps':RslState)
+ghost predicate RslNextEnvironment(ps:RslState, ps':RslState)
 {
   && RslNextCommon(ps, ps')
   && !ps.environment.nextStep.LEnvStepHostIos?
   && ps'.replicas == ps.replicas
 }
 
-predicate RslNextOneExternal(ps:RslState, ps':RslState, eid:NodeIdentity, ios:seq<RslIo>)
+ghost predicate RslNextOneExternal(ps:RslState, ps':RslState, eid:NodeIdentity, ios:seq<RslIo>)
 {
   && RslNextCommon(ps, ps')
   && eid !in ps.constants.config.replica_ids
@@ -72,7 +72,7 @@ predicate RslNextOneExternal(ps:RslState, ps':RslState, eid:NodeIdentity, ios:se
   && ps'.replicas == ps.replicas
 }
 
-predicate RslNext(ps:RslState, ps':RslState)
+ghost predicate RslNext(ps:RslState, ps':RslState)
 {
   || (exists idx, ios :: RslNextOneReplica(ps, ps', idx, ios))
   || (exists eid, ios :: RslNextOneExternal(ps, ps', eid, ios))

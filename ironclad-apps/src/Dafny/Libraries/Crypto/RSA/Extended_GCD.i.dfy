@@ -3,7 +3,7 @@
 include "../../FatNat/FatInt.i.dfy"
 include "division.i.dfy"
 
-static predicate opposing_signs(x:int, y:int)
+static ghost predicate opposing_signs(x:int, y:int)
 {
     x==0
     || y==0
@@ -25,7 +25,7 @@ datatype Egcd_ghost = Egcd_ghost_c(
         b:nat
         );
 
-predicate {:heap} Egcd_invariant(d:Egcd_data, g:Egcd_ghost)
+ghost predicate {:heap} Egcd_invariant(d:Egcd_data, g:Egcd_ghost)
     reads d.R;
     reads d.X.value;
     reads d.Y.value;
@@ -51,7 +51,7 @@ predicate {:heap} Egcd_invariant(d:Egcd_data, g:Egcd_ghost)
     && (d.next_R_zero <==> J(d.next_R)==0)
 }
 
-predicate {:heap} Extended_gcd_requires(A:array<int>, B:array<int>)
+ghost predicate {:heap} Extended_gcd_requires(A:array<int>, B:array<int>)
     reads A;
     reads B;
 {
@@ -63,7 +63,7 @@ predicate {:heap} Extended_gcd_requires(A:array<int>, B:array<int>)
     && (BEWordSeqToInt(B[..]) < BEWordSeqToInt(A[..]))
 }
 
-predicate {:heap} Extended_gcd_ensures(A:array<int>, B:array<int>, X:FatInt, Y:FatInt)
+ghost predicate {:heap} Extended_gcd_ensures(A:array<int>, B:array<int>, X:FatInt, Y:FatInt)
     reads A;
     reads B;
     reads X.value;

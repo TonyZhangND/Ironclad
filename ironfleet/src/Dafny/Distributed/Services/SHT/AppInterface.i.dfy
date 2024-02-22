@@ -15,7 +15,7 @@ export All reveals *
 type Key(==, !new) = uint64
 type Value = seq<byte>
 
-predicate method KeyLt(ka:Key, kb:Key) 
+predicate KeyLt(ka:Key, kb:Key) 
 {
     ka < kb 
 }
@@ -24,27 +24,27 @@ lemma lemma_KeyOrdering()
 {
 }
 
-function max_key_len() : int { 16 }  
-function max_val_len() : int { 1024 }  
+ghost function max_key_len() : int { 16 }  
+ghost function max_val_len() : int { 1024 }  
 
-predicate ValidKey(key:Key)
+ghost predicate ValidKey(key:Key)
 {
     true 
 }
 
-predicate ValidValue(v:Value)
+ghost predicate ValidValue(v:Value)
 {
     |v| < max_val_len()
 }
 
-function method KeyMin() : Key { 0 }
+function KeyMin() : Key { 0 }
 
-function MarshallSHTKey(k:Key) : seq<byte>
+ghost function MarshallSHTKey(k:Key) : seq<byte>
 {
     Uint64ToBytes(k)
 }
 
-function MarshallSHTValue(v:Value) : seq<byte>
+ghost function MarshallSHTValue(v:Value) : seq<byte>
 {
     if |v| < 0x1_0000_0000_0000_0000 then
         Uint64ToBytes(|v| as uint64) + v

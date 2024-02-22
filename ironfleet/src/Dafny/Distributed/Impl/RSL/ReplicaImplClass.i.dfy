@@ -78,7 +78,7 @@ class ReplicaImpl
     replica := ReplicaState(rcs, 0, proposer_state, acceptor_state, learner_state, executor_state);
   }
 
-  predicate Valid()
+  ghost predicate Valid()
     reads this
     reads this.replica.executor.app
     reads this.cur_req_set
@@ -101,14 +101,14 @@ class ReplicaImpl
     && msg_grammar == CMessage_grammar()
   }
 
-  function Env() : HostEnvironment
+  ghost function Env() : HostEnvironment
     requires netClient != null
     reads this, NetClientIsValid.reads(netClient)
   {
     netClient.env
   }
 
-  function AbstractifyToLReplica() : LReplica
+  ghost function AbstractifyToLReplica() : LReplica
     reads this
     reads this.replica.executor.app
     requires ReplicaStateIsAbstractable(replica)
@@ -116,7 +116,7 @@ class ReplicaImpl
     AbstractifyReplicaStateToLReplica(replica)
   }
 
-  function AbstractifyToLScheduler() : LScheduler
+  ghost function AbstractifyToLScheduler() : LScheduler
     reads this
     reads this.replica.executor.app
     requires ReplicaStateIsAbstractable(replica)
@@ -156,7 +156,7 @@ class ReplicaImpl
     ok := true;
   }
 
-  predicate ReceivedPacketProperties(cpacket:CPacket, netEvent0:NetEvent, io0:RslIo)
+  ghost predicate ReceivedPacketProperties(cpacket:CPacket, netEvent0:NetEvent, io0:RslIo)
     reads this
     requires CPaxosConfigurationIsValid(replica.constants.all.config)
   {

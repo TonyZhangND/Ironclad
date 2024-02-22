@@ -27,28 +27,28 @@ import opened Concrete_NodeIdentity_i
 // Note: proposer_id is now an index into the shared configuration, not a Uint64 representation of an EndPoint
 datatype CBallot = CBallot(seqno:uint64, proposer_id:uint64)
 
-function method BallotSize() : uint64 { Uint64Size() + Uint64Size() }
+function BallotSize() : uint64 { Uint64Size() + Uint64Size() }
 
-function method CBallotIsLessThan(lhs:CBallot, rhs:CBallot) : bool
+function CBallotIsLessThan(lhs:CBallot, rhs:CBallot) : bool
 {
   || lhs.seqno < rhs.seqno
   || (lhs.seqno == rhs.seqno && lhs.proposer_id < rhs.proposer_id)
 }
 
-function method CBallotIsNotGreaterThan(lhs:CBallot, rhs:CBallot) : bool
+function CBallotIsNotGreaterThan(lhs:CBallot, rhs:CBallot) : bool
 {
   || lhs.seqno < rhs.seqno
   || (lhs.seqno == rhs.seqno && lhs.proposer_id <= rhs.proposer_id)
 }
 
-predicate CBallotIsAbstractable(ballot:CBallot)
+ghost predicate CBallotIsAbstractable(ballot:CBallot)
 {
   && ballot.CBallot?     // OBSERVE: Always true, but seems necessary to avoid errors below
   && ballot.proposer_id <= 0xFFFF_FFFF_FFFF_FFFF // We don't support more than 2^64-1 replicas.  Such is life.
   //&& EndPointUint64Representation(ballot.proposer_id)
 }
 
-function AbstractifyCBallotToBallot(ballot:CBallot) : Ballot
+ghost function AbstractifyCBallotToBallot(ballot:CBallot) : Ballot
   // the specification of the ballot does not account for a null state.
   requires CBallotIsAbstractable(ballot)
 {
@@ -57,13 +57,13 @@ function AbstractifyCBallotToBallot(ballot:CBallot) : Ballot
 }
 
 
-predicate CCBalLeq(ba:CBallot, bb:CBallot)
+ghost predicate CCBalLeq(ba:CBallot, bb:CBallot)
   requires CBallotIsAbstractable(ba) && CBallotIsAbstractable(bb)
 {
   BalLeq(AbstractifyCBallotToBallot(ba), AbstractifyCBallotToBallot(bb))
 }
 
-predicate CCBalLt(ba:CBallot, bb:CBallot)
+ghost predicate CCBalLt(ba:CBallot, bb:CBallot)
   requires CBallotIsAbstractable(ba) && CBallotIsAbstractable(bb)
 {
   BalLt(AbstractifyCBallotToBallot(ba), AbstractifyCBallotToBallot(bb))
@@ -106,14 +106,14 @@ lemma lemma_BallotInjective(b1:CBallot, b2:CBallot)
 
 datatype COperationNumber = COperationNumber(n:uint64)
 
-function method OpNumSize()  : uint64 { Uint64Size() }
+function OpNumSize()  : uint64 { Uint64Size() }
 
-predicate COperationNumberIsAbstractable(opn:COperationNumber)
+ghost predicate COperationNumberIsAbstractable(opn:COperationNumber)
 {
   opn.COperationNumber?     // OBSERVE: Always true, but seems necessary to avoid errors below
 }
 
-function AbstractifyCOperationNumberToOperationNumber(opn:COperationNumber) : OperationNumber
+ghost function AbstractifyCOperationNumberToOperationNumber(opn:COperationNumber) : OperationNumber
   // requires COperationNumberIsAbstractable(opn)
   ensures COperationNumberIsAbstractable(opn) ==> (0 <= AbstractifyCOperationNumberToOperationNumber(opn) <= 0xffff_ffff_ffff_ffff)
 {
@@ -125,7 +125,7 @@ lemma lemma_AbstractifyCOperationNumberToOperationNumber_isInjective()
 {
 }
 
-function AbstractifyCOperationNumbersToOperationNumbers(copns:set<COperationNumber>):set<OperationNumber>
+ghost function AbstractifyCOperationNumbersToOperationNumbers(copns:set<COperationNumber>):set<OperationNumber>
   requires forall opn :: opn in copns ==> COperationNumberIsAbstractable(opn)
 {
   set copn | copn in copns :: AbstractifyCOperationNumberToOperationNumber(copn)
@@ -156,17 +156,17 @@ lemma lemma_AbstractifyCOperationNumbersToOperationNumbers_maintainsSize(copns:s
 
 datatype CRequest = CRequest(client:EndPoint, seqno:uint64, request:CAppRequest)
 
-predicate method ValidRequest(c:CRequest)
+predicate ValidRequest(c:CRequest)
 {
   c.CRequest? ==> EndPointIsValidPublicKey(c.client) && CAppRequestMarshallable(c.request)
 }
 
-predicate CRequestIsAbstractable(c:CRequest)
+ghost predicate CRequestIsAbstractable(c:CRequest)
 {
   EndPointIsAbstractable(c.client) && CAppRequestIsAbstractable(c.request)
 }
 
-function AbstractifyCRequestToRequest(c:CRequest) : Request
+ghost function AbstractifyCRequestToRequest(c:CRequest) : Request
   requires CRequestIsAbstractable(c)
 {
   Request(AbstractifyEndPointToNodeIdentity(c.client), c.seqno as int, AbstractifyCAppRequestToAppRequest(c.request))  
@@ -180,13 +180,13 @@ lemma lemma_AbstractifyCRequestToRequest_isInjective()
 }
 
 
-predicate CRequestsSeqIsAbstractable(cvals:seq<CRequest>)
+ghost predicate CRequestsSeqIsAbstractable(cvals:seq<CRequest>)
 {
   forall cval :: cval in cvals ==> CRequestIsAbstractable(cval)
 }
 
 
-function {:opaque} AbstractifyCRequestsSeqToRequestsSeq(cvals:seq<CRequest>) : seq<Request>
+ghost function {:opaque} AbstractifyCRequestsSeqToRequestsSeq(cvals:seq<CRequest>) : seq<Request>
   requires CRequestsSeqIsAbstractable(cvals)
   ensures |cvals| == |AbstractifyCRequestsSeqToRequestsSeq(cvals)|
   ensures forall i {:trigger AbstractifyCRequestsSeqToRequestsSeq(cvals)[i]} :: 0 <= i < |cvals| ==> AbstractifyCRequestToRequest(cvals[i]) == AbstractifyCRequestsSeqToRequestsSeq(cvals)[i]
@@ -241,24 +241,24 @@ lemma lemma_AbstractifyCRequestsSeqToRequestsSeq_suffix(r:seq<CRequest>, n:int)
 
 type CRequestBatch = seq<CRequest>
 
-function method RequestBatchSizeLimit() : int { 100 } //{ 0xFFFF }
+function RequestBatchSizeLimit() : int { 100 } //{ 0xFFFF }
     
-predicate ValidRequestBatch(c:CRequestBatch)
+ghost predicate ValidRequestBatch(c:CRequestBatch)
 {
   (forall cr :: cr in c ==> ValidRequest(cr)) && |c| <= RequestBatchSizeLimit()
 }
 
-predicate CRequestBatchIsAbstractable(c:CRequestBatch)
+ghost predicate CRequestBatchIsAbstractable(c:CRequestBatch)
 {
   CRequestsSeqIsAbstractable(c)
 }
 
-predicate CRequestBatchSeqIsAbstractable(s:seq<CRequestBatch>)
+ghost predicate CRequestBatchSeqIsAbstractable(s:seq<CRequestBatch>)
 {
   forall cval :: cval in s ==> CRequestBatchIsAbstractable(cval)
 }
 
-function {:opaque} AbstractifyCRequestBatchToRequestBatch(cvals:CRequestBatch) : RequestBatch
+ghost function {:opaque} AbstractifyCRequestBatchToRequestBatch(cvals:CRequestBatch) : RequestBatch
   requires CRequestsSeqIsAbstractable(cvals)
   ensures |cvals| == |AbstractifyCRequestBatchToRequestBatch(cvals)|
   ensures forall i :: 0 <= i < |cvals| ==> AbstractifyCRequestToRequest(cvals[i]) == AbstractifyCRequestBatchToRequestBatch(cvals)[i]
@@ -291,17 +291,17 @@ lemma lemma_AbstractifyCRequestBatchToRequestBatch_isInjective()
 // Not yet in use.  Will be needed for the reply cache.  
 datatype CReply   = CReply  (client:EndPoint, seqno:uint64, reply:CAppReply)
 
-predicate method ValidReply(c:CReply)
+predicate ValidReply(c:CReply)
 {
   c.CReply? ==> EndPointIsValidPublicKey(c.client) && CAppReplyMarshallable(c.reply)
 }
 
-predicate CReplyIsAbstractable(c:CReply)
+ghost predicate CReplyIsAbstractable(c:CReply)
 {
   EndPointIsAbstractable(c.client) && CAppReplyIsAbstractable(c.reply)
 }
 
-function AbstractifyCReplyToReply(c:CReply) : Reply
+ghost function AbstractifyCReplyToReply(c:CReply) : Reply
   requires CReplyIsAbstractable(c)
 {
   Reply(AbstractifyEndPointToNodeIdentity(c.client), c.seqno as int, AbstractifyCAppReplyToAppReply(c.reply))
@@ -314,12 +314,12 @@ lemma lemma_AbstractifyCReplyToReply_isInjective()
   lemma_AbstractifyEndPointToNodeIdentity_injective_forall();
 }
 
-predicate CReplySeqIsAbstractable(creplies:seq<CReply>)
+ghost predicate CReplySeqIsAbstractable(creplies:seq<CReply>)
 {
   forall creply :: creply in creplies ==> CReplyIsAbstractable(creply)
 }
 
-function {:opaque} AbstractifyCReplySeqToReplySeq(s:seq<CReply>) : seq<Reply>
+ghost function {:opaque} AbstractifyCReplySeqToReplySeq(s:seq<CReply>) : seq<Reply>
   requires CReplySeqIsAbstractable(s)
   ensures |AbstractifyCReplySeqToReplySeq(s)| == |s|
   ensures forall i :: 0 <= i < |AbstractifyCReplySeqToReplySeq(s)| ==> AbstractifyCReplySeqToReplySeq(s)[i] == AbstractifyCReplyToReply(s[i])
@@ -335,20 +335,20 @@ function {:opaque} AbstractifyCReplySeqToReplySeq(s:seq<CReply>) : seq<Reply>
 
 type CReplyCache = map<EndPoint, CReply>
 
-predicate CReplyCacheIsAbstractable(m:CReplyCache)
+ghost predicate CReplyCacheIsAbstractable(m:CReplyCache)
 {
   forall e {:trigger EndPointIsValidPublicKey(e)} :: e in m ==> EndPointIsValidPublicKey(e) && CReplyIsAbstractable(m[e])
 }
 
-function max_reply_cache_size() : int { 256 } // 0x1_0000_0000
+ghost function max_reply_cache_size() : int { 256 } // 0x1_0000_0000
 
-predicate ValidReplyCache(m:CReplyCache)
+ghost predicate ValidReplyCache(m:CReplyCache)
 {
   && CReplyCacheIsAbstractable(m) && |m| < max_reply_cache_size()
   && (forall e {:trigger ValidReply(m[e])} :: e in m ==> ValidReply(m[e]))
 }
 
-function {:opaque} AbstractifyCReplyCacheToReplyCache(m:CReplyCache) : ReplyCache
+ghost function {:opaque} AbstractifyCReplyCacheToReplyCache(m:CReplyCache) : ReplyCache
   requires CReplyCacheIsAbstractable(m)
 {
   assert forall e :: e in m ==> EndPointIsValidPublicKey(e);
@@ -385,12 +385,12 @@ lemma lemma_AbstractifyCReplyCacheToReplyCache_properties(m:CReplyCache)
 // MapOfSeqNums
 
 
-predicate MapOfSeqNumsIsAbstractable(m:map<EndPoint,uint64>)
+ghost predicate MapOfSeqNumsIsAbstractable(m:map<EndPoint,uint64>)
 {
   forall e :: e in m ==> EndPointIsValidPublicKey(e)
 }
 
-function {:opaque} AbstractifyMapOfSeqNums(m:map<EndPoint,uint64>) : map<NodeIdentity,int>
+ghost function {:opaque} AbstractifyMapOfSeqNums(m:map<EndPoint,uint64>) : map<NodeIdentity,int>
   requires MapOfSeqNumsIsAbstractable(m)
 {
   lemma_AbstractifyEndPointToNodeIdentity_injective_forall();
@@ -422,33 +422,33 @@ lemma lemma_AbstractifyMapOfSeqNums_properties(m:map<EndPoint,uint64>)
 datatype CVote = CVote(max_value_bal:CBallot, max_val:CRequestBatch)
 datatype CVotes = CVotes(v:map<COperationNumber,CVote>)
 
-function ValidVote(vote:CVote) : bool
+ghost function ValidVote(vote:CVote) : bool
 {
   ValidRequestBatch(vote.max_val)
 }
 
-function method max_votes_len() : int { 8 } // previously 0x10_0000
+function max_votes_len() : int { 8 } // previously 0x10_0000
 
-function ValidVotes(votes:CVotes) : bool
+ghost function ValidVotes(votes:CVotes) : bool
 {
   && |votes.v| < max_votes_len()
   && (forall o :: o in votes.v ==> ValidVote(votes.v[o]))
 }
 
-predicate CVoteIsAbstractable(vote:CVote)
+ghost predicate CVoteIsAbstractable(vote:CVote)
 {
   && vote.CVote?     // OBSERVE: Always true, but seems necessary to avoid errors below
   && CBallotIsAbstractable(vote.max_value_bal)
   && CRequestBatchIsAbstractable(vote.max_val)
 }
 
-function AbstractifyCVoteToVote(vote:CVote) : Vote
+ghost function AbstractifyCVoteToVote(vote:CVote) : Vote
   requires CVoteIsAbstractable(vote)
 {
   Vote(AbstractifyCBallotToBallot(vote.max_value_bal), AbstractifyCRequestBatchToRequestBatch(vote.max_val))
 }
 
-predicate CVotesIsAbstractable(votes:CVotes)
+ghost predicate CVotesIsAbstractable(votes:CVotes)
 {
   forall i :: i in votes.v ==> COperationNumberIsAbstractable(i) && CVoteIsAbstractable(votes.v[i])
 }
@@ -467,7 +467,7 @@ lemma lemma_AbstractifyMapOfThings<T>(m:map<COperationNumber,T>, newDomain:set<O
   }
 }
 
-function {:opaque} AbstractifyCVotesToVotes(votes:CVotes) : Votes
+ghost function {:opaque} AbstractifyCVotesToVotes(votes:CVotes) : Votes
   requires CVotesIsAbstractable(votes)
 {
   // var newDomain := set i | i in votes.v :: AbstractifyCOperationNumberToOperationNumber(i);

@@ -13,7 +13,7 @@ static lemma Lemma_RepeatDigitProperties(digit:int, count:int)
     }
 }
 
-static function RepeatDigit_premium(digit:int, count:int) : seq<int>
+static ghost function RepeatDigit_premium(digit:int, count:int) : seq<int>
     ensures |RepeatDigit(digit, count)| == if count < 0 then 0 else count;
     ensures forall i :: 0 <= i < count ==> RepeatDigit(digit, count)[i] == digit;
 {
@@ -21,7 +21,7 @@ static function RepeatDigit_premium(digit:int, count:int) : seq<int>
     RepeatDigit(digit, count)
 }
 
-static function {:opaque} SequenceOfZeros(n:nat) : seq<int>
+static ghost function {:opaque} SequenceOfZeros(n:nat) : seq<int>
 //-    ensures SequenceOfZeros(n)!=NSeqInt_n();
     ensures |SequenceOfZeros(n)|==n;
     ensures forall i :: 0<=i<n ==> SequenceOfZeros(n)[i]==0;

@@ -8,10 +8,10 @@ include "../Util/ProfileIfc.i.dfy"
 datatype sub_Problem = sub_Problem_ctor(
     A:BigNat, B:BigNat, c:nat);
 
-static predicate WellformedBorrow(borrow:nat)
+static ghost predicate WellformedBorrow(borrow:nat)
     { borrow==0 || borrow==1 }
 
-static predicate sub_WellformedProblem(p:sub_Problem)
+static ghost predicate sub_WellformedProblem(p:sub_Problem)
 {
     WellformedBigNat(p.A)
     && WellformedBigNat(p.B)
@@ -19,14 +19,14 @@ static predicate sub_WellformedProblem(p:sub_Problem)
     && WellformedBorrow(p.c)
 }
 
-static predicate sub_WorksheetProblemsWellformed(ps:seq<sub_Problem>)
+static ghost predicate sub_WorksheetProblemsWellformed(ps:seq<sub_Problem>)
     { forall i :: 0 <= i < |ps| ==> sub_WellformedProblem(ps[i]) }
 
-static predicate method sub_ZeroProblem(p:sub_Problem)
+static predicate sub_ZeroProblem(p:sub_Problem)
     requires sub_WellformedProblem(p);
     { zero(p.A) && zero(p.B) && p.c==0 }
 
-static predicate sub_WorksheetProblemsConnected(p0:sub_Problem, s0:nat, p1:sub_Problem)
+static ghost predicate sub_WorksheetProblemsConnected(p0:sub_Problem, s0:nat, p1:sub_Problem)
     requires sub_WellformedProblem(p0);
     requires Word32(s0);
     requires sub_WellformedProblem(p1);
@@ -37,12 +37,12 @@ static predicate sub_WorksheetProblemsConnected(p0:sub_Problem, s0:nat, p1:sub_P
     && !sub_ZeroProblem(p0)
 }
 
-static predicate sub_WellformedSolutions(ss:seq<int>)
+static ghost predicate sub_WellformedSolutions(ss:seq<int>)
 {
     forall i :: 0 <= i < |ss| ==> ss[i]>=0 && Word32(ss[i])
 }
 
-static predicate sub_IncompleteWorksheetConsistent(ps:seq<sub_Problem>, ss:seq<int>)
+static ghost predicate sub_IncompleteWorksheetConsistent(ps:seq<sub_Problem>, ss:seq<int>)
 {
     sub_WorksheetProblemsWellformed(ps)
     && |ps| == |ss|+1
@@ -51,7 +51,7 @@ static predicate sub_IncompleteWorksheetConsistent(ps:seq<sub_Problem>, ss:seq<i
         sub_WorksheetProblemsConnected(ps[i], ss[i], ps[i+1]))
 }
 
-static predicate sub_WorksheetConsistent(ps:seq<sub_Problem>, ss:seq<int>)
+static ghost predicate sub_WorksheetConsistent(ps:seq<sub_Problem>, ss:seq<int>)
 {
     sub_IncompleteWorksheetConsistent(ps, ss)
     && sub_ZeroProblem(ps[|ps|-1])
@@ -199,26 +199,26 @@ static method BigNatSub_(A:BigNat, B:BigNat) returns (ss:seq<int>, ghost ps:seq<
     assert sub_WorksheetConsistent(ps, ss);
 }
 
-static function sub_ProblemValue(p:sub_Problem) : int
+static ghost function sub_ProblemValue(p:sub_Problem) : int
     requires sub_WellformedProblem(p);
 {
     I(p.A) - I(p.B) - p.c
 }
 
-static predicate sub_WellformedBigNatSeq(R:seq<BigNat>)
+static ghost predicate sub_WellformedBigNatSeq(R:seq<BigNat>)
 {
     forall i :: 0 <= i < |R| ==> WellformedBigNat(R[i])
 }
 
 //-////////////////////////////////////////////////////////////////////////////
-//- These functions define the relationship between a sequence of words
+//- These ghost functions define the relationship between a sequence of words
 //- and a sequence of BigNats formed from subsequences of the word seq.
 //- That's so that we can show that the high-place-value partial sums
 //- (one word at a time) can be viewed as correct BigNat solutions to the
 //- truncated problems. Then we inductively include low-order words one
 //- at a time until we've reconstructed the original problem.
 
-static predicate sub_BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate sub_BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
     requires IsWordSeq(ss);
     requires sub_WellformedBigNatSeq(R);
 {
@@ -227,18 +227,18 @@ static predicate sub_BigNatsForSumWords_Base(ss:seq<int>, R:seq<BigNat>)
     && R[0] == TruncatingBigNatCtor(ss)
 }
 
-static predicate sub_BigNatsForSumWords_Assembly(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate sub_BigNatsForSumWords_Assembly(ss:seq<int>, R:seq<BigNat>)
     requires sub_WellformedBigNatSeq(R);
     requires IsWordSeq(ss);
     requires sub_BigNatsForSumWords_Base(ss, R);
     { forall i :: 0 <= i <=|ss| ==> R[i] == TruncatingBigNatCtor(ss[i..]) }
 
-static predicate sub_ShiftRelation(M:seq<BigNat>, i:nat)
+static ghost predicate sub_ShiftRelation(M:seq<BigNat>, i:nat)
     requires sub_WellformedBigNatSeq(M);
     requires i < |M|-1;
 { I(M[i]) == I(M[i+1]) *  Width() + lo(M[i]) }
 
-static predicate sub_ShiftRelationSeq(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate sub_ShiftRelationSeq(ss:seq<int>, R:seq<BigNat>)
     requires sub_WellformedBigNatSeq(R);
     requires |R| == |ss|+1;
 {    forall i :: 0 <= i < |ss| ==> sub_ShiftRelation(R, i) }
@@ -252,7 +252,7 @@ static lemma sub_ShiftRelationLemma(M:seq<BigNat>, i:nat)
     reveal_I();
 }
 
-static predicate sub_BigNatsForSumWords(ss:seq<int>, R:seq<BigNat>)
+static ghost predicate sub_BigNatsForSumWords(ss:seq<int>, R:seq<BigNat>)
     requires IsWordSeq(ss);
     requires sub_WellformedBigNatSeq(R);
 {

@@ -641,13 +641,13 @@ static lemma lemma_BEDigitSeqToInt_invertibility_tight(pv:int, x:int, digitseq:s
 
 
 
-static predicate IsZero(sx:seq<int>, xi:int)
+static ghost predicate IsZero(sx:seq<int>, xi:int)
     requires 0<=xi<|sx|;
 {
     sx[xi]==0
 }
 
-static predicate AreEqual(sx:seq<int>, xi:int, sy:seq<int>, yi:int)
+static ghost predicate AreEqual(sx:seq<int>, xi:int, sy:seq<int>, yi:int)
     requires 0<=xi<|sx|;
     requires 0<=yi<|sy|;
 {

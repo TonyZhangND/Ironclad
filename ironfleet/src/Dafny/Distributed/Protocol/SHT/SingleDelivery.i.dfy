@@ -25,29 +25,29 @@ type SendState<MT> = map<NodeIdentity, AckState<MT>>
 
 datatype SingleDeliveryAcct<MT> = SingleDeliveryAcct(receiveState:TombstoneTable, sendState:SendState<MT>)
 
-function TombstoneTableLookup(src:NodeIdentity, t:TombstoneTable) : nat
+ghost function TombstoneTableLookup(src:NodeIdentity, t:TombstoneTable) : nat
 {
     if src in t then t[src] as int else 0 
 }
 
-function AckStateLookup<MT>(src:NodeIdentity, sendState:SendState):AckState<MT>
+ghost function AckStateLookup<MT>(src:NodeIdentity, sendState:SendState):AckState<MT>
 {
     if src in sendState then sendState[src] else AckState(0, [])
 }
 
-// Written as a function to avoid an exists in the client
-function SingleDelivery_Init<MT>() : SingleDeliveryAcct
+// Written as a ghost function to avoid an exists in the client
+ghost function SingleDelivery_Init<MT>() : SingleDeliveryAcct
 {
     SingleDeliveryAcct(map[], map[])
 }
 
-predicate MessageNotReceived(s:SingleDeliveryAcct, src:NodeIdentity, sm:SingleMessage)
+ghost predicate MessageNotReceived(s:SingleDeliveryAcct, src:NodeIdentity, sm:SingleMessage)
 {
       sm.SingleMessage? 
    && sm.seqno > TombstoneTableLookup(src, s.receiveState)
 }
 
-predicate NewSingleMessage(s:SingleDeliveryAcct, pkt:Packet)
+ghost predicate NewSingleMessage(s:SingleDeliveryAcct, pkt:Packet)
 {
     pkt.msg.SingleMessage? &&  
     var last_seqno := TombstoneTableLookup(pkt.src, s.receiveState);
@@ -55,7 +55,7 @@ predicate NewSingleMessage(s:SingleDeliveryAcct, pkt:Packet)
 }
 
 // Remove all packets implicitly ack'ed by seqnoAcked from the list of unacknowledged packets
-function TruncateUnAckList<MT>(unAcked:seq<SingleMessage<MT>>, seqnoAcked:nat) : seq<SingleMessage<MT>>
+ghost function TruncateUnAckList<MT>(unAcked:seq<SingleMessage<MT>>, seqnoAcked:nat) : seq<SingleMessage<MT>>
     ensures forall m :: m in TruncateUnAckList(unAcked, seqnoAcked) ==> m in unAcked;
 {
     if |unAcked| > 0 && unAcked[0].SingleMessage? && unAcked[0].seqno <= seqnoAcked then 
@@ -64,7 +64,7 @@ function TruncateUnAckList<MT>(unAcked:seq<SingleMessage<MT>>, seqnoAcked:nat) :
         unAcked
 }
 
-predicate ReceiveAck(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet, acks:set<Packet>)
+ghost predicate ReceiveAck(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet, acks:set<Packet>)
     requires pkt.msg.Ack?;
 {
     acks == {} &&   // We don't ack acks
@@ -77,14 +77,14 @@ predicate ReceiveAck(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet, ac
         s' == s
 }
 
-predicate ShouldAckSingleMessage<MT>(s:SingleDeliveryAcct, pkt:Packet)
+ghost predicate ShouldAckSingleMessage<MT>(s:SingleDeliveryAcct, pkt:Packet)
 {
     pkt.msg.SingleMessage? &&  // Don't want to ack acks
     var last_seqno := TombstoneTableLookup(pkt.src, s.receiveState);
     pkt.msg.seqno <= last_seqno
 }
 
-predicate SendAck(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>) 
+ghost predicate SendAck(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>) 
     requires ShouldAckSingleMessage(s, pkt);
 {
        ack.msg.Ack? 
@@ -94,7 +94,7 @@ predicate SendAck(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>
     && acks == { ack }
 }
 
-predicate MaybeAckPacket(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>) 
+ghost predicate MaybeAckPacket(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>) 
 {
     if ShouldAckSingleMessage(s, pkt) then
         SendAck(s, pkt, ack, acks)
@@ -102,7 +102,7 @@ predicate MaybeAckPacket(s:SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<
         acks == {}
 }
 
-predicate ReceiveRealPacket(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet)
+ghost predicate ReceiveRealPacket(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet)
     requires pkt.msg.SingleMessage?;
 {
     if NewSingleMessage(s, pkt) then
@@ -113,12 +113,12 @@ predicate ReceiveRealPacket(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Pac
         s == s'
 }
 
-predicate UnAckedMsgForDst<MT>(s:SingleDeliveryAcct, msg:SingleMessage<MT>, dst:NodeIdentity)
+ghost predicate UnAckedMsgForDst<MT>(s:SingleDeliveryAcct, msg:SingleMessage<MT>, dst:NodeIdentity)
 {
     dst in s.sendState && msg in s.sendState[dst].unAcked
 }
 
-function UnAckedMessages(s:SingleDeliveryAcct<Message>, src:NodeIdentity):set<Packet>
+ghost function UnAckedMessages(s:SingleDeliveryAcct<Message>, src:NodeIdentity):set<Packet>
 {
     set dst, i | dst in s.sendState && 0 <= i < |s.sendState[dst].unAcked| && s.sendState[dst].unAcked[i].SingleMessage? :: 
         var sm := s.sendState[dst].unAcked[i];
@@ -128,7 +128,7 @@ function UnAckedMessages(s:SingleDeliveryAcct<Message>, src:NodeIdentity):set<Pa
 // Partial actions
 
 // Client should ReceiveSingleMessage or ReceiveNoMessage
-predicate ReceiveSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>)
+ghost predicate ReceiveSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, pkt:Packet, ack:Packet, acks:set<Packet>)
 {
     match pkt.msg {
         case Ack(_) => ReceiveAck(s, s', pkt, acks)
@@ -137,21 +137,21 @@ predicate ReceiveSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, 
     }
 }
 
-predicate ReceiveNoMessage(s:SingleDeliveryAcct, s':SingleDeliveryAcct)
+ghost predicate ReceiveNoMessage(s:SingleDeliveryAcct, s':SingleDeliveryAcct)
 {
     s'.receiveState == s.receiveState
 }
 
 
 // Highest sequence number we've sent to dst
-function HighestSeqnoSent(s:SingleDeliveryAcct, dst:NodeIdentity) : nat
+ghost function HighestSeqnoSent(s:SingleDeliveryAcct, dst:NodeIdentity) : nat
 {
     var ackState := AckStateLookup(dst, s.sendState); 
     ackState.numPacketsAcked + |ackState.unAcked|   
 }
 
 // Client should SendSingleMessage or SendNoMessage
-predicate SendSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, m:MT, sm:SingleMessage, params:Parameters, shouldSend:bool)
+ghost predicate SendSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, m:MT, sm:SingleMessage, params:Parameters, shouldSend:bool)
 {
        sm.SingleMessage? 
     && sm.m == m
@@ -165,7 +165,7 @@ predicate SendSingleMessage<MT>(s:SingleDeliveryAcct, s':SingleDeliveryAcct, m:M
             && shouldSend)
 }
 
-predicate SendNoMessage(s:SingleDeliveryAcct, s':SingleDeliveryAcct)
+ghost predicate SendNoMessage(s:SingleDeliveryAcct, s':SingleDeliveryAcct)
 {
    s'.sendState == s.sendState    // UNCHANGED
 }

@@ -8,7 +8,7 @@ include "BlockEncoding.i.dfy"
 include "KeyImpl.i.dfy"
 include "../../FatNat/FatNatModesty.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_STR_SSH_RSA() : seq<int>
+static function{:CompiledSpec} CompiledSpec_STR_SSH_RSA() : seq<int>
 
 static method rfc4251_encode_word32(w:int) returns (msg:seq<int>)
     requires Word32(w);    //- redundant; falls out of definition.
@@ -39,7 +39,7 @@ static lemma lemma_rfc4251_positive_to_twoscomplement(s:seq<int>)
 {
 }
 
-static function rfc4251_positive_to_twoscomplement_premium(s:seq<int>) : seq<int>
+static ghost function rfc4251_positive_to_twoscomplement_premium(s:seq<int>) : seq<int>
     requires IsByteSeq(s);
     ensures |rfc4251_positive_to_twoscomplement(s)| <= |s|+1;
     ensures IsByteSeq(rfc4251_positive_to_twoscomplement(s));
@@ -144,7 +144,7 @@ static lemma lemma_rfc4251_mpint_encoding_premium(v:nat)
     assert IsByteSeq(rfc4251_mpint_encoding(v));
 }
 
-static function rfc4251_mpint_encoding_premium(v:nat) : seq<int>
+static ghost function rfc4251_mpint_encoding_premium(v:nat) : seq<int>
     requires v < power2(power2(34));
     ensures IsByteSeq(BEIntToByteSeq(v));
     ensures IsByteSeq(rfc4251_mpint_encoding_premium(v));
@@ -243,7 +243,7 @@ static lemma lemma_rfc4251_word32_encoding(w:int)
     lemma_BEIntToDigitSeq_produces_DigitSeq(power2(8), 4, BEWordSeqToInt([w]));
 }
 
-static function rfc4251_word32_encoding_premium(w:int) : seq<int>
+static ghost function rfc4251_word32_encoding_premium(w:int) : seq<int>
     requires 0 <= w < power2(32);
     ensures rfc4251_word32_encoding(w) == rfc4251_word32_encoding_premium(w);
     ensures IsByteSeq(rfc4251_word32_encoding(w));
@@ -260,7 +260,7 @@ static lemma lemma_rfc4251_string_encoding(s:seq<int>)
     assert rfc4251_string_encoding(s) == rfc4251_word32_encoding_premium(|s|) + s;
 }
 
-static function rfc4251_string_encoding_premium(s:seq<int>) : seq<int>
+static ghost function rfc4251_string_encoding_premium(s:seq<int>) : seq<int>
     requires IsByteSeq(s);
     requires |s| < power2(32);
     ensures rfc4251_string_encoding(s) == rfc4251_string_encoding_premium(s);
@@ -290,7 +290,7 @@ static lemma lemma_rfc4251_sshrsa_encoding_premium(e:nat, n:nat)
     assert IsByteSeq(rfc4251_mpint_encoding(n));
 }
 
-static function rfc4251_sshrsa_encoding_premium(e:nat, n:nat) : seq<int>
+static ghost function rfc4251_sshrsa_encoding_premium(e:nat, n:nat) : seq<int>
     requires e < power2(power2(34));
     requires n < power2(power2(34));
     ensures IsWordSeq([|STR_SSH_RSA()|]);
@@ -302,7 +302,7 @@ static function rfc4251_sshrsa_encoding_premium(e:nat, n:nat) : seq<int>
     rfc4251_sshrsa_encoding(e,n)
 }
 
-static function rfc4251_sshrsa_pubkey_encoding_premium(pubkey:RSAPubKeySpec) : seq<int>
+static ghost function rfc4251_sshrsa_pubkey_encoding_premium(pubkey:RSAPubKeySpec) : seq<int>
     requires WellformedRSAPubKeySpec(pubkey);
     requires pubkey.e < power2(power2(34));
     requires pubkey.n < power2(power2(34));

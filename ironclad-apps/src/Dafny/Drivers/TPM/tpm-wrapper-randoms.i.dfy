@@ -1,6 +1,6 @@
 include "tpm-device.s.dfy"
 
-static predicate read_random_forall(start_index:int, random_bytes:seq<int>)
+static ghost predicate read_random_forall(start_index:int, random_bytes:seq<int>)
 {
     forall j :: 0 <= j < |random_bytes| ==> TPM_random_byte(start_index + j) == random_bytes[j]
 }
@@ -43,7 +43,7 @@ static lemma lemma_TPM_random_bytes_length(old_random_index:int, new_random_inde
     }
 }
 
-static function TPM_random_bytes_premium (old_random_index:int, new_random_index:int) : seq<int>
+static ghost function TPM_random_bytes_premium (old_random_index:int, new_random_index:int) : seq<int>
     requires old_random_index <= new_random_index;
     ensures |TPM_random_bytes_premium(old_random_index, new_random_index)| == new_random_index - old_random_index;
 {
@@ -51,7 +51,7 @@ static function TPM_random_bytes_premium (old_random_index:int, new_random_index
     TPM_random_bytes(old_random_index, new_random_index)
 }
 
-static predicate TPMs_match_except_for_randoms (TPM1:TPM_struct, TPM2:TPM_struct)
+static ghost predicate TPMs_match_except_for_randoms (TPM1:TPM_struct, TPM2:TPM_struct)
 {
     TPMs_match(TPM1, TPM2[random_index := TPM1.random_index])
 }

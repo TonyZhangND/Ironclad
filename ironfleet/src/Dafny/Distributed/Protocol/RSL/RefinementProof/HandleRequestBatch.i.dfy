@@ -9,7 +9,7 @@ import opened LiveRSL__Types_i
 import opened Collections__Seqs_s
 import opened AppStateMachine_s
 
-function GetAppStateFromRequestBatches(batches:seq<RequestBatch>):AppState
+ghost function GetAppStateFromRequestBatches(batches:seq<RequestBatch>):AppState
 {
   if |batches| == 0 then
     AppInitialize()
@@ -17,7 +17,7 @@ function GetAppStateFromRequestBatches(batches:seq<RequestBatch>):AppState
     last(HandleRequestBatch(GetAppStateFromRequestBatches(all_but_last(batches)), last(batches)).0)
 }
 
-function GetReplyFromRequestBatches(batches:seq<RequestBatch>, batch_num:int, req_num:int):Reply
+ghost function GetReplyFromRequestBatches(batches:seq<RequestBatch>, batch_num:int, req_num:int):Reply
   requires 0 <= batch_num < |batches|
   requires 0 <= req_num < |batches[batch_num]|
 {

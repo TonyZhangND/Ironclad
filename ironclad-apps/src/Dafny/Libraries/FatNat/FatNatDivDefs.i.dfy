@@ -15,7 +15,7 @@ datatype FNDivGhost = FNDivGhost_c(
     wks:seq<MulRow>,
     remainders:seq<int>);
 
-predicate {:heap} FNDivision_invariant(d:FNDivData, g:FNDivGhost)
+ghost predicate {:heap} FNDivision_invariant(d:FNDivData, g:FNDivGhost)
     reads d.n;
     reads d.dv;
     reads d.r;

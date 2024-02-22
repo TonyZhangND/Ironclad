@@ -13,7 +13,7 @@ datatype LParameters = LParameters(
   max_batch_delay:int
   )
 
-predicate WFLParameters(p:LParameters)
+ghost predicate WFLParameters(p:LParameters)
 {
   && p.max_log_length > 0
   && p.baseline_view_timeout_period > 0

@@ -11,7 +11,7 @@ import opened Math__power_s
 import opened Common__SeqIsUniqueDef_i
 import opened Common__NetClient_i
 
-function method parse_end_point(public_key:seq<byte>) : (bool, EndPoint)
+function parse_end_point(public_key:seq<byte>) : (bool, EndPoint)
   ensures var tuple := parse_end_point(public_key);
           var ok, ep := tuple.0, tuple.1;
           ok ==> EndPointIsValidPublicKey(ep)
@@ -51,7 +51,7 @@ method test_unique(endpoints:seq<EndPoint>) returns (unique:bool)
   reveal SeqIsUnique();
 }
 
-function method parse_end_points(args:seq<seq<byte>>) : (bool, seq<EndPoint>)
+function parse_end_points(args:seq<seq<byte>>) : (bool, seq<EndPoint>)
   ensures var (ok, endpoints) := parse_end_points(args);
           ok ==> (forall e :: e in endpoints ==> EndPointIsValidPublicKey(e))
 {

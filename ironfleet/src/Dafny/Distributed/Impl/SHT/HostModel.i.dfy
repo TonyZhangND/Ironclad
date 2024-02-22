@@ -30,31 +30,31 @@ import opened SHT__Message_i
 import opened SHT__SingleMessage_i
 import opened SHT__SingleDelivery_i
 
-function method mapremove<KT,VT>(m:map<KT,VT>, k:KT) : map<KT,VT>
+function mapremove<KT,VT>(m:map<KT,VT>, k:KT) : map<KT,VT>
 {
     map ki | ki in m && ki != k :: m[ki]
 }
 
-function method mapdomain<KT,VT>(m:map<KT,VT>) : set<KT>
+function mapdomain<KT,VT>(m:map<KT,VT>) : set<KT>
 {
     set k | k in m :: k
 }
 
-function method BulkUpdateDomain(h:Hashtable, kr:KeyRange, u:Hashtable) : set<Key>
+function BulkUpdateDomain(h:Hashtable, kr:KeyRange, u:Hashtable) : set<Key>
 {
    set k | k in mapdomain(h)+mapdomain(u) && (KeyRangeContains(kr, KeyPlus(k)) ==> k in u)
 }
 
-function method BulkUpdateHashtable(h:Hashtable, kr:KeyRange, u:Hashtable) : Hashtable
+function BulkUpdateHashtable(h:Hashtable, kr:KeyRange, u:Hashtable) : Hashtable
 {
     map k {:auto_trigger} | k in BulkUpdateDomain(h, kr, u) :: if (k in u) then u[k] else h[k]
 }
 
-function method BulkRemoveHashtable(h:Hashtable, kr:KeyRange) : Hashtable {
+function BulkRemoveHashtable(h:Hashtable, kr:KeyRange) : Hashtable {
     map k | (k in h && !KeyRangeContains(kr, KeyPlus(k))) :: h[k]
 }
 
-function method ExtractRange(h:Hashtable, kr:KeyRange) : Hashtable 
+function ExtractRange(h:Hashtable, kr:KeyRange) : Hashtable 
     requires ValidKeyRange(kr);
     requires forall k :: k in h ==> ValidKey(k) && ValidValue(h[k]);
     ensures forall k :: k in ExtractRange(h, kr) ==> k in h && ExtractRange(h, kr)[k] == h[k];
@@ -227,7 +227,7 @@ method {:timeLimitMultiplier 2} HostModelNextSetRequest(host:HostState, cpacket:
     assert NextSetRequest_Complete(s, s', g_src, g_seqno, AbstractifyCMessageToRslMessage(cpacket.msg.m), g_sm, g_m, g_out, shouldSend);
 }
 
-predicate HostIgnoringUnParseable(host:Host, host':Host, packets:set<Packet>)
+ghost predicate HostIgnoringUnParseable(host:Host, host':Host, packets:set<Packet>)
 {
     packets == {}
  && host' == host.(receivedPacket := None)

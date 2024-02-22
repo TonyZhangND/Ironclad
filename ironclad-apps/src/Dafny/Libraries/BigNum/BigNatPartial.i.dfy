@@ -2,7 +2,7 @@
 include "BigNatCore.i.dfy"
 include "../Util/integer_sequences.s.dfy"
 
-//-static predicate IsWordSeq(ws:seq<int>) { IsIsWordSeq(ws) }
+//-static ghost predicate IsWordSeq(ws:seq<int>) { IsIsWordSeq(ws) }
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@ include "../Util/integer_sequences.s.dfy"
 
 //////////////////////////////////////////////////////////////////////////////
 
-static function {:opaque} V(vs:seq<int>) : int
+static ghost function {:opaque} V(vs:seq<int>) : int
 {
     if (|vs|==0) then
         0
@@ -239,7 +239,7 @@ static lemma lemma_V_high_zeros(s:seq<int>)
     }
 }
 
-static function {:opaque} TruncatingBigNatCtor_def(ss:seq<int>) : BigNat
+static ghost function {:opaque} TruncatingBigNatCtor_def(ss:seq<int>) : BigNat
     decreases |ss|;
     requires IsWordSeq(ss);
 {
@@ -251,7 +251,7 @@ static function {:opaque} TruncatingBigNatCtor_def(ss:seq<int>) : BigNat
         TruncatingBigNatCtor_def(ss[..|ss|-1])
 }
 
-static function TruncatingBigNatCtor(ss:seq<int>) : BigNat
+static ghost function TruncatingBigNatCtor(ss:seq<int>) : BigNat
     requires IsWordSeq(ss);
     ensures WellformedBigNat(TruncatingBigNatCtor(ss));
     ensures V(ss) == I(TruncatingBigNatCtor(ss));

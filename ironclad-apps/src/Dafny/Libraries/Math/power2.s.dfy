@@ -1,6 +1,6 @@
 include "../base.s.dfy"
 
-static function {:opaque} power2(exp: nat) : nat
+static ghost function {:opaque} power2(exp: nat) : nat
     ensures power2(exp) > 0;
 {
     if (exp==0) then

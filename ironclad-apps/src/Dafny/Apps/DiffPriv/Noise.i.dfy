@@ -11,12 +11,12 @@ include "ErrorCodes.i.dfy"
 
 datatype DiffPrivParametersImpl = DiffPrivParametersImpl_ctor(alpha:BigRat, beta:BigRat, delta:int, B:int);
 
-static function WellformedDiffPrivParameters (p:DiffPrivParametersImpl) : bool
+static ghost function WellformedDiffPrivParameters (p:DiffPrivParametersImpl) : bool
 {
     WellformedBigRat(p.alpha) && WellformedBigRat(p.beta) && Word32(p.delta) && Word32(p.B)
 }
 
-static function DiffPrivParametersImplToSpec (p:DiffPrivParametersImpl) : DiffPrivParameters
+static ghost function DiffPrivParametersImplToSpec (p:DiffPrivParametersImpl) : DiffPrivParameters
     requires WellformedDiffPrivParameters(p);
 {
     DiffPrivParameters_ctor(RV(p.alpha), RV(p.beta), p.delta, p.B)
@@ -506,7 +506,7 @@ static lemma Lemma_ThresholdGeOne (alpha:real, u:real, threshold:real)
     }
 }
 
-static function RequiredNoiseEntropyPart1 (p:DiffPrivParameters) : real
+static ghost function RequiredNoiseEntropyPart1 (p:DiffPrivParameters) : real
     requires DiffPrivParametersValid(p);
     ensures RequiredNoiseEntropyPart1(p) > 0.0;
 {

@@ -9,9 +9,9 @@ import opened Common__NodeIdentity_i
 import opened AppInterface_i`Spec
 import opened SHT__Delegations_i
 
-function min(x:int, y:int) : int { if x < y then x else y }
+ghost function min(x:int, y:int) : int { if x < y then x else y }
 
-predicate InBounds(i:int, low:int, high:int, len:int)
+ghost predicate InBounds(i:int, low:int, high:int, len:int)
 {
     low <= i < min(high, len)
 }

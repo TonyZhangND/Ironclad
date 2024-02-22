@@ -1,7 +1,7 @@
 include "mul.i.dfy"
 include "div.i.dfy"
 
-static function IsEven(x:int) : bool
+static ghost function IsEven(x:int) : bool
 {
     exists y:int :: mul(y, 2) == x
 }
@@ -42,7 +42,7 @@ static lemma lemma_no_half(i:int)
 
 //-datatype IntDivResult = IntDivResult_c(q:int, r:int);
 //-
-//-function DivMod(x:int, d:int) : IntDivResult
+//-ghost function DivMod(x:int, d:int) : IntDivResult
 //-    requires d>0;
 //-    ensures d*DivMod(x,d).q+DivMod(x,d).r == x;
 //-    ensures 0<=DivMod(x,d).r<d;

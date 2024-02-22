@@ -3,7 +3,7 @@ include "FatNatX86.i.dfy"
 include "../Util/beseqs_simple.i.dfy"
 include "FatNatAddLemmas.i.dfy"
 
-predicate FNAddRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, i:int)
+ghost predicate FNAddRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, i:int)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);
@@ -15,7 +15,7 @@ predicate FNAddRelation_local(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryi
         == DigitAt(a,i) + DigitAt(b,i) + DigitAt(carryin,i)
 }
 
-predicate FNAddRelation(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>)
+ghost predicate FNAddRelation(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);
@@ -116,7 +116,7 @@ lemma lemma_FNAddition(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<i
 }
 
 //- Need to be able to talk about just the assembled part of c.
-predicate FNAddRelation_inductive(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, j:int)
+ghost predicate FNAddRelation_inductive(pv:int, a:seq<int>, b:seq<int>, c:seq<int>, carryin:seq<int>, j:int)
     requires 1<pv;
     requires IsDigitSeq(pv, a);
     requires IsDigitSeq(pv, b);

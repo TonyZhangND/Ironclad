@@ -36,7 +36,7 @@ import opened Temporal__WF1_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-function TimeForOneReplicaToSendHeartbeat(asp:AssumptionParameters):int
+ghost function TimeForOneReplicaToSendHeartbeat(asp:AssumptionParameters):int
   requires asp.host_period > 0
   requires asp.max_clock_ambiguity >= 0
   requires asp.c.params.heartbeat_period >= 0
@@ -45,7 +45,7 @@ function TimeForOneReplicaToSendHeartbeat(asp:AssumptionParameters):int
   asp.max_clock_ambiguity * 2 + asp.c.params.heartbeat_period + TimeToPerformGenericAction(asp)
 }
 
-function TimeForOneReplicaToAdvanceAnother(asp:AssumptionParameters, processing_bound:int):int
+ghost function TimeForOneReplicaToAdvanceAnother(asp:AssumptionParameters, processing_bound:int):int
   requires asp.host_period > 0
   requires asp.max_clock_ambiguity >= 0
   requires asp.c.params.heartbeat_period >= 0
@@ -55,7 +55,7 @@ function TimeForOneReplicaToAdvanceAnother(asp:AssumptionParameters, processing_
   TimeForOneReplicaToSendHeartbeat(asp) + processing_bound
 }
 
-predicate HostReachedView(
+ghost predicate HostReachedView(
   ps:RslState,
   replica_index:int,
   view:Ballot
@@ -64,7 +64,7 @@ predicate HostReachedView(
   0 <= replica_index < |ps.replicas| && BalLeq(view, CurrentViewOfHost(ps, replica_index))
 }
 
-function{:opaque} HostReachedViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
+ghost function{:opaque} HostReachedViewTemporal(b:Behavior<RslState>, replica_index:int, view:Ballot):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, HostReachedViewTemporal(b, replica_index, view))} ::
                sat(i, HostReachedViewTemporal(b, replica_index, view)) <==> HostReachedView(b[i], replica_index, view)
@@ -72,13 +72,13 @@ function{:opaque} HostReachedViewTemporal(b:Behavior<RslState>, replica_index:in
   stepmap(imap i :: HostReachedView(b[i], replica_index, view))
 }
 
-predicate NextHeartbeatTimeInv(ps:RslState, idx:int, max_clock_ambiguity:int)
+ghost predicate NextHeartbeatTimeInv(ps:RslState, idx:int, max_clock_ambiguity:int)
 {
   && 0 <= idx < |ps.replicas|
   && ps.replicas[idx].replica.nextHeartbeatTime <= ps.environment.time + max_clock_ambiguity + ps.constants.params.heartbeat_period
 }
 
-predicate ReplicaHasSpecificNextHeartbeatTime(
+ghost predicate ReplicaHasSpecificNextHeartbeatTime(
   ps:RslState,
   replica_index:int,
   nextHeartbeatTime:int
@@ -88,7 +88,7 @@ predicate ReplicaHasSpecificNextHeartbeatTime(
   && ps.replicas[replica_index].replica.nextHeartbeatTime == nextHeartbeatTime
 }
 
-function{:opaque} ReplicaHasSpecificNextHeartbeatTimeTemporal(
+ghost function{:opaque} ReplicaHasSpecificNextHeartbeatTimeTemporal(
   b:Behavior<RslState>,
   replica_index:int,
   nextHeartbeatTime:int
@@ -102,7 +102,7 @@ function{:opaque} ReplicaHasSpecificNextHeartbeatTimeTemporal(
 }
 
 
-predicate ReplicaSentHeartbeat(
+ghost predicate ReplicaSentHeartbeat(
   ps:RslState,
   ps':RslState,
   sender_idx:int,
@@ -124,7 +124,7 @@ predicate ReplicaSentHeartbeat(
   && RslNextOneReplica(ps, ps', sender_idx, ps.environment.nextStep.ios)
 }
 
-function{:opaque} ReplicaSentHeartbeatTemporal(
+ghost function{:opaque} ReplicaSentHeartbeatTemporal(
   b:Behavior<RslState>,
   sender_idx:int,
   receiver_idx:int

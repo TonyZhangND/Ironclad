@@ -10,7 +10,7 @@ datatype DiffPrivRequest = InvalidRequest_ctor()
                          | AddRowRequest_ctor(request_ciphertext:seq<int>)
                          | QueryRequest_ctor(q:QueryParameters);
 
-static predicate RequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
+static ghost predicate RequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
     requires IsByteSeq(data);
 {
     if |data| == 0 then
@@ -27,7 +27,7 @@ static predicate RequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
         request.InvalidRequest_ctor?
 }
 
-static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:DiffPrivRequest)
+static ghost predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:DiffPrivRequest)
     requires |data| > 0;
     requires data[0] == 1;
 {
@@ -38,7 +38,7 @@ static predicate GetQuoteRequestParsedCorrectly(data:seq<int>, request:DiffPrivR
         && request.nonce_external == data[1..21]
 }
 
-static predicate InitializeDBRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
+static ghost predicate InitializeDBRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 2;
@@ -56,7 +56,7 @@ static predicate InitializeDBRequestParsedCorrectly (data:seq<int>, request:Diff
             request.budget == real(budget_num) / real(budget_den))
 }
 
-static predicate AddRowRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
+static ghost predicate AddRowRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 3;
@@ -67,7 +67,7 @@ static predicate AddRowRequestParsedCorrectly (data:seq<int>, request:DiffPrivRe
         request == AddRowRequest_ctor(data[1..])
 }
 
-static predicate QueryRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
+static ghost predicate QueryRequestParsedCorrectly (data:seq<int>, request:DiffPrivRequest)
     requires IsByteSeq(data);
     requires |data| > 0;
     requires data[0] == 4;
@@ -110,7 +110,7 @@ datatype DiffPrivResponse = NullResponse_ctor()
                           | AddRowResponse_ctor()
                           | QueryResponse_ctor(query_error_code:int, response:int);
 
-static predicate ResponseFormedCorrectly (response:DiffPrivResponse, data:seq<int>)
+static ghost predicate ResponseFormedCorrectly (response:DiffPrivResponse, data:seq<int>)
     requires IsByteSeq(data);
 {
     match response

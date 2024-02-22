@@ -10,7 +10,7 @@ import opened Collections__Maps2_i
 // DEFINITIONS
 //////////////////
 
-function{:opaque} stepDecrease(start:int, d:imap<int, int>):temporal
+ghost function{:opaque} stepDecrease(start:int, d:imap<int, int>):temporal
   requires imaptotal(d)
   ensures  forall i {:trigger sat(i, stepDecrease(start, d))} :: sat(i, stepDecrease(start, d)) <==> d[i] < d[start]
 {
@@ -18,13 +18,13 @@ function{:opaque} stepDecrease(start:int, d:imap<int, int>):temporal
   stepmap(imap i :: d[i] < d[start])
 }
 
-function nextDecrease(start:int, d:imap<int, int>):temporal
+ghost function nextDecrease(start:int, d:imap<int, int>):temporal
   requires imaptotal(d)
 {
   next(stepDecrease(start, d))
 }
 
-function{:opaque} nextOrDecrease(goal:temporal, d:imap<int, int>):temporal
+ghost function{:opaque} nextOrDecrease(goal:temporal, d:imap<int, int>):temporal
   requires imaptotal(d)
   ensures  forall i {:trigger sat(i, nextOrDecrease(goal, d))} :: sat(i, nextOrDecrease(goal, d)) <==>
                     sat(i, eventual(or(goal, nextDecrease(i, d))))
@@ -38,7 +38,7 @@ function{:opaque} nextOrDecrease(goal:temporal, d:imap<int, int>):temporal
 //////////////////
 
 // If d decreases unless A, then <>A.
-lemma TemporalInductionOfEventuallyFromDecreasingFunction(i:int, x:temporal, d:imap<int, int>)
+lemma TemporalInductionOfEventuallyFromDecreasingghost function(i:int, x:temporal, d:imap<int, int>)
   requires imaptotal(d)
   requires forall j {:trigger sat(j, x)} :: i <= j ==> sat(j, x) || d[nextstep(j)] < d[j]
   requires forall j :: d[j] >= 0
@@ -48,7 +48,7 @@ lemma TemporalInductionOfEventuallyFromDecreasingFunction(i:int, x:temporal, d:i
   TemporalAssist();
   if (!sat(i, x))
   {
-    TemporalInductionOfEventuallyFromDecreasingFunction(i + 1, x, d);
+    TemporalInductionOfEventuallyFromDecreasingghost function(i + 1, x, d);
   }
 }
 

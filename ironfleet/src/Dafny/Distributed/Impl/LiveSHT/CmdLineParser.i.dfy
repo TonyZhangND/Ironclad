@@ -11,17 +11,17 @@ import opened Common__NetClient_i
 import opened Common__SeqIsUniqueDef_i
 import opened Common__NodeIdentity_i
 
-function EndPointNull () : EndPoint
+ghost function EndPointNull () : EndPoint
 {
   EndPoint([])
 }
 
-function ConstantsStateNull () : ConstantsState 
+ghost function ConstantsStateNull () : ConstantsState 
 {
   ConstantsState(EndPointNull(), [], StaticParams())
 }
 
-function sht_cmd_line_parsing(args:seq<seq<byte>>) : ConstantsState
+ghost function sht_cmd_line_parsing(args:seq<seq<byte>>) : ConstantsState
 {
   var (ok, endpoints) := parse_end_points(args);
   if !ok then
@@ -32,7 +32,7 @@ function sht_cmd_line_parsing(args:seq<seq<byte>>) : ConstantsState
                    StaticParams())
 }
 
-function sht_parse_id(arg:seq<byte>) : EndPoint
+ghost function sht_parse_id(arg:seq<byte>) : EndPoint
 {
   var (ok, ep) := parse_end_point(arg);
   ep

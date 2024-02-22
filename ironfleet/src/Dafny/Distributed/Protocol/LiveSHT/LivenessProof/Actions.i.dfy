@@ -16,7 +16,7 @@ import opened SHT__Host_i
 import opened SHT__Network_i
 import opened Temporal__Temporal_s
 
-predicate PacketProcessedViaIos(
+ghost predicate PacketProcessedViaIos(
     ps:LSHT_State,
     ps':LSHT_State,
     p:LSHTPacket,
@@ -33,7 +33,7 @@ predicate PacketProcessedViaIos(
     && LHost_ReceivePacket_Next(ps.hosts[idx].host, ps'.hosts[idx].host, ios)
 }
 
-predicate PacketProcessedDuringAction(
+ghost predicate PacketProcessedDuringAction(
     ps:LSHT_State,
     p:LSHTPacket
     )
@@ -41,7 +41,7 @@ predicate PacketProcessedDuringAction(
     ps.environment.nextStep.LEnvStepHostIos? && LIoOpReceive(p) in ps.environment.nextStep.ios
 }
 
-function{:opaque} PacketProcessedTemporal(
+ghost function{:opaque} PacketProcessedTemporal(
     b:Behavior<LSHT_State>,
     p:LSHTPacket
     ):temporal
@@ -52,7 +52,7 @@ function{:opaque} PacketProcessedTemporal(
     stepmap(imap i :: PacketProcessedDuringAction(b[i], p))
 }
 
-predicate PacketSentDuringAction(
+ghost predicate PacketSentDuringAction(
     ps:LSHT_State,
     p:LSHTPacket
     )
@@ -60,7 +60,7 @@ predicate PacketSentDuringAction(
     ps.environment.nextStep.LEnvStepHostIos? && LIoOpSend(p) in ps.environment.nextStep.ios
 }
 
-function{:opaque} PacketSentTemporal(
+ghost function{:opaque} PacketSentTemporal(
     b:Behavior<LSHT_State>,
     p:LSHTPacket
     ):temporal
@@ -74,7 +74,7 @@ function{:opaque} PacketSentTemporal(
 datatype SHTActionParams = SHTActionParams(idx:int, ios:seq<LSHTIo>, host:Host, host':Host, recv:set<Packet>, out:set<Packet>,
                                            nextActionIndex:int, resendCount:int, pkt:Packet, ack:Packet)
 
-predicate SHTActionOccurred(ss:LSHT_State, ss':LSHT_State, ap:SHTActionParams)
+ghost predicate SHTActionOccurred(ss:LSHT_State, ss':LSHT_State, ap:SHTActionParams)
 {
        0 <= ap.idx < |ss.hosts|
     && 0 <= ap.idx < |ss.config.hostIds|

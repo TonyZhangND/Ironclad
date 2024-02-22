@@ -8,7 +8,7 @@ type Config = seq<EndPoint>
 
 datatype Node = Node(held:bool, epoch:int, my_index:int, config:Config)
 
-predicate NodeInit(s:Node, my_index:int, config:Config)
+ghost predicate NodeInit(s:Node, my_index:int, config:Config)
 {
     s.epoch == (if my_index == 0 then 1 else 0)
  && 0 <= my_index < |config|
@@ -17,7 +17,7 @@ predicate NodeInit(s:Node, my_index:int, config:Config)
  && s.config == config
 }
 
-predicate NodeGrant(s:Node, s':Node, ios:seq<LockIo>)
+ghost predicate NodeGrant(s:Node, s':Node, ios:seq<LockIo>)
 {
     s.my_index == s'.my_index // change
  && if s.held && s.epoch < 0xFFFF_FFFF_FFFF_FFFF then 
@@ -34,7 +34,7 @@ predicate NodeGrant(s:Node, s':Node, ios:seq<LockIo>)
         s == s' && ios == []
 }
 
-predicate NodeAccept(s:Node, s':Node, ios:seq<LockIo>)
+ghost predicate NodeAccept(s:Node, s':Node, ios:seq<LockIo>)
 {
     s.my_index == s'.my_index // change
  && |ios| >= 1
@@ -56,7 +56,7 @@ predicate NodeAccept(s:Node, s':Node, ios:seq<LockIo>)
             s == s' && |ios| == 1
 }
 
-predicate NodeNext(s:Node, s':Node, ios:seq<LockIo>)
+ghost predicate NodeNext(s:Node, s':Node, ios:seq<LockIo>)
 {
     NodeGrant(s, s', ios)
  || NodeAccept(s, s', ios)

@@ -14,7 +14,7 @@ import opened CommonProof__Assumptions_i
 // INVARIANTS
 ///////////////////////////////
 
-predicate ConstantsAllConsistentInv(ps:RslState)
+ghost predicate ConstantsAllConsistentInv(ps:RslState)
 {
   && |ps.constants.config.replica_ids| == |ps.replicas|
   && forall idx :: 0 <= idx < |ps.constants.config.replica_ids| ==>

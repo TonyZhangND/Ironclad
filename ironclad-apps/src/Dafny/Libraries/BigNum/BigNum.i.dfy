@@ -4,14 +4,14 @@ datatype BigNum = BigNum_ctor(
     negate : bool,
     value : BigNat);
 
-static function WellformedBigNum(A:BigNum) : bool
+static ghost function WellformedBigNum(A:BigNum) : bool
 {
     WellformedBigNat(A.value)
         //- disallow redundant zero (-0)
     && (zero(A.value) ==> !A.negate)
 }
 
-static function BV(A:BigNum) : int
+static ghost function BV(A:BigNum) : int
     requires WellformedBigNum(A);
     ensures (BV(A) < 0) <==> A.negate;
 {
@@ -21,7 +21,7 @@ static function BV(A:BigNum) : int
         I(A.value)
 }
 
-static function method BigNumNegate(A:BigNum) : BigNum
+static function BigNumNegate(A:BigNum) : BigNum
     requires WellformedBigNum(A);
     ensures WellformedBigNum(BigNumNegate(A));
     ensures BV(BigNumNegate(A)) == -BV(A);
@@ -388,7 +388,7 @@ method BigNumMul(A:BigNum, B:BigNum) returns (R:BigNum)
     }
 }
 
-static predicate ModestBigNumWords(A:BigNum)
+static ghost predicate ModestBigNumWords(A:BigNum)
 {
     WellformedBigNum(A)
     && ModestBigNatWords(A.value)
@@ -477,7 +477,7 @@ method BigNumDiv(N:BigNum, D:BigNum) returns (Q:BigNum, R:BigNum)
     lemma_fundamental_div_mod_converse(BV(N), BV(D), BV(Q), BV(R));
 }
 
-static function method MakeSmallLiteralBigNum_def(x:nat) : BigNum
+static function MakeSmallLiteralBigNum_def(x:nat) : BigNum
     requires x < Width();
     ensures WellformedBigNum(MakeSmallLiteralBigNum_def(x));
 {
@@ -520,7 +520,7 @@ static lemma lemma_MakeSmallLiteralBigNum(x:nat)
     }
 }
 
-static function method MakeSmallLiteralBigNum(x:nat) : BigNum
+static function MakeSmallLiteralBigNum(x:nat) : BigNum
     requires x < Width();
     ensures WellformedBigNum(MakeSmallLiteralBigNum(x));
     ensures BV(MakeSmallLiteralBigNum(x))==x;

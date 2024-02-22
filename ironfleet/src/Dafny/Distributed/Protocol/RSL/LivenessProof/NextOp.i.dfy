@@ -30,7 +30,7 @@ import opened Temporal__WF1_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmpty(
+ghost predicate AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmpty(
   ps:RslState,
   live_quorum:set<int>,
   view:Ballot,
@@ -44,7 +44,7 @@ predicate AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmpty(
     && s.next_operation_number_to_propose <= opn
 }
 
-function{:opaque} AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmptyTemporal(
+ghost function{:opaque} AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmptyTemporal(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   view:Ballot,
@@ -58,7 +58,7 @@ function{:opaque} AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmp
   stepmap(imap i :: AllLiveReplicasCaughtUpWithEarlierOperationWithRequestQueueEmpty(b[i], live_quorum, view, opn))
 }
 
-predicate ProposerStartsBatchTimer(
+ghost predicate ProposerStartsBatchTimer(
   ps:RslState,
   idx:int
   )
@@ -67,7 +67,7 @@ predicate ProposerStartsBatchTimer(
   && ps.replicas[idx].replica.proposer.incomplete_batch_timer.IncompleteBatchTimerOn?
 }
 
-function{:opaque} ProposerStartsBatchTimerTemporal(
+ghost function{:opaque} ProposerStartsBatchTimerTemporal(
   b:Behavior<RslState>,
   idx:int
   ):temporal
@@ -79,7 +79,7 @@ function{:opaque} ProposerStartsBatchTimerTemporal(
   stepmap(imap i :: ProposerStartsBatchTimer(b[i], idx))
 }
 
-predicate ProposerExceedsCertainNextOp(
+ghost predicate ProposerExceedsCertainNextOp(
   ps:RslState,
   idx:int,
   opn:int
@@ -89,7 +89,7 @@ predicate ProposerExceedsCertainNextOp(
   && ps.replicas[idx].replica.proposer.next_operation_number_to_propose > opn
 }
 
-function{:opaque} ProposerExceedsCertainNextOpTemporal(
+ghost function{:opaque} ProposerExceedsCertainNextOpTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:int
@@ -101,7 +101,7 @@ function{:opaque} ProposerExceedsCertainNextOpTemporal(
   stepmap(imap i :: ProposerExceedsCertainNextOp(b[i], idx, opn))
 }
 
-predicate ProposerHasCertainNextOpAndNonemptyRequestQueue(
+ghost predicate ProposerHasCertainNextOpAndNonemptyRequestQueue(
   ps:RslState,
   idx:int,
   opn:int
@@ -114,7 +114,7 @@ predicate ProposerHasCertainNextOpAndNonemptyRequestQueue(
      && s.acceptor.log_truncation_point >= opn
 }
 
-function{:opaque} ProposerHasCertainNextOpAndNonemptyRequestQueueTemporal(
+ghost function{:opaque} ProposerHasCertainNextOpAndNonemptyRequestQueueTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:int
@@ -126,7 +126,7 @@ function{:opaque} ProposerHasCertainNextOpAndNonemptyRequestQueueTemporal(
   stepmap(imap i :: ProposerHasCertainNextOpAndNonemptyRequestQueue(b[i], idx, opn))
 }
 
-predicate ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimer(
+ghost predicate ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimer(
   ps:RslState,
   idx:int,
   opn:int,
@@ -141,7 +141,7 @@ predicate ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimer(
      && s.proposer.incomplete_batch_timer == IncompleteBatchTimerOn(timerExpiration)
 }
 
-function{:opaque} ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimerTemporal(
+ghost function{:opaque} ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimerTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:int,
@@ -229,7 +229,7 @@ lemma lemma_IfProposerHasCertainNextOpAndNonemptyRequestQueueThenProposerEventua
     
   var P := and(ProposerHasCertainNextOpAndNonemptyRequestQueueTemporal(b, h.view.proposer_id, opn), AllLiveReplicasReadyForNextOperationTemporal(b, asp.live_quorum, h.view, opn));
   var Q := or(w, or(x, not(z)));
-  var Action := MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx);
+  var Action := MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx);
 
   forall i | prev_step <= i
     ensures sat(i, TemporalWF1Req1(P, Q))
@@ -418,7 +418,7 @@ lemma lemma_IfProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimerThenPr
   var P := ProposerHasCertainNextOpAndNonemptyRequestQueueAndBatchTimerTemporal(b, h.view.proposer_id, opn, timerExpiration);
   assert sat(prev_step, P);
   var Q := or(x, not(z));
-  var Action := MakeRslActionTemporalFromReadClockReplicaFunction(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx);
+  var Action := MakeRslActionTemporalFromReadClockReplicaghost function(b, LReplicaNextReadClockMaybeNominateValueAndSend2a, idx);
 
   forall i | prev_step <= i
     ensures sat(i, TemporalWF1Req1(P, Q))

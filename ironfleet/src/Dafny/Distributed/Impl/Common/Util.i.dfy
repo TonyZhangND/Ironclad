@@ -109,7 +109,7 @@ method RecordTimingSeq(name:seq<char>, start:uint64, end:uint64)
   }
 }
 
-function BEByteSeqToInt(bytes:seq<byte>) : int
+ghost function BEByteSeqToInt(bytes:seq<byte>) : int
   decreases |bytes|
 {
   if bytes == [] then 0
@@ -207,7 +207,7 @@ lemma lemma_BEByteSeqToUint64_properties(bs:seq<byte>)
 }
 
 /*  Doesn't appear to be in use at present
-function method BEByteSeqToUint32(bs:seq<byte>) : uint32
+function BEByteSeqToUint32(bs:seq<byte>) : uint32
   requires |bs| == Uint32Size() as int
   ensures 0 <= BEByteSeqToInt(SeqByteToByteSeq(bs)) < 0x100000000    // Need for the cast on the next line
   ensures BEByteSeqToUint32(bs) == BEByteSeqToInt(SeqByteToByteSeq(bs)) as uint32
@@ -225,7 +225,7 @@ function method BEByteSeqToUint32(bs:seq<byte>) : uint32
 // "BEByteSeq" is a seq<int> with a byte precondition constraint, to
 // access the generic pv library.
 // So let's have SeqByte be a Dafny seq<byte>.
-function method SeqByteToUint64(bs:seq<byte>) : uint64
+function SeqByteToUint64(bs:seq<byte>) : uint64
   requires |bs| == Uint64Size() as int
   ensures 0 <= BEByteSeqToInt(bs) < 0x10000000000000000    // Need for the cast on the next line
   ensures SeqByteToUint64(bs) == BEByteSeqToInt(bs) as uint64
@@ -242,7 +242,7 @@ function method SeqByteToUint64(bs:seq<byte>) : uint64
   + (bs[7] as uint64)
 }
 
-function BEUintToSeqByte(v:int, width:int) : seq<byte>
+ghost function BEUintToSeqByte(v:int, width:int) : seq<byte>
   ensures width >= 0 && v >= 0 ==> |BEUintToSeqByte(v, width)| == width
 {
   if width > 0 && v >= 0 then
@@ -336,7 +336,7 @@ lemma lemma_BEByteSeqToInt_BEUintToSeqByte_invertability()
 }
 
 
-function method Uint64ToSeqByte(u:uint64) : seq<byte>
+function Uint64ToSeqByte(u:uint64) : seq<byte>
   ensures Uint64ToSeqByte(u) == BEUintToSeqByte(u as int, 8)
 {
   ghost var pv := 256;
@@ -373,7 +373,7 @@ function method Uint64ToSeqByte(u:uint64) : seq<byte>
   bs
 }
 
-function method SeqByteToUint16(bs:seq<byte>) : uint16
+function SeqByteToUint16(bs:seq<byte>) : uint16
   requires |bs| == Uint16Size() as int
   ensures 0 <= BEByteSeqToInt(bs) < 0x10000000000000000    // Need for the cast on the next line
   ensures BEByteSeqToInt(bs) < 0x10000
@@ -384,7 +384,7 @@ function method SeqByteToUint16(bs:seq<byte>) : uint16
   (bs[0] as uint16) * 256 + (bs[1] as uint16)
 }
 
-function method Uint16ToSeqByte(u:uint16) : seq<byte>
+function Uint16ToSeqByte(u:uint16) : seq<byte>
   ensures Uint16ToSeqByte(u) == BEUintToSeqByte(u as int, 2)
 {
   ghost var pv := 256;

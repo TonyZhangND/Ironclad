@@ -6,7 +6,7 @@ include "../Util/seqs_reverse.i.dfy"
 //- Convert between "legacy" little-endian, well-formed-required BigNats
 //- and new-style BEIsByteSeq
 
-static predicate ZeroPrefix(s:seq<int>, s_suffix:seq<int>)
+static ghost predicate ZeroPrefix(s:seq<int>, s_suffix:seq<int>)
 {
     |s| >= |s_suffix|
     && s[ |s|-|s_suffix| .. ] == s_suffix

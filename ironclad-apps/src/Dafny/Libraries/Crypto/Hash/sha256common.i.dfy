@@ -8,12 +8,12 @@ include "sha_padding.i.dfy"
 include "sha_common.i.dfy"
 include "../../../Drivers/CPU/assembly_premium.i.dfy"
 
-static predicate Word32AtoH(v:atoh_Type)
+static ghost predicate Word32AtoH(v:atoh_Type)
 {
     Word32(v.a) && Word32(v.b) && Word32(v.c) && Word32(v.d) && Word32(v.e) && Word32(v.f) && Word32(v.g) && Word32(v.h)
 }
 
-static predicate IsAToHWordSeq(vs:seq<atoh_Type>)
+static ghost predicate IsAToHWordSeq(vs:seq<atoh_Type>)
 {
     forall i :: 0 <= i < |vs| ==> Word32AtoH(vs[i])
 }
@@ -24,7 +24,7 @@ static predicate IsAToHWordSeq(vs:seq<atoh_Type>)
 
 datatype SHA256_state = SHA256_state_c(M:seq<int>, H:seq<int>, W:seq<int>, atoh:atoh_Type, num_blocks:int);
 
-static function SHA256_vars_to_state(M:array<int>, words:int, H:array<int>, W:array<int>, atoh:atoh_Type, num_blocks:int)
+static ghost function SHA256_vars_to_state(M:array<int>, words:int, H:array<int>, W:array<int>, atoh:atoh_Type, num_blocks:int)
                                     : SHA256_state
     requires M != null && H != null && W != null;
     requires 0 <= words <= M.Length;
@@ -33,7 +33,7 @@ static function SHA256_vars_to_state(M:array<int>, words:int, H:array<int>, W:ar
     SHA256_state_c(M[..words], H[..], W[..], atoh, num_blocks)
 }
 
-static predicate PartialSHA256TraceHasCorrectHs(z:SHA256Trace)
+static ghost predicate PartialSHA256TraceHasCorrectHs(z:SHA256Trace)
 {
     |z.H| > 0 &&
     |z.H| <= |z.atoh|+1 &&
@@ -44,7 +44,7 @@ static predicate PartialSHA256TraceHasCorrectHs(z:SHA256Trace)
         forall j :: 0 <= j < 8 ==> z.H[blk+1][j] == Add32(ConvertAtoHToSeq(z.atoh[blk][64])[j], z.H[blk][j]))
 }
 
-static predicate PartialSHA256TraceHasCorrectWs(z:SHA256Trace)
+static ghost predicate PartialSHA256TraceHasCorrectWs(z:SHA256Trace)
 {
     |z.W| <= |z.M| &&
     forall blk :: 0 <= blk < |z.W| ==>
@@ -56,7 +56,7 @@ static predicate PartialSHA256TraceHasCorrectWs(z:SHA256Trace)
                                                       z.W[blk][t-16]))
 }
 
-static predicate PartialSHA256TraceHasCorrectatohsWf(z:SHA256Trace)
+static ghost predicate PartialSHA256TraceHasCorrectatohsWf(z:SHA256Trace)
 {
     |z.atoh| <= |z.H| &&
     |z.atoh| <= |z.W| &&
@@ -68,7 +68,7 @@ static predicate PartialSHA256TraceHasCorrectatohsWf(z:SHA256Trace)
         (|z.atoh[blk]| > 0 ==> IsWordSeqOfLen(z.H[blk], 8) && ConvertAtoHToSeq(z.atoh[blk][0]) == z.H[blk])
 }
 
-static predicate{:opaque} PartialSHA256TraceHasCorrectatohsOpaque(z:SHA256Trace)
+static ghost predicate{:opaque} PartialSHA256TraceHasCorrectatohsOpaque(z:SHA256Trace)
 {
     |z.atoh| <= |z.H| &&
     |z.atoh| <= |z.W| &&
@@ -94,17 +94,17 @@ static predicate{:opaque} PartialSHA256TraceHasCorrectatohsOpaque(z:SHA256Trace)
             z.atoh[blk][t+1].a == Add32(T1, T2)
 }
 
-static predicate PartialSHA256TraceHasCorrectatohs(z:SHA256Trace)
+static ghost predicate PartialSHA256TraceHasCorrectatohs(z:SHA256Trace)
 {
     PartialSHA256TraceHasCorrectatohsWf(z) && PartialSHA256TraceHasCorrectatohsOpaque(z)
 }
 
-static predicate PartialSHA256TraceIsCorrect(z:SHA256Trace)
+static ghost predicate PartialSHA256TraceIsCorrect(z:SHA256Trace)
 {
     PartialSHA256TraceHasCorrectWs(z) && PartialSHA256TraceHasCorrectHs(z) && PartialSHA256TraceHasCorrectatohs(z)
 }
 
-static predicate AreSHA256TraceAndStateOK(z:SHA256Trace, s:SHA256_state)
+static ghost predicate AreSHA256TraceAndStateOK(z:SHA256Trace, s:SHA256_state)
 {
     PartialSHA256TraceIsCorrect(z) &&
     IsWordSeq(s.M) &&
@@ -115,7 +115,7 @@ static predicate AreSHA256TraceAndStateOK(z:SHA256Trace, s:SHA256_state)
 }
 
 
-static predicate IsSHA256ReadyForBlock(z:SHA256Trace, s:SHA256_state, nextBlock:int)
+static ghost predicate IsSHA256ReadyForBlock(z:SHA256Trace, s:SHA256_state, nextBlock:int)
     requires 0 <= nextBlock;
 {
     AreSHA256TraceAndStateOK(z, s) &&
@@ -126,7 +126,7 @@ static predicate IsSHA256ReadyForBlock(z:SHA256Trace, s:SHA256_state, nextBlock:
     s.H == z.H[nextBlock]
 }
 
-static predicate{:opaque} TheAToHsAreOK(z:SHA256Trace, blk: int, t: int)
+static ghost predicate{:opaque} TheAToHsAreOK(z:SHA256Trace, blk: int, t: int)
     requires 0 <= t <= 63;
     requires 0 <= blk;
     requires |z.atoh| > blk;
@@ -150,7 +150,7 @@ static predicate{:opaque} TheAToHsAreOK(z:SHA256Trace, blk: int, t: int)
     z.atoh[blk][t+1].a == Add32(T1, T2)
 }
 
-static predicate IsSHA256ReadyForStep(z:SHA256Trace, s:SHA256_state, currentBlock:int, nextStep:int)
+static ghost predicate IsSHA256ReadyForStep(z:SHA256Trace, s:SHA256_state, currentBlock:int, nextStep:int)
     requires 0 <= currentBlock;
     requires 0 <= nextStep <= 64;
 {

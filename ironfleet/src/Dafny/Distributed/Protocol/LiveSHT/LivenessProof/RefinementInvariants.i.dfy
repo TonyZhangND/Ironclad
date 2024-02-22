@@ -28,7 +28,7 @@ import opened SHT__SingleDelivery_i
 import opened SHT__SingleMessage_i
 import opened Temporal__Temporal_s
 
-function PacketToLSHTPacket(p:Packet) : LSHTPacket
+ghost function PacketToLSHTPacket(p:Packet) : LSHTPacket
 {
     LPacket(p.dst, p.src, p.msg)
 }

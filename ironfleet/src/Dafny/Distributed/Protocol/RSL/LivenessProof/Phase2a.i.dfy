@@ -33,7 +33,7 @@ import opened Environment_s
 import opened Collections__Maps2_s
 import opened Common__UpperBound_s
 
-predicate ProposerSends2asForOperation(
+ghost predicate ProposerSends2asForOperation(
   ps:RslState,
   ps':RslState,
   idx:int,
@@ -54,7 +54,7 @@ predicate ProposerSends2asForOperation(
                                          ExtractSentPacketsFromIos(ios))
 }
 
-function{:opaque} ProposerSends2asForOperationTemporal(
+ghost function{:opaque} ProposerSends2asForOperationTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:OperationNumber
@@ -69,7 +69,7 @@ function{:opaque} ProposerSends2asForOperationTemporal(
                          ProposerSends2asForOperation(b[i], b[nextstep(i)], idx, opn, ios))
 }
 
-predicate LearnerHas2bFromAcceptorInView(
+ghost predicate LearnerHas2bFromAcceptorInView(
   ps:RslState,
   acceptor_idx:int,
   learner_idx:int,
@@ -85,7 +85,7 @@ predicate LearnerHas2bFromAcceptorInView(
     && ps.constants.config.replica_ids[acceptor_idx] in s.unexecuted_learner_state[opn].received_2b_message_senders
 }
 
-function{:opaque} LearnerHas2bFromAcceptorInViewTemporal(
+ghost function{:opaque} LearnerHas2bFromAcceptorInViewTemporal(
   b:Behavior<RslState>,
   acceptor_idx:int,
   learner_idx:int,
@@ -100,7 +100,7 @@ function{:opaque} LearnerHas2bFromAcceptorInViewTemporal(
   stepmap(imap i :: LearnerHas2bFromAcceptorInView(b[i], acceptor_idx, learner_idx, view, opn))
 }
 
-predicate ExecutorHasLearnedDecisionAboutOp(
+ghost predicate ExecutorHasLearnedDecisionAboutOp(
   ps:RslState,
   idx:int,
   opn:OperationNumber
@@ -111,7 +111,7 @@ predicate ExecutorHasLearnedDecisionAboutOp(
     s.ops_complete > opn || (s.ops_complete == opn && s.next_op_to_execute.OutstandingOpKnown?)
 }
 
-function{:opaque} ExecutorHasLearnedDecisionAboutOpTemporal(
+ghost function{:opaque} ExecutorHasLearnedDecisionAboutOpTemporal(
   b:Behavior<RslState>,
   idx:int,
   opn:OperationNumber
@@ -123,7 +123,7 @@ function{:opaque} ExecutorHasLearnedDecisionAboutOpTemporal(
   stepmap(imap i :: ExecutorHasLearnedDecisionAboutOp(b[i], idx, opn))
 }
 
-function{:opaque} LearnerHas2bFromEveryAcceptorInViewTemporalSet(
+ghost function{:opaque} LearnerHas2bFromEveryAcceptorInViewTemporalSet(
   b:Behavior<RslState>,
   live_quorum:set<int>,
   learner_idx:int,

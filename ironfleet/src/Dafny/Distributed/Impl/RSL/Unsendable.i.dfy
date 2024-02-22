@@ -9,7 +9,7 @@ import opened LiveRSL__PacketParsing_i
 import opened Common__GenericMarshalling_i
 import opened Environment_s
 
-predicate IosReflectIgnoringUnsendable(ios:seq<LIoOp<EndPoint, seq<byte>>>)
+ghost predicate IosReflectIgnoringUnsendable(ios:seq<LIoOp<EndPoint, seq<byte>>>)
 {
   && |ios| == 1
   && ios[0].LIoOpReceive?
@@ -17,7 +17,7 @@ predicate IosReflectIgnoringUnsendable(ios:seq<LIoOp<EndPoint, seq<byte>>>)
      || !Marshallable(parse_Message(DemarshallFunc(ios[0].r.msg, CMessage_grammar()))))
 }
     
-predicate HostNextIgnoreUnsendable(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+ghost predicate HostNextIgnoreUnsendable(s:LScheduler, s':LScheduler, ios:seq<LIoOp<EndPoint, seq<byte>>>)
 {
   && s.nextActionIndex == 0
   && s' == s.(nextActionIndex := 1)

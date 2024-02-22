@@ -24,12 +24,12 @@ import opened CommonProof__PacketSending_i
 import opened Temporal__Temporal_s
 import opened Environment_s
 
-predicate ReplyCacheObjectInv(cache:ReplyCache, client:NodeIdentity)
+ghost predicate ReplyCacheObjectInv(cache:ReplyCache, client:NodeIdentity)
 {
   client in cache ==> cache[client].Reply? && cache[client].client == client
 }
 
-predicate ReplyCacheStateInv(ps:RslState, client:NodeIdentity)
+ghost predicate ReplyCacheStateInv(ps:RslState, client:NodeIdentity)
 {
   forall idx :: 0 <= idx < |ps.replicas| ==> ReplyCacheObjectInv(ps.replicas[idx].replica.executor.reply_cache, client)
 }

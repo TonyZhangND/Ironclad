@@ -3,7 +3,7 @@ include "../Collections/Maps2.s.dfy"
 
 abstract module DistributedSystem_s {
 
-import H_s : Host_s
+import opened H_s = Host_s
 import opened Collections__Maps2_s
 import opened Native__Io_s
 import opened Environment_s
@@ -13,7 +13,7 @@ import opened Native__NativeTypes_s
 // PHYSICAL ENVIRONMENT
 /////////////////////////////////////////
 
-predicate ValidPhysicalEnvironmentStep(step:LEnvStep<EndPoint, seq<byte>>)
+ghost predicate ValidPhysicalEnvironmentStep(step:LEnvStep<EndPoint, seq<byte>>)
 {
   step.LEnvStepHostIos? ==> forall io{:trigger io in step.ios}{:trigger ValidPhysicalIo(io)} :: io in step.ios ==> ValidPhysicalIo(io)
 }
@@ -28,7 +28,7 @@ datatype DS_State = DS_State(
   servers:map<EndPoint,H_s.HostState>
   )
 
-predicate DS_Init(s:DS_State, config:H_s.ConcreteConfiguration)
+ghost predicate DS_Init(s:DS_State, config:H_s.ConcreteConfiguration)
   reads *
 {
   && s.config == config
@@ -38,7 +38,7 @@ predicate DS_Init(s:DS_State, config:H_s.ConcreteConfiguration)
   && (forall id :: id in s.servers ==> H_s.HostInit(s.servers[id], config, id))
 }
   
-predicate DS_NextOneServer(s:DS_State, s':DS_State, id:EndPoint, ios:seq<LIoOp<EndPoint,seq<byte>>>)
+ghost predicate DS_NextOneServer(s:DS_State, s':DS_State, id:EndPoint, ios:seq<LIoOp<EndPoint,seq<byte>>>)
   requires id in s.servers
   reads *
 {
@@ -47,7 +47,7 @@ predicate DS_NextOneServer(s:DS_State, s':DS_State, id:EndPoint, ios:seq<LIoOp<E
   && s'.servers == s.servers[id := s'.servers[id]]
 }
 
-predicate DS_Next(s:DS_State, s':DS_State)
+ghost predicate DS_Next(s:DS_State, s':DS_State)
   reads *
 {
   && s'.config == s.config
@@ -59,18 +59,18 @@ predicate DS_Next(s:DS_State, s':DS_State)
       s'.servers == s.servers
 }
 
-//    /////////////////////////////////////////////////////////////////////
-//    // Relationship with the abstract service's state machine
-//    function DS_AbstractState(s:DS_State) : SpecState
-//    function DS_AbstractConfig(s:ConcreteConfiguration) : SpecConfiguration
-//
-//    predicate IsAbstractStateAbstractionSequenceOf(s:seq<SpecState>, start:SpecState, end:SpecState)
-//    {
-//      && |s| > 0
-//      && s[0] == start
-//      && s[|s|-1] == end
-//      && (forall i :: 0 <= i < |s|-1 ==> Spec_Next(s[i], s[i+1]))
-//    }
+  //  /////////////////////////////////////////////////////////////////////
+  //  // Relationship with the abstract service's state machine
+  //  ghost function DS_AbstractState(s:DS_State) : SpecState
+  //  ghost function DS_AbstractConfig(s:ConcreteConfiguration) : SpecConfiguration
+
+  //  ghost predicate IsAbstractStateAbstractionSequenceOf(s:seq<SpecState>, start:SpecState, end:SpecState)
+  //  {
+  //    && |s| > 0
+  //    && s[0] == start
+  //    && s[|s|-1] == end
+  //    && (forall i :: 0 <= i < |s|-1 ==> Spec_Next(s[i], s[i+1]))
+  //  }
 
 }
 

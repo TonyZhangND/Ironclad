@@ -28,22 +28,22 @@ import opened Math__mul_i
 
 type CAppRequest = Bytes
 
-predicate method CAppRequestIsAbstractable(request:CAppRequest)
+predicate CAppRequestIsAbstractable(request:CAppRequest)
 {
   true
 }
 
-function method AbstractifyCAppRequestToAppRequest(request:CAppRequest) : AppRequest
+function AbstractifyCAppRequestToAppRequest(request:CAppRequest) : AppRequest
 {
   request
 }
 
-predicate method CAppRequestMarshallable(request:CAppRequest)
+predicate CAppRequestMarshallable(request:CAppRequest)
 {
   |request| <= MaxAppRequestSize()
 }
 
-function method MarshallCAppRequest(request:CAppRequest) : V
+function MarshallCAppRequest(request:CAppRequest) : V
 {
   VByteArray(request)
 }
@@ -57,22 +57,22 @@ function method MarshallCAppRequest(request:CAppRequest) : V
 
 type CAppReply = Bytes
 
-predicate method CAppReplyIsAbstractable(reply:CAppReply)
+predicate CAppReplyIsAbstractable(reply:CAppReply)
 {
   true
 }
 
-function method AbstractifyCAppReplyToAppReply(reply:CAppReply) : AppReply
+function AbstractifyCAppReplyToAppReply(reply:CAppReply) : AppReply
 {
   reply
 }
 
-predicate method CAppReplyMarshallable(reply:CAppReply)
+predicate CAppReplyMarshallable(reply:CAppReply)
 {
   |reply| <= MaxAppReplySize()
 }
 
-function method MarshallCAppReply(reply:CAppReply) : V
+function MarshallCAppReply(reply:CAppReply) : V
 {
   VByteArray(reply)
 }
@@ -86,22 +86,22 @@ function method MarshallCAppReply(reply:CAppReply) : V
 
 type CAppState = Bytes
 
-predicate method CAppStateIsAbstractable(state:CAppState)
+predicate CAppStateIsAbstractable(state:CAppState)
 {
   true
 }
 
-function method AbstractifyCAppStateToAppState(state:CAppState) : AppState
+function AbstractifyCAppStateToAppState(state:CAppState) : AppState
 {
   state
 }
 
-predicate method CAppStateMarshallable(state:CAppState)
+predicate CAppStateMarshallable(state:CAppState)
 {
   |state| <= MaxAppStateSize()
 }
 
-function method MarshallCAppState(state:CAppState) : V
+function MarshallCAppState(state:CAppState) : V
 {
   VByteArray(state)
 }

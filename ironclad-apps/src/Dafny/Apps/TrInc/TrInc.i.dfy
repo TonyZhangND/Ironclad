@@ -15,7 +15,7 @@ include "../Common/CommonState.i.dfy"
 
 datatype TrIncCounterImpl = TrIncCounterImpl_c(public_key:RSAPubKeyImpl, counter_value:BigNat);
 
-predicate TrIncCounterImplValid (c:TrIncCounterImpl)
+ghost predicate TrIncCounterImplValid (c:TrIncCounterImpl)
 {
     WellformedBigNat(c.counter_value) &&
     ModestBigNatValue(c.counter_value) &&
@@ -24,18 +24,18 @@ predicate TrIncCounterImplValid (c:TrIncCounterImpl)
     RSA_DIGEST_MIN_KEY_SIZE() <= PubKeyImplToSpec(c.public_key).size < power2(60)
 }
 
-predicate TrIncCounterImplSeqValid (s:seq<TrIncCounterImpl>)
+ghost predicate TrIncCounterImplSeqValid (s:seq<TrIncCounterImpl>)
 {
     forall i :: 0 <= i < |s| ==> TrIncCounterImplValid(s[i])
 }
 
-function TrIncCounterImplToSpec (c:TrIncCounterImpl) : TrIncCounter
+ghost function TrIncCounterImplToSpec (c:TrIncCounterImpl) : TrIncCounter
     requires TrIncCounterImplValid(c);
 {
     TrIncCounterConstructor(PubKeyImplToSpec(c.public_key), I(c.counter_value))
 }
 
-function TrIncCounterImplSeqToSpec (s:seq<TrIncCounterImpl>) : seq<TrIncCounter>
+ghost function TrIncCounterImplSeqToSpec (s:seq<TrIncCounterImpl>) : seq<TrIncCounter>
     requires TrIncCounterImplSeqValid(s);
 {
     if |s| == 0 then
@@ -133,13 +133,13 @@ lemma Lemma_TrIncCounterImplSeqToSpecConcatenation (s1:seq<TrIncCounterImpl>, s2
 
 datatype TrIncStateImpl = TrIncStateImpl_c(counters:seq<TrIncCounterImpl>);
 
-predicate TrIncStateImplValid (trinc_state:TrIncStateImpl)
+ghost predicate TrIncStateImplValid (trinc_state:TrIncStateImpl)
 {
     Word32(|trinc_state.counters|)
     && TrIncCounterImplSeqValid(trinc_state.counters)
 }
 
-function TrIncStateImplToSpec (s:TrIncStateImpl) : TrIncState
+ghost function TrIncStateImplToSpec (s:TrIncStateImpl) : TrIncState
     requires TrIncStateImplValid(s);
 {
     TrIncStateConstructor(TrIncCounterImplSeqToSpec(s.counters))

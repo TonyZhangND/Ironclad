@@ -24,7 +24,7 @@ import opened Collections__Maps2_i
 import opened Math__mul_auto_i
 import opened Math__mul_i
 
-function{:opaque} HostQueueEmptyTemporal<IdType, MessageType>(
+ghost function{:opaque} HostQueueEmptyTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   host:IdType
   ):temporal
@@ -35,7 +35,7 @@ function{:opaque} HostQueueEmptyTemporal<IdType, MessageType>(
   stepmap(imap i :: host in b[i].hostInfo ==> |b[i].hostInfo[host].queue| == 0)
 }
 
-function{:opaque} PacketInHostQueueTemporal<IdType, MessageType>(
+ghost function{:opaque} PacketInHostQueueTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   p:LPacket<IdType, MessageType>
   ):temporal
@@ -46,7 +46,7 @@ function{:opaque} PacketInHostQueueTemporal<IdType, MessageType>(
   stepmap(imap i :: p.dst in b[i].hostInfo && p in b[i].hostInfo[p.dst].queue)
 }
 
-predicate PacketReceivedDuringAction<IdType, MessageType>(
+ghost predicate PacketReceivedDuringAction<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   p:LPacket<IdType, MessageType>
   )
@@ -54,7 +54,7 @@ predicate PacketReceivedDuringAction<IdType, MessageType>(
   e.nextStep.LEnvStepHostIos? && LIoOpReceive(p) in e.nextStep.ios
 }
 
-function{:opaque} PacketReceivedTemporal<IdType, MessageType>(
+ghost function{:opaque} PacketReceivedTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   p:LPacket<IdType, MessageType>
   ):temporal
@@ -65,7 +65,7 @@ function{:opaque} PacketReceivedTemporal<IdType, MessageType>(
   stepmap(imap i :: PacketReceivedDuringAction(b[i], p))
 }
 
-predicate AllPacketsReceivedWithin<IdType(!new), MessageType(!new)>(
+ghost predicate AllPacketsReceivedWithin<IdType(!new), MessageType(!new)>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   i:int,
   receive_period:int,
@@ -79,7 +79,7 @@ predicate AllPacketsReceivedWithin<IdType(!new), MessageType(!new)>(
       sat(i, next(eventuallynextwithin(PacketReceivedTemporal(b, p), receive_period, BehaviorToTimeMap(b))))
 }
 
-function{:opaque} AllPacketsReceivedWithinTemporal<IdType(!new), MessageType(!new)>(
+ghost function{:opaque} AllPacketsReceivedWithinTemporal<IdType(!new), MessageType(!new)>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   receive_period:int,
   sources:set<IdType>,
@@ -93,7 +93,7 @@ function{:opaque} AllPacketsReceivedWithinTemporal<IdType(!new), MessageType(!ne
   stepmap(imap i :: AllPacketsReceivedWithin(b, i, receive_period, sources, destinations))
 }
 
-predicate ReceiveAttemptedInStep<IdType, MessageType>(
+ghost predicate ReceiveAttemptedInStep<IdType, MessageType>(
   e:LEnvironment<IdType, MessageType>,
   host:IdType
   )
@@ -104,7 +104,7 @@ predicate ReceiveAttemptedInStep<IdType, MessageType>(
   && (e.nextStep.ios[0].LIoOpTimeoutReceive? || e.nextStep.ios[0].LIoOpReceive?)
 }
 
-function{:opaque} ReceiveAttemptedTemporal<IdType, MessageType>(
+ghost function{:opaque} ReceiveAttemptedTemporal<IdType, MessageType>(
   b:Behavior<LEnvironment<IdType, MessageType>>,
   host:IdType
   ):temporal
@@ -202,7 +202,7 @@ lemma Lemma_ReceiveMakesHostQueueSmaller2<IdType, MessageType>(
   }
 }
 
-function{:opaque} QueuePosition<IdType, MessageType>(q:seq<LPacket<IdType, MessageType>>, p:LPacket<IdType, MessageType>):int
+ghost function{:opaque} QueuePosition<IdType, MessageType>(q:seq<LPacket<IdType, MessageType>>, p:LPacket<IdType, MessageType>):int
   requires p in q
   ensures  0 <= QueuePosition(q, p) < |q|
 {
@@ -765,7 +765,7 @@ lemma Lemma_HostQueueSizeBoundedAfterEmptyHelper<IdType, MessageType>(
   }
 }
 
-function{:opaque} QueueBounded<IdType, MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>, host:IdType, burst_size:int):temporal
+ghost function{:opaque} QueueBounded<IdType, MessageType>(b:Behavior<LEnvironment<IdType, MessageType>>, host:IdType, burst_size:int):temporal
   requires imaptotal(b)
   ensures  forall i{:trigger sat(i, QueueBounded(b, host, burst_size))} ::
              sat(i, QueueBounded(b, host, burst_size)) <==> (host in b[i].hostInfo ==> |b[i].hostInfo[host].queue| <= burst_size)

@@ -24,18 +24,18 @@ import opened Collections__Sets_i
 import opened DirectRefinement__HandleRequestBatch_i
 import opened Temporal__Temporal_s
 
-predicate IsValidQuorumOf2bsSequence(ps:RslState, qs:seq<QuorumOf2bs>)
+ghost predicate IsValidQuorumOf2bsSequence(ps:RslState, qs:seq<QuorumOf2bs>)
 {
   forall opn :: 0 <= opn < |qs| ==> qs[opn].opn == opn && IsValidQuorumOf2bs(ps, qs[opn])
 }
 
-predicate IsMaximalQuorumOf2bsSequence(ps:RslState, qs:seq<QuorumOf2bs>)
+ghost predicate IsMaximalQuorumOf2bsSequence(ps:RslState, qs:seq<QuorumOf2bs>)
 {
   && IsValidQuorumOf2bsSequence(ps, qs)
   && !exists q :: IsValidQuorumOf2bs(ps, q) && q.opn == |qs|
 }
 
-function GetSequenceOfRequestBatches(qs:seq<QuorumOf2bs>):seq<RequestBatch>
+ghost function GetSequenceOfRequestBatches(qs:seq<QuorumOf2bs>):seq<RequestBatch>
   ensures |GetSequenceOfRequestBatches(qs)| == |qs|
 {
   if |qs| == 0 then

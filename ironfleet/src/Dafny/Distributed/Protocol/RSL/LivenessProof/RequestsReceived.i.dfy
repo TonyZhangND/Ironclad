@@ -38,13 +38,13 @@ import opened Temporal__WF1_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate RequestInRequestsReceivedPrevEpochs(ps:RslState, req:Request, idx:int)
+ghost predicate RequestInRequestsReceivedPrevEpochs(ps:RslState, req:Request, idx:int)
 {
   && 0 <= idx < |ps.replicas|
   && req in ps.replicas[idx].replica.proposer.election_state.requests_received_prev_epochs
 }
 
-function {:opaque} RequestInRequestsReceivedPrevEpochsTemporal(b:Behavior<RslState>, req:Request, idx:int):temporal
+ghost function {:opaque} RequestInRequestsReceivedPrevEpochsTemporal(b:Behavior<RslState>, req:Request, idx:int):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, RequestInRequestsReceivedPrevEpochsTemporal(b, req, idx))} ::
              sat(i, RequestInRequestsReceivedPrevEpochsTemporal(b, req, idx)) <==> RequestInRequestsReceivedPrevEpochs(b[i], req, idx)
@@ -52,14 +52,14 @@ function {:opaque} RequestInRequestsReceivedPrevEpochsTemporal(b:Behavior<RslSta
   stepmap(imap i :: RequestInRequestsReceivedPrevEpochs(b[i], req, idx))
 }
 
-predicate RequestInRequestsReceivedThisOrPrevEpochs(ps:RslState, req:Request, idx:int)
+ghost predicate RequestInRequestsReceivedThisOrPrevEpochs(ps:RslState, req:Request, idx:int)
 {
   && 0 <= idx < |ps.replicas|
   && (|| req in ps.replicas[idx].replica.proposer.election_state.requests_received_prev_epochs
      || req in ps.replicas[idx].replica.proposer.election_state.requests_received_this_epoch)
 }
 
-function {:opaque} RequestInRequestsReceivedThisOrPrevEpochsTemporal(b:Behavior<RslState>, req:Request, idx:int):temporal
+ghost function {:opaque} RequestInRequestsReceivedThisOrPrevEpochsTemporal(b:Behavior<RslState>, req:Request, idx:int):temporal
   requires imaptotal(b)
   ensures  forall i {:trigger sat(i, RequestInRequestsReceivedThisOrPrevEpochsTemporal(b, req, idx))} ::
              sat(i, RequestInRequestsReceivedThisOrPrevEpochsTemporal(b, req, idx))
@@ -359,7 +359,7 @@ lemma lemma_EventuallyPersistentRequestAlwaysInRequestsReceivedThisOrPrevEpochs(
   TemporalEventually(processing_sync_start, step, always(t));
 }
 
-predicate RequestInRequestsReceivedThisOrPrevEpochsWithSpecificEpochEnd(
+ghost predicate RequestInRequestsReceivedThisOrPrevEpochsWithSpecificEpochEnd(
   ps:RslState,
   req:Request,
   idx:int,
@@ -372,7 +372,7 @@ predicate RequestInRequestsReceivedThisOrPrevEpochsWithSpecificEpochEnd(
     && (req in es.requests_received_prev_epochs || req in es.requests_received_this_epoch)
 }
 
-function{:opaque} RequestInRequestsReceivedThisOrPrevEpochsWithSpecificEpochEndTemporal(
+ghost function{:opaque} RequestInRequestsReceivedThisOrPrevEpochsWithSpecificEpochEndTemporal(
   b:Behavior<RslState>,
   req:Request,
   idx:int,

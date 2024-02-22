@@ -8,14 +8,14 @@ include "MillerRabin.s.dfy"
 include "division.i.dfy"
 include "../../FatNat/FatNatCommon.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_Configure_MillerRabinStrength() : int
+static function{:CompiledSpec} CompiledSpec_Configure_MillerRabinStrength() : int
 
-static function IsPrime(n:nat) : bool
+static ghost function IsPrime(n:nat) : bool
 {
     forall cf:nat :: 2 <= cf < n ==> !divides(cf, n)
 }
 
-predicate IsEvenFatNat_inner(N:array<int>)
+ghost predicate IsEvenFatNat_inner(N:array<int>)
     reads N;
     requires WellformedFatNat(N);
 {
@@ -179,7 +179,7 @@ lemma lemma_bignat_even(N:array<int>)
 //-    }
 }
 
-static function method WordIsEven_def(x:nat) : bool
+static function WordIsEven_def(x:nat) : bool
     requires Word32(x);
 {
     
@@ -194,7 +194,7 @@ static lemma lemma_WordIsEven(x:nat)
     lemma_mod_is_mod_boogie(x, 2);
 }
 
-static function method WordIsEven(x:nat) : bool
+static function WordIsEven(x:nat) : bool
     requires Word32(x);
     ensures IsEven(x) == WordIsEven(x);
 {
@@ -204,7 +204,7 @@ static function method WordIsEven(x:nat) : bool
 }
 
 
-function method IsEvenFatNat_def(N:array<int>) : bool
+function IsEvenFatNat_def(N:array<int>) : bool
     reads N;
     requires WellformedFatNat(N);
 {
@@ -241,7 +241,7 @@ lemma lemma_IsEvenFatNat(N:array<int>)
     }
 }
 
-function method IsEvenFatNat(N:array<int>) : bool
+function IsEvenFatNat(N:array<int>) : bool
     reads N;
     requires WellformedFatNat(N);
     ensures IsEvenFatNat(N) == IsEven(J(N));
@@ -603,7 +603,7 @@ method ProbeLoop(N:array<int>, Nminus1:array<int>, Xinit:array<int>, s:int, ghos
     assert !isProbablyPrime ==> MRProbeFails(problem, probe);
 }
 
-static predicate MillerRabinSpecSucceeding_incremental(problem:MRProblem, probes:seq<MRProbe>)
+static ghost predicate MillerRabinSpecSucceeding_incremental(problem:MRProblem, probes:seq<MRProbe>)
     //- all probes succeed
     //- probed exactly as many times as problem strength requires
 {
@@ -613,7 +613,7 @@ static predicate MillerRabinSpecSucceeding_incremental(problem:MRProblem, probes
     && forall i :: 0 <= i < |probes|-1 ==> MRProbeSucceeds(problem, probes[i])
 }
 
-static predicate MillerRabinWorksheetValid_incremental(n:int, worksheet:MillerRabinWorksheet)
+static ghost predicate MillerRabinWorksheetValid_incremental(n:int, worksheet:MillerRabinWorksheet)
 {
     |worksheet.probes|==|worksheet.probe_candidates|
     && |worksheet.probes|==|worksheet.probe_seed_reqs|

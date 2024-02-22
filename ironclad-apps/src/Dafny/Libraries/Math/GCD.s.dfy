@@ -1,10 +1,10 @@
-static function divides(d:nat, n:int) : bool
+static ghost function divides(d:nat, n:int) : bool
     requires d != 0;
 {
     (n % d) == 0
 }
 
-static predicate is_gcd(a:nat, b:nat, gcd:nat)
+static ghost predicate is_gcd(a:nat, b:nat, gcd:nat)
 {
     gcd != 0
     && divides(gcd,a)

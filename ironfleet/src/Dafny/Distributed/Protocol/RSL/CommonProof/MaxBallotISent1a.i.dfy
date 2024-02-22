@@ -15,7 +15,7 @@ import opened CommonProof__Actions_i
 import opened CommonProof__PacketSending_i
 import opened Temporal__Temporal_s
 
-predicate PrimaryHasReachedState2OfBallot(
+ghost predicate PrimaryHasReachedState2OfBallot(
   ps:RslState,
   bal:Ballot
   )

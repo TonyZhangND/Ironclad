@@ -234,7 +234,7 @@ static lemma Lemma_AllBlocksAreWordSeqs(os:seq<int>, block_size:int)
     }
 }
 
-static predicate BlockBoundariesAreWithinSequence(i:int, block_size:int, len:int)
+static ghost predicate BlockBoundariesAreWithinSequence(i:int, block_size:int, len:int)
 {
     0 <= i*block_size <= (i+1)*block_size <= len
 }
@@ -425,14 +425,14 @@ static method DivideSeqIntoEqualBlocks(s:seq<int>, block_size:int) returns (r:se
     }
 }
 
-static function{:opaque} PadSequenceToMultiple(os:seq<int>, block_size:int) : seq<int>
+static ghost function{:opaque} PadSequenceToMultiple(os:seq<int>, block_size:int) : seq<int>
     requires 0 < block_size;
 {
     if |os| % block_size == 0 then os
     else os + RepeatDigit(0, block_size - (|os| % block_size))
 }
 
-static function PadAndBreakIntoBlocks(os:seq<int>, block_size:int) : seq<seq<int>>
+static ghost function PadAndBreakIntoBlocks(os:seq<int>, block_size:int) : seq<seq<int>>
     requires 0 < block_size;
 {
     BreakIntoBlocks(PadSequenceToMultiple(os, block_size), block_size)
@@ -493,7 +493,7 @@ static lemma lemma_PadSequenceToMultiple_premium_properties(os:seq<int>, block_s
     }
 }
 
-static function PadSequenceToMultiple_premium(os:seq<int>, block_size:int) : seq<int>
+static ghost function PadSequenceToMultiple_premium(os:seq<int>, block_size:int) : seq<int>
     requires 0 < block_size;
     ensures var padded_len := RoundUpToMultiple(|os|, block_size);
             var num_blocks := padded_len / block_size;
@@ -531,7 +531,7 @@ static lemma lemma_PadAndBreakIntoBlocks_premium_properties(os:seq<int>, block_s
     }
 }
 
-static function PadAndBreakIntoBlocks_premium(os:seq<int>, block_size:int) : seq<seq<int>>
+static ghost function PadAndBreakIntoBlocks_premium(os:seq<int>, block_size:int) : seq<seq<int>>
     requires 0 < block_size;
     ensures var padded_len := RoundUpToMultiple(|os|, block_size);
             var num_blocks := padded_len / block_size;

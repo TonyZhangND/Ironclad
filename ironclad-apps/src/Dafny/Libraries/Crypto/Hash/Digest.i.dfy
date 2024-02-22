@@ -1,7 +1,7 @@
 include "Digest.s.dfy"
 include "sha256.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_SHA256_DigestInfo() : seq<int>
+static function{:CompiledSpec} CompiledSpec_SHA256_DigestInfo() : seq<int>
 
 static lemma lemma_SHA256_DigestInfo_properties()
     ensures IsByteSeq(SHA256_DigestInfo());
@@ -10,7 +10,7 @@ static lemma lemma_SHA256_DigestInfo_properties()
     lemma_2toX();
 }
 
-static function SHA256_DigestInfo_premium() : seq<int>
+static ghost function SHA256_DigestInfo_premium() : seq<int>
     ensures IsByteSeq(SHA256_DigestInfo());
     ensures |SHA256_DigestInfo()|==19;
 {
@@ -26,7 +26,7 @@ static lemma lemma_SHA256_preserves_type(msg:seq<int>)
 //-    lemma_BitSeqToBoolSeq_ensures(msg);
 }
 
-static predicate SHA256_BytesRequires(msg_bytes:seq<int>)
+static ghost predicate SHA256_BytesRequires(msg_bytes:seq<int>)
 {
     IsByteSeq(msg_bytes)
     && IsBitSeq(BEByteSeqToBitSeq(msg_bytes))
@@ -109,7 +109,7 @@ static lemma lemma_SHA256Digest_premium(msg:seq<int>)
     lemma_BEWordSeqToByteSeq_ensures(SHA256(BEByteSeqToBitSeq(msg)));
 }
 
-static function SHA256Digest_premium(msg:seq<int>) : seq<int>
+static ghost function SHA256Digest_premium(msg:seq<int>) : seq<int>
     requires IsByteSeq(msg);
     requires |msg|<power2(61);
     ensures IsByteSeq(SHA256Digest_premium(msg));

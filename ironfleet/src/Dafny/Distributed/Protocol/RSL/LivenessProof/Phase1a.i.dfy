@@ -42,7 +42,7 @@ import opened Temporal__WF1_i
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate PrimaryInView(
+ghost predicate PrimaryInView(
   ps:RslState,
   view:Ballot
   )
@@ -51,7 +51,7 @@ predicate PrimaryInView(
   && CurrentViewOfHost(ps, view.proposer_id) == view
 }
 
-function{:opaque} PrimaryInViewTemporal(
+ghost function{:opaque} PrimaryInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -62,7 +62,7 @@ function{:opaque} PrimaryInViewTemporal(
   stepmap(imap i :: PrimaryInView(b[i], view))
 }
 
-predicate PrimaryMaxBallotISent1aInView(
+ghost predicate PrimaryMaxBallotISent1aInView(
   ps:RslState,
   view:Ballot
   )
@@ -71,7 +71,7 @@ predicate PrimaryMaxBallotISent1aInView(
   && ps.replicas[view.proposer_id].replica.proposer.max_ballot_i_sent_1a == view
 }
 
-function{:opaque} PrimaryMaxBallotISent1aInViewTemporal(
+ghost function{:opaque} PrimaryMaxBallotISent1aInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -82,7 +82,7 @@ function{:opaque} PrimaryMaxBallotISent1aInViewTemporal(
   stepmap(imap i :: PrimaryMaxBallotISent1aInView(b[i], view))
 }
 
-predicate PrimarySent1aInView(
+ghost predicate PrimarySent1aInView(
   ps:RslState,
   ps':RslState,
   view:Ballot
@@ -100,7 +100,7 @@ predicate PrimarySent1aInView(
             && s.election_state.current_view == view
 }
 
-function{:opaque} PrimarySent1aInViewTemporal(
+ghost function{:opaque} PrimarySent1aInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -231,13 +231,13 @@ lemma lemma_PrimaryInViewLeadsToPrimaryMaxBallotISent1aInViewWF1Req2(
   requires 0 <= start_step
   ensures  var P := PrimaryInViewTemporal(b, view);
            var Q := or(PrimaryMaxBallotISent1aInViewTemporal(b, view), not(NoReplicaBeyondViewTemporal(b, view)));
-           var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, view.proposer_id);
+           var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, view.proposer_id);
            sat(start_step, always(TemporalWF1Req2(P, Q, Action)))
 {
   var primary_idx := view.proposer_id;
   var P := PrimaryInViewTemporal(b, view);
   var Q := or(PrimaryMaxBallotISent1aInViewTemporal(b, view), not(NoReplicaBeyondViewTemporal(b, view)));
-  var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, primary_idx);
+  var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, primary_idx);
 
   forall i | start_step <= i
     ensures sat(i, TemporalWF1Req2(P, Q, Action))
@@ -279,7 +279,7 @@ lemma lemma_PrimaryInViewLeadsToPrimaryMaxBallotISent1aInView(
   var primary_idx := view.proposer_id;
   var P := PrimaryInViewTemporal(b, view);
   var Q := or(PrimaryMaxBallotISent1aInViewTemporal(b, view), not(NoReplicaBeyondViewTemporal(b, view)));
-  var Action := MakeRslActionTemporalFromSpontaneousReplicaFunction(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, primary_idx);
+  var Action := MakeRslActionTemporalFromSpontaneousReplicaghost function(b, LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a, primary_idx);
   var t := TimeToPerformGenericAction(asp);
 
   lemma_PrimaryInViewLeadsToPrimaryMaxBallotISent1aInViewWF1Req1(b, asp, start_step, view);

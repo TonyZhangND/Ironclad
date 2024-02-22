@@ -26,7 +26,7 @@ include "../IO/pci.i.dfy"
 
 datatype TPMSessionAndKey = TPMSessionAndKey_c(auth_handle:seq<int>, nonce_even:seq<int>, key_handle:seq<int>, key_auth:seq<int>)
 
-predicate TPMSessionAndKeyValid(sk:TPMSessionAndKey)
+ghost predicate TPMSessionAndKeyValid(sk:TPMSessionAndKey)
 {
     IsByteSeqOfLen(sk.auth_handle, 4) &&
     IsByteSeqOfLen(sk.nonce_even, 20) &&
@@ -51,10 +51,10 @@ static lemma lemma_length_five_sequences_match_iff_all_match(s1:seq<int>, s2:seq
 }
 
 /***********************************************************************************
-     Useful functions
+     Useful ghost functions
  ***********************************************************************************/
 
-predicate TPM_ready()
+ghost predicate TPM_ready()
     reads this`TPM;
     reads this`IoMemPerm;
 {
@@ -354,7 +354,7 @@ static method compute_is_TPM_reply_header_ok(reply:seq<int>, expected_tag:seq<in
 }
 
 //-/////////////////////////////////////////////////////////////////
-//-      Actual functionality
+//-      Actual ghost functionality
 //-/////////////////////////////////////////////////////////////////
 
 //- Template for TPM operations
@@ -439,7 +439,7 @@ method check_locked() returns (r:bool)
     r := (nv_locked == 1);
 }
 
-function method{:dafnycc_conservative_seq_triggers} check_perms_reply_given_pcrs_digest(reply:seq<int>, desired_pcrs_digest:seq<int>) : bool
+function{:dafnycc_conservative_seq_triggers} check_perms_reply_given_pcrs_digest(reply:seq<int>, desired_pcrs_digest:seq<int>) : bool
     requires |reply| == 85;
 {
     var tag := reply[14..16];

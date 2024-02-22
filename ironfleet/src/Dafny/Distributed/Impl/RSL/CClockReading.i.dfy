@@ -7,7 +7,7 @@ import opened LiveRSL__ClockReading_i
 
 datatype CClockReading = CClockReading(t:uint64)
 
-function AbstractifyCClockReadingToClockReading(cclock:CClockReading) : ClockReading
+ghost function AbstractifyCClockReadingToClockReading(cclock:CClockReading) : ClockReading
 {
   ClockReading(cclock.t as int)
 }

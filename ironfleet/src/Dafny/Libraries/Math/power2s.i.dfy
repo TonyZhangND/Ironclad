@@ -3,7 +3,7 @@ module Math__power2_s {
 // TODO_MODULE: module Math__power2_s {
 // TODO_MODULE: import opened Libraries__base_s
 
-function {:opaque} power2(exp: nat) : nat
+ghost function {:opaque} power2(exp: nat) : nat
   ensures power2(exp) > 0
 {
   if (exp==0) then

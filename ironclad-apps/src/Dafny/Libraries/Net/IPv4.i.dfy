@@ -10,7 +10,7 @@ include "InternetChecksum.i.dfy"
 
 //
 
-function method {:opaque} Serialize16(Value:int) : seq<int>
+function {:opaque} Serialize16(Value:int) : seq<int>
     requires Word16(Value);
     ensures IsByteSeqOfLen(Serialize16(Value), 2);
 {
@@ -19,7 +19,7 @@ function method {:opaque} Serialize16(Value:int) : seq<int>
     [Value / 0x100] + [Value % 0x100]
 }
 
-function method {:opaque} Deserialize16(Bytes:seq<int>) : int
+function {:opaque} Deserialize16(Bytes:seq<int>) : int
     requires IsByteSeq(Bytes);
     requires |Bytes| == 2;
     ensures Word16(Deserialize16(Bytes));
@@ -34,7 +34,7 @@ function method {:opaque} Deserialize16(Bytes:seq<int>) : int
 //- Define an IPv4 Address.
 //-
 datatype IPv4Address = IPv4AddressBuilder(bytes:seq<int>);
-function ValidIPv4Address(Addr:IPv4Address) : bool
+ghost function ValidIPv4Address(Addr:IPv4Address) : bool
 {
     //-
     //- Technically all 2^32 are valid, although some are reserved.

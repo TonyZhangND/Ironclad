@@ -5,14 +5,14 @@ module Common__SeqIsUnique_i {
 import opened Common__SeqIsUniqueDef_i
 import opened Native__NativeTypes_i
 
-function UniqueSeqToSet<X>(xs:seq<X>) : set<X>
+ghost function UniqueSeqToSet<X>(xs:seq<X>) : set<X>
   requires SeqIsUnique(xs)
   ensures forall x :: x in xs ==> x in UniqueSeqToSet(xs)
 {
   set x | x in xs
 }
 
-function{:timeLimitMultiplier 3}{:opaque} SetToUniqueSeq<X(!new)>(s:set<X>):seq<X>
+ghost function{:timeLimitMultiplier 3}{:opaque} SetToUniqueSeq<X(!new)>(s:set<X>):seq<X>
   ensures  forall x :: x in SetToUniqueSeq(s) <==> x in s
   ensures  SeqIsUnique(SetToUniqueSeq(s))
   ensures  |SetToUniqueSeq(s)| == |s|
@@ -33,7 +33,7 @@ function{:timeLimitMultiplier 3}{:opaque} SetToUniqueSeq<X(!new)>(s:set<X>):seq<
   )
 }
 
-function/*TODO:{:opaque}*/ Subsequence<X(!new)>(xs:seq<X>, f:X->bool):seq<X>
+ghost function/*TODO:{:opaque}*/ Subsequence<X(!new)>(xs:seq<X>, f:X->bool):seq<X>
   reads f.reads
   requires forall x :: x in xs ==> f.requires(x)
   ensures  forall x :: x in Subsequence(xs, f) <==> x in xs && f(x)
@@ -153,7 +153,7 @@ lemma EstablishAppendToUniqueSeq<X>(xs:seq<X>, x:X, xs':seq<X>)
   assert SeqIsUnique(xs'');
 }
 
-function method AppendToUniqueSeq<X>(xs:seq<X>, x:X):seq<X>
+function AppendToUniqueSeq<X>(xs:seq<X>, x:X):seq<X>
   requires SeqIsUnique(xs)
   requires x !in xs
   ensures  SeqIsUnique(AppendToUniqueSeq(xs, x))
@@ -165,7 +165,7 @@ function method AppendToUniqueSeq<X>(xs:seq<X>, x:X):seq<X>
   xs'
 }
 
-function method AppendToUniqueSeqMaybe<X(==)>(xs:seq<X>, x:X):seq<X>
+function AppendToUniqueSeqMaybe<X(==)>(xs:seq<X>, x:X):seq<X>
   requires SeqIsUnique(xs)
   ensures  SeqIsUnique(AppendToUniqueSeqMaybe(xs, x))
   ensures  x in AppendToUniqueSeqMaybe(xs, x)

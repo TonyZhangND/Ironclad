@@ -28,13 +28,13 @@ static lemma lemma_mul32power226_is_power31()
     }
 }
 
-static predicate ZeroBitRepresentation(A:BigNat, c:nat)
+static ghost predicate ZeroBitRepresentation(A:BigNat, c:nat)
     requires WellformedBigNat(A);
 {
     c==0 <==> zero(A)
 }
 
-static predicate BitCount(A:BigNat, c:nat)
+static ghost predicate BitCount(A:BigNat, c:nat)
     requires WellformedBigNat(A);
 {
     ZeroBitRepresentation(A,c)
@@ -47,7 +47,7 @@ static predicate BitCount(A:BigNat, c:nat)
 
 
 
-static function {:opaque} IntBitCount_inner(a:nat) : nat
+static ghost function {:opaque} IntBitCount_inner(a:nat) : nat
 {
     if (a==0) then
         0
@@ -116,7 +116,7 @@ static lemma lemma_IntBitCount(a:nat, b:nat)
     }
 }
 
-static function IntBitCount(a:nat) : nat
+static ghost function IntBitCount(a:nat) : nat
     ensures (IntBitCount(a)>0) ==> (power2(IntBitCount(a)-1) <= a);
     ensures a < power2(IntBitCount(a));
 {
@@ -131,27 +131,27 @@ static function IntBitCount(a:nat) : nat
 
 
 
-static function KindaBigNat() : nat
+static ghost function KindaBigNat() : nat
 {
     
     
     power2(power2(31))
 }
 
-static predicate ModestBigNatValue(A:BigNat)
+static ghost predicate ModestBigNatValue(A:BigNat)
 {
     WellformedBigNat(A)
     && I(A) < KindaBigNat()
 }
 
-static predicate ModestBigNatBits(A:BigNat,ac:nat)
+static ghost predicate ModestBigNatBits(A:BigNat,ac:nat)
 {
     WellformedBigNat(A)
     && BitCount(A,ac)
     && ac<=power2(31)
 }
 
-static predicate ModestBigNatWords(A:BigNat)
+static ghost predicate ModestBigNatWords(A:BigNat)
 {
     WellformedBigNat(A)
     && |A.words| <= power2(26)
@@ -367,7 +367,7 @@ static lemma lemma_zero_bits(A:BigNat, ac:nat)
     assert ZeroBitRepresentation(A,ac);
 }
 
-static function method {:opaque} MakeSmallLiteralBigNat_def(x:nat) : BigNat
+static function {:opaque} MakeSmallLiteralBigNat_def(x:nat) : BigNat
     requires x < Width();
     ensures WellformedBigNat(MakeSmallLiteralBigNat_def(x));
 {
@@ -409,7 +409,7 @@ static lemma lemma_MakeSmallLiteralBigNat(x:nat)
     }
 }
 
-static function method MakeSmallLiteralBigNat(x:nat) : BigNat
+static function MakeSmallLiteralBigNat(x:nat) : BigNat
     requires x < Width();
     ensures WellformedBigNat(MakeSmallLiteralBigNat(x));
     ensures I(MakeSmallLiteralBigNat(x))==x;
@@ -421,12 +421,12 @@ static function method MakeSmallLiteralBigNat(x:nat) : BigNat
 //-////////////////////////////////////////////////////////////////////////////
 //- FrumpyBigNat: For when you need room to multiply two numbers.
 
-static function Frump() : nat
+static ghost function Frump() : nat
 {
     power2(power2(30))
 }
 
-static function FrumpyBigNat(N:BigNat) : bool
+static ghost function FrumpyBigNat(N:BigNat) : bool
 {
     WellformedBigNat(N)
     && I(N) < Frump()

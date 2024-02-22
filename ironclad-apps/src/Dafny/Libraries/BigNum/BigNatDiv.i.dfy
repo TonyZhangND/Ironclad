@@ -290,19 +290,19 @@ static method BigNatWordShift_(A:BigNat, ghost ac:nat, w:nat) returns (R:BigNat,
     }
 }
 
-//-function IsBit(a:int)
+//-ghost function IsBit(a:int)
 //-    { a==0 || a==1 }
 //-
-//-function IsBitSeq(bs:seq<int>)
+//-ghost function IsBitSeq(bs:seq<int>)
 //-    { forall b in bs :: IsBit(b) }
 //-
-//-function BitsFor(A:BigNat, ac:nat, bits:seq<int>)
+//-ghost function BitsFor(A:BigNat, ac:nat, bits:seq<int>)
 //-    requires WellformedBigNat(A);
 //-    requires BitCount(A,ac);
 //-    requires IsBitSeq(bits);
 //-    { forall i:int :: 0<=i<ac :: BigNatSelectBit(A, i) == bits[i]; }
 
-static function zero_seq(w:nat) : seq<int>
+static ghost function zero_seq(w:nat) : seq<int>
     decreases w;
     ensures w == |zero_seq(w)|;
     ensures forall i :: 0<=i<w ==> zero_seq(w)[i]==0;

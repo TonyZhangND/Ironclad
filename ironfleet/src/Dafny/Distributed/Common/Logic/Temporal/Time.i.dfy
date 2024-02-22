@@ -19,7 +19,7 @@ import opened Math__mul_auto_i
 // DEFINITIONS
 /////////////////////////
 
-function{:opaque} earliestStepWithin(start:int, x:temporal, span:int, timefun:imap<int, int>):int
+ghost function{:opaque} earliestStepWithin(start:int, x:temporal, span:int, timefun:imap<int, int>):int
   requires imaptotal(timefun)
   requires monotonic_from(start, timefun)
   requires sat(start, eventuallywithin(x, span, timefun))
@@ -34,7 +34,7 @@ function{:opaque} earliestStepWithin(start:int, x:temporal, span:int, timefun:im
   i1
 }
 
-function{:opaque} earliestActionWithin(start:int, x:temporal, span:int, timefun:imap<int, int>):int
+ghost function{:opaque} earliestActionWithin(start:int, x:temporal, span:int, timefun:imap<int, int>):int
   requires imaptotal(timefun)
   requires monotonic_from(start, timefun)
   requires sat(start, eventuallynextwithin(x, span, timefun))
@@ -49,7 +49,7 @@ function{:opaque} earliestActionWithin(start:int, x:temporal, span:int, timefun:
   i1
 }
 
-function{:opaque} goalOrDecrease(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} goalOrDecrease(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(d)
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, goalOrDecrease(goal, d, span, timefun))} :: sat(i, goalOrDecrease(goal, d, span, timefun)) <==>
@@ -59,7 +59,7 @@ function{:opaque} goalOrDecrease(goal:temporal, d:imap<int, int>, span:int, time
   stepmap(imap i :: sat(i, eventuallywithin(or(goal, stepDecrease(i, d)), span, timefun)))
 }
 
-function{:opaque} nextOrDecreaseWithin(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} nextOrDecreaseWithin(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(d)
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, nextOrDecreaseWithin(goal, d, span, timefun))} :: sat(i, nextOrDecreaseWithin(goal, d, span, timefun)) <==>
@@ -69,7 +69,7 @@ function{:opaque} nextOrDecreaseWithin(goal:temporal, d:imap<int, int>, span:int
   stepmap(imap i :: sat(i, eventuallynextwithin(or(goal, nextDecrease(i, d)), span, timefun)))
 }
 
-function{:opaque} eventuallywithinspans(d:imap<int, int>, goal:temporal, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} eventuallywithinspans(d:imap<int, int>, goal:temporal, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(d)
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, eventuallywithinspans(d, goal, span, timefun))} ::
@@ -80,7 +80,7 @@ function{:opaque} eventuallywithinspans(d:imap<int, int>, goal:temporal, span:in
   stepmap(imap i :: sat(i, eventuallywithin(goal, span * d[i], timefun)))
 }
 
-function{:opaque} eventuallynextwithinspans(d:imap<int, int>, goal:temporal, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} eventuallynextwithinspans(d:imap<int, int>, goal:temporal, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(d)
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, eventuallynextwithinspans(d, goal, span, timefun))} ::
@@ -91,7 +91,7 @@ function{:opaque} eventuallynextwithinspans(d:imap<int, int>, goal:temporal, spa
   stepmap(imap i :: sat(i, eventuallynextwithin(goal, span * d[i], timefun)))
 }
 
-function stepattimeboundary(i:int, j:int, t:int, timefun:imap<int, int>):int
+ghost function stepattimeboundary(i:int, j:int, t:int, timefun:imap<int, int>):int
   requires imaptotal(timefun)
   requires monotonic_from(i, timefun)
   requires timefun[i] <= t
@@ -106,7 +106,7 @@ function stepattimeboundary(i:int, j:int, t:int, timefun:imap<int, int>):int
   if i == j then i else if timefun[j-1] <= t then j-1 else stepattimeboundary(i, j-1, t, timefun)
 }
 
-predicate TimeNotZeno(timefun:imap<int, int>)
+ghost predicate TimeNotZeno(timefun:imap<int, int>)
   requires imaptotal(timefun)
 {
   forall t :: sat(0, eventual(after(t, timefun)))
@@ -401,12 +401,12 @@ lemma TemporalDeduceFromAlwaysWithin(i:int, j:int, x:temporal, span:int, timefun
   TemporalDeduceFromAlways(i, j, untilabsolutetime(x, timefun[i] + span, timefun));
 }
 
-predicate{:opaque} monotonic_from_opaque(start:int, f:imap<int, int>)
+ghost predicate{:opaque} monotonic_from_opaque(start:int, f:imap<int, int>)
 {
   forall i1, i2 {:trigger f[i1], f[i2]} :: i1 in f && i2 in f && start <= i1 <= i2 ==> f[i1] <= f[i2]
 }
 
-function{:opaque} actionGoalDecrease(i1:int, goal:temporal, d:imap<int, int>):temporal
+ghost function{:opaque} actionGoalDecrease(i1:int, goal:temporal, d:imap<int, int>):temporal
   requires imaptotal(d)
   ensures  forall i {:trigger sat(i, actionGoalDecrease(i1, goal, d))} :: sat(i, actionGoalDecrease(i1, goal, d)) <==>
                (0 < d[i + 1] && d[i + 1] < d[i1]) || sat(i, goal) || (d[i1] == 0)
@@ -415,7 +415,7 @@ function{:opaque} actionGoalDecrease(i1:int, goal:temporal, d:imap<int, int>):te
   stepmap(imap i :: (0 < d[i + 1] && d[i + 1] < d[i1]) || sat(i, goal) || (d[i1] == 0))
 }
 
-function{:opaque} actionGoalDecreaseWithin(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} actionGoalDecreaseWithin(goal:temporal, d:imap<int, int>, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(d)
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, actionGoalDecreaseWithin(goal, d, span, timefun))} ::
@@ -472,7 +472,7 @@ lemma Lemma_EventuallyNextGoalSpans(start:int, d:imap<int, int>, goal:temporal, 
   }
 }
 
-function {:opaque} ActionIsInstantaneousTemporal(x:temporal, timefun:imap<int, int>):temporal
+ghost function {:opaque} ActionIsInstantaneousTemporal(x:temporal, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
   ensures  forall i {:trigger sat(i, ActionIsInstantaneousTemporal(x, timefun))} ::
                sat(i, ActionIsInstantaneousTemporal(x, timefun)) <==> (sat(i, x) ==> timefun[i] == timefun[i+1])
@@ -481,7 +481,7 @@ function {:opaque} ActionIsInstantaneousTemporal(x:temporal, timefun:imap<int, i
 }
 
 // "x" happens at most "count" times in all periods no longer than "span"
-function{:opaque} countWithinLe(count:int, x:temporal, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} countWithinLe(count:int, x:temporal, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
   ensures  forall i1 {:trigger sat(i1, countWithinLe(count, x, span, timefun))} :: sat(i1, countWithinLe(count, x, span, timefun))
                 <==> (forall i2 :: TLe(i1, i2) && timefun[i2] <= timefun[i1] + span ==> countWithin(i1, i2, x) <= count)
@@ -491,7 +491,7 @@ function{:opaque} countWithinLe(count:int, x:temporal, span:int, timefun:imap<in
 }
 
 // "x" happens at least "count" times in a period no longer than "span"
-function{:opaque} countWithinGe(count:int, x:temporal, span:int, timefun:imap<int, int>):temporal
+ghost function{:opaque} countWithinGe(count:int, x:temporal, span:int, timefun:imap<int, int>):temporal
   requires imaptotal(timefun)
   ensures  forall i1 {:trigger sat(i1, countWithinGe(count, x, span, timefun))} :: sat(i1, countWithinGe(count, x, span, timefun))
                 <==> (exists i2 :: TLe(i1, i2) && timefun[i2] <= timefun[i1] + span && countWithin(i1, i2, x) >= count)

@@ -6,19 +6,19 @@ abstract module AppInterface_s {
     type Key(==, !new)
     type Value
 
-    predicate method KeyLt(ka:Key, kb:Key) 
+    predicate KeyLt(ka:Key, kb:Key) 
 
     lemma lemma_KeyOrdering()
         ensures forall k,k' :: KeyLt(k,k') ==> !KeyLt(k',k);                        // Antisymmetry
         ensures forall k,k' :: !KeyLt(k,k') ==> KeyLt(k',k) || k' == k;                        
         ensures forall k,k',k'' :: KeyLt(k,k') && KeyLt(k',k'') ==> KeyLt(k, k'');  // Transitivity
 
-    function method KeyMin() : Key
+    function KeyMin() : Key
         ensures forall k :: k == KeyMin() || KeyLt(KeyMin(), k);
 
-    predicate ValidKey(key:Key)
-    predicate ValidValue(v:Value)
+    ghost predicate ValidKey(key:Key)
+    ghost predicate ValidValue(v:Value)
 
-    function MarshallSHTKey(k:Key) : seq<byte>
-    function MarshallSHTValue(v:Value) : seq<byte>
+    ghost function MarshallSHTKey(k:Key) : seq<byte>
+    ghost function MarshallSHTValue(v:Value) : seq<byte>
 }

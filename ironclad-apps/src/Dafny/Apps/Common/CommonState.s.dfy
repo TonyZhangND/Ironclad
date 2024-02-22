@@ -12,13 +12,13 @@ datatype CommonStateMachine = CommonStateMachine_ctor(initialized:bool, common_s
 
 ghost var {:readonly} current_common_state:CommonStateMachine;
 
-static predicate {:autoReq} PCR19ReflectsKey (state:CommonState, before_TPM:TPM_struct, after_TPM:TPM_struct)
+static ghost predicate {:autoReq} PCR19ReflectsKey (state:CommonState, before_TPM:TPM_struct, after_TPM:TPM_struct)
 {
     var encoded_public_key := rfc4251_sshrsa_encoding(state.key_pair.pub.e, state.key_pair.pub.n);
     after_TPM.PCR_19 == before_TPM.PCR_19 + [BEWordSeqToByteSeq(SHA1(BEByteSeqToBitSeq(encoded_public_key)))]
 }
 
-static predicate {:autoReq} CommonStateGeneratedCorrectly (key_bits:nat, state:CommonState, before_TPM:TPM_struct, after_TPM:TPM_struct)
+static ghost predicate {:autoReq} CommonStateGeneratedCorrectly (key_bits:nat, state:CommonState, before_TPM:TPM_struct, after_TPM:TPM_struct)
 {
     state.key_bits == key_bits
     && RSAKeyGenerationValid(state.key_bits, state.key_pair, TPM_random_bytes(before_TPM.random_index, after_TPM.random_index))
@@ -29,10 +29,10 @@ static predicate {:autoReq} CommonStateGeneratedCorrectly (key_bits:nat, state:C
     && TPMs_match(after_TPM, before_TPM[random_index := after_TPM.random_index][PCR_19 := after_TPM.PCR_19])
 }
 
-//- This function is used to ensure that the routine to get a quote operates correctly.
+//- This ghost function is used to ensure that the routine to get a quote operates correctly.
 //- It should output the public key and quote.
 
-static predicate {:autoReq} HandleGetQuoteRequestValid (state:CommonState, old_TPM:TPM_struct, new_TPM:TPM_struct,
+static ghost predicate {:autoReq} HandleGetQuoteRequestValid (state:CommonState, old_TPM:TPM_struct, new_TPM:TPM_struct,
                                                         nonce_external_in:seq<int>, encoded_public_key_out:seq<int>,
                                                         pcr_info_bytes_out:seq<int>, sig_bytes_out:seq<int>)
 {

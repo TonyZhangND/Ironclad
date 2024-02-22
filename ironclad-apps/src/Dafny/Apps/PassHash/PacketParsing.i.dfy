@@ -7,7 +7,7 @@ include "../../Libraries/Util/Halter.i.dfy"
 //- Request parsing
 //-//////////////////////////
 
-static predicate RequestValid (request:PassHashRequest)
+static ghost predicate RequestValid (request:PassHashRequest)
 {
     match request
         case InvalidRequest_ctor => true
@@ -80,7 +80,7 @@ static method ParsePerformHashRequestPacket (data:seq<int>) returns (request:Pas
 //- Response forming
 //-//////////////////////////
 
-static predicate WellformedResponse (response:PassHashResponse)
+static ghost predicate WellformedResponse (response:PassHashResponse)
 {
     match response
         case NullResponse_ctor => true

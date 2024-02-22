@@ -42,7 +42,7 @@ include "../../../Dafny/Drivers/CPU/assembly.i.dfy"
 include "../../../Dafny/Libraries/Math/bit_vector_lemmas.i.dfy"
 
 /*
-function True(x:int) : bool 
+ghost function True(x:int) : bool 
 {
     true
 }
@@ -257,7 +257,7 @@ datatype List<A> = Nil() | Cons(hd:A, tl:List<A>);
 
 datatype DT = DT1(x1:int, y1:int) | DT2(x2:int, a2:List<int>, y2:int, b2:DT, z2:int);
 
-function len<A>(l:List<A>):int
+ghost function len<A>(l:List<A>):int
     ensures len(l) >= 0;
 {
     if l.Cons? then 1 + len(l.tl) else 0
@@ -307,7 +307,7 @@ method TestGetLength()
     assert n == 2;
 }
 
-function method id<A>(a:A):A { a }
+function id<A>(a:A):A { a }
 
 method Foo(i:int, j:int) returns(k:int)
     requires i >= 5 && j >= 6;
@@ -441,10 +441,10 @@ method Main() returns (result:int)
     result := Cube(5);
 }
 /*
-function method{:axiom}{:imported} word_32(x:int):bool
-function method{:axiom}{:imported} and (x:int, y:int):int
-function method{:axiom}{:imported} or  (x:int, y:int):int
-function method{:axiom}{:imported} xor (x:int, y:int):int
+function{:axiom}{:imported} word_32(x:int):bool
+function{:axiom}{:imported} and (x:int, y:int):int
+function{:axiom}{:imported} or  (x:int, y:int):int
+function{:axiom}{:imported} xor (x:int, y:int):int
 
 /*
 //- mutural summay ensures that M_1[r_1] == M_2[r_2]
@@ -521,7 +521,7 @@ method one_time_pad( ) returns ()
 }
 */
 
-/* encryption of multiple blocks. This function ensures that:
+/* encryption of multiple blocks. This ghost function ensures that:
      1. each block b is encrypted into xor(b,k), where k is the global key
      2. each encrypted blocks are still words
 */

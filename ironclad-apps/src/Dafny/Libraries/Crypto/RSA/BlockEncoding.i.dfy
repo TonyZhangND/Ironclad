@@ -6,8 +6,8 @@ include "../../../Drivers/TPM/tpm-wrapper.i.dfy"
 include "../../FatNat/FatNatCommon.i.dfy"
 include "../../FatNat/Transforms.i.dfy"
 
-static function method{:CompiledSpec} CompiledSpec_BlockType(pad_mode:PadMode) : int
-static function method{:CompiledSpec} CompiledSpec_SignaturePadByte() : int
+static function{:CompiledSpec} CompiledSpec_BlockType(pad_mode:PadMode) : int
+static function{:CompiledSpec} CompiledSpec_SignaturePadByte() : int
 
 //-////////////////////////////////////////////////////////////////////////////
 //- octet-string to octet-string encoding
@@ -295,7 +295,7 @@ static method UnpadMessageOrFail(padded_msg:seq<int>, pad_mode:PadMode) returns 
 //-////////////////////////////////////////////////////////////////////////////
 //- encoding an octet string to integers
 
-static function method LEBytesToWord(os:seq<int>) : int
+static function LEBytesToWord(os:seq<int>) : int
     requires IsByteSeq(os);
     requires |os|==4;
     ensures Word32(LEBytesToWord(os));
@@ -650,7 +650,7 @@ static method WordsToOctets(ws:seq<int>) returns (os:seq<int>)
     assert ws==ws[0..];
 }
 
-predicate {:heap} CanDecodeFatInteger(M:array<int>, keysize_octets:nat, pad_mode:PadMode)
+ghost predicate {:heap} CanDecodeFatInteger(M:array<int>, keysize_octets:nat, pad_mode:PadMode)
     requires WellformedFatNat(M);
     reads M;
 {
@@ -662,7 +662,7 @@ predicate {:heap} CanDecodeFatInteger(M:array<int>, keysize_octets:nat, pad_mode
         && |pm|==keysize_octets
 }
 
-static predicate CanDecodeInteger(M:BigNat, keysize_octets:nat, pad_mode:PadMode)
+static ghost predicate CanDecodeInteger(M:BigNat, keysize_octets:nat, pad_mode:PadMode)
     requires WellformedBigNat(M);
 {
     exists pm:seq<int>, m:seq<int> ::

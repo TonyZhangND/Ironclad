@@ -49,7 +49,7 @@ class SchedulerImpl
     {
     }
 
-    predicate Valid()
+    ghost predicate Valid()
         reads this;
         reads NetClientIsValid.reads(netClient);
     {
@@ -65,20 +65,20 @@ class SchedulerImpl
         && CSingleDeliveryAccountIsValid(host.sd, host.constants.params)
     }
         
-    function Env() : HostEnvironment?
+    ghost function Env() : HostEnvironment?
         reads this, NetClientIsValid.reads(netClient);
     {
         if netClient!=null then netClient.env else null
     }
    
-    function AbstractifyToHost() : Host
+    ghost function AbstractifyToHost() : Host
         reads this;
         requires HostStateIsAbstractable(host);
     {
         AbstractifyHostStateToHost(host)
     }
 
-    function AbstractifyToLScheduler() : LScheduler
+    ghost function AbstractifyToLScheduler() : LScheduler
         reads this;
         requires HostStateIsAbstractable(host);
     {
@@ -207,7 +207,7 @@ class SchedulerImpl
     }
 
 
-    predicate ReceivedPacketProperties(cpacket:CPacket, netEvent0:NetEvent, io0:LSHTIo)
+    ghost predicate ReceivedPacketProperties(cpacket:CPacket, netEvent0:NetEvent, io0:LSHTIo)
         reads this;
         //requires SHTConcreteConfigurationIsValid(host.constants.all.config);
     {

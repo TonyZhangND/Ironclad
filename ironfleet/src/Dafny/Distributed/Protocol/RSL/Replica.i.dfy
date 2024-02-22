@@ -32,7 +32,7 @@ datatype LReplica = LReplica(
   learner:LLearner,
   executor:LExecutor)
 
-predicate LReplicaInit(r:LReplica, c:LReplicaConstants)
+ghost predicate LReplicaInit(r:LReplica, c:LReplicaConstants)
   requires WellFormedLConfiguration(c.all.config)
 {
   && r.constants == c
@@ -43,14 +43,14 @@ predicate LReplicaInit(r:LReplica, c:LReplicaConstants)
   && LExecutorInit(r.executor, c)
 }
 
-predicate LReplicaNextProcessInvalid(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessInvalid(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_Invalid?
 {
   && s' == s
   && sent_packets == []
 }
 
-predicate LReplicaNextProcessRequest(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessRequest(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_Request?
 {
   if |received_packet.msg.val| > MaxAppRequestSize() then
@@ -70,7 +70,7 @@ predicate LReplicaNextProcessRequest(s:LReplica, s':LReplica, received_packet:Rs
        && s' == s)
 }
 
-predicate LReplicaNextProcess1a(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcess1a(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_1a?
 {
   && LAcceptorProcess1a(s.acceptor, s'.acceptor, received_packet, sent_packets)
@@ -78,7 +78,7 @@ predicate LReplicaNextProcess1a(s:LReplica, s':LReplica, received_packet:RslPack
   && s' == s.(acceptor := s'.acceptor)
 }
 
-predicate LReplicaNextProcess1b(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcess1b(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_1b?
 {
   if  && received_packet.src in s.proposer.constants.all.config.replica_ids
@@ -93,14 +93,14 @@ predicate LReplicaNextProcess1b(s:LReplica, s':LReplica, received_packet:RslPack
     s' == s && sent_packets == []
 }
 
-predicate LReplicaNextProcessStartingPhase2(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessStartingPhase2(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_StartingPhase2?
 {
   && LExecutorProcessStartingPhase2(s.executor, s'.executor, received_packet, sent_packets)
   && s' == s.(executor := s'.executor)
 }
 
-predicate LReplicaNextProcess2a(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcess2a(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_2a?
 {
   var m := received_packet.msg;
@@ -113,7 +113,7 @@ predicate LReplicaNextProcess2a(s:LReplica, s':LReplica, received_packet:RslPack
     s' == s && sent_packets == []
 }
 
-predicate LReplicaNextProcess2b(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcess2b(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_2b?
 {
   var opn := received_packet.msg.opn_2b;
@@ -127,14 +127,14 @@ predicate LReplicaNextProcess2b(s:LReplica, s':LReplica, received_packet:RslPack
     && sent_packets == []
 }
 
-predicate LReplicaNextProcessReply(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessReply(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_Reply?
 {
   && sent_packets == []
   && s' == s
 }
 
-predicate LReplicaNextProcessAppStateSupply(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessAppStateSupply(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_AppStateSupply?
 {
   if received_packet.src in s.executor.constants.all.config.replica_ids && received_packet.msg.opn_state_supply > s.executor.ops_complete then
@@ -146,14 +146,14 @@ predicate LReplicaNextProcessAppStateSupply(s:LReplica, s':LReplica, received_pa
     s' == s && sent_packets == []
 }
 
-predicate LReplicaNextProcessAppStateRequest(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessAppStateRequest(s:LReplica, s':LReplica, received_packet:RslPacket, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_AppStateRequest?
 {
   && LExecutorProcessAppStateRequest(s.executor, s'.executor, received_packet, sent_packets)
   && s' == s.(executor := s'.executor)
 }
 
-predicate LReplicaNextProcessHeartbeat(s:LReplica, s':LReplica, received_packet:RslPacket, clock:int, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextProcessHeartbeat(s:LReplica, s':LReplica, received_packet:RslPacket, clock:int, sent_packets:seq<RslPacket>)
   requires received_packet.msg.RslMessage_Heartbeat?
 {
   && LProposerProcessHeartbeat(s.proposer, s'.proposer, received_packet, clock)
@@ -162,25 +162,25 @@ predicate LReplicaNextProcessHeartbeat(s:LReplica, s':LReplica, received_packet:
   && s' == s.(proposer := s'.proposer, acceptor := s'.acceptor)
 }
 
-predicate LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextSpontaneousMaybeEnterNewViewAndSend1a(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
 {
   && LProposerMaybeEnterNewViewAndSend1a(s.proposer, s'.proposer, sent_packets)
   && s' == s.(proposer := s'.proposer)
 }
 
-predicate LReplicaNextSpontaneousMaybeEnterPhase2(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextSpontaneousMaybeEnterPhase2(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
 {
   && LProposerMaybeEnterPhase2(s.proposer, s'.proposer, s.acceptor.log_truncation_point, sent_packets)
   && s' == s.(proposer := s'.proposer)
 }
 
-predicate LReplicaNextReadClockMaybeNominateValueAndSend2a(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextReadClockMaybeNominateValueAndSend2a(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
 {
   && LProposerMaybeNominateValueAndSend2a(s.proposer, s'.proposer, clock.t, s.acceptor.log_truncation_point, sent_packets)
   && s' == s.(proposer := s'.proposer)
 }
 
-predicate LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
 {
   (exists opn ::
         && IsLogTruncationPointValid(opn, s.acceptor.last_checkpointed_operation, s.constants.all.config)
@@ -198,7 +198,7 @@ predicate LReplicaNextSpontaneousTruncateLogBasedOnCheckpoints(s:LReplica, s':LR
   )
 }
 
-predicate LReplicaNextSpontaneousMaybeMakeDecision(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextSpontaneousMaybeMakeDecision(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
 {
   var opn := s.executor.ops_complete;
   if  && s.executor.next_op_to_execute.OutstandingOpUnknown?
@@ -212,7 +212,7 @@ predicate LReplicaNextSpontaneousMaybeMakeDecision(s:LReplica, s':LReplica, sent
     s' == s && sent_packets == []
 }
 
-predicate LReplicaNextSpontaneousMaybeExecute(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextSpontaneousMaybeExecute(s:LReplica, s':LReplica, sent_packets:seq<RslPacket>)
 {
   if  && s.executor.next_op_to_execute.OutstandingOpKnown?
       && LtUpperBound(s.executor.ops_complete, s.executor.constants.all.params.max_integer_val)
@@ -226,7 +226,7 @@ predicate LReplicaNextSpontaneousMaybeExecute(s:LReplica, s':LReplica, sent_pack
     s' == s && sent_packets == []
 }
 
-predicate LReplicaNextReadClockMaybeSendHeartbeat(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextReadClockMaybeSendHeartbeat(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
 {
   if clock.t < s.nextHeartbeatTime then
     s' == s && sent_packets == []
@@ -240,21 +240,21 @@ predicate LReplicaNextReadClockMaybeSendHeartbeat(s:LReplica, s':LReplica, clock
     && s' == s.(nextHeartbeatTime := s'.nextHeartbeatTime)
 }
 
-predicate LReplicaNextReadClockCheckForViewTimeout(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextReadClockCheckForViewTimeout(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
 {
   && LProposerCheckForViewTimeout(s.proposer, s'.proposer, clock.t)
   && sent_packets == []
   && s' == s.(proposer := s'.proposer)
 }
 
-predicate LReplicaNextReadClockCheckForQuorumOfViewSuspicions(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
+ghost predicate LReplicaNextReadClockCheckForQuorumOfViewSuspicions(s:LReplica, s':LReplica, clock:ClockReading, sent_packets:seq<RslPacket>)
 {
   && LProposerCheckForQuorumOfViewSuspicions(s.proposer, s'.proposer, clock.t)
   && sent_packets == []
   && s' == s.(proposer := s'.proposer)
 }
 
-function {:opaque} ExtractSentPacketsFromIos(ios:seq<RslIo>) : seq<RslPacket>
+ghost function {:opaque} ExtractSentPacketsFromIos(ios:seq<RslIo>) : seq<RslPacket>
   ensures forall p :: p in ExtractSentPacketsFromIos(ios) <==> LIoOpSend(p) in ios
 {
   if |ios| == 0 then
@@ -265,7 +265,7 @@ function {:opaque} ExtractSentPacketsFromIos(ios:seq<RslIo>) : seq<RslPacket>
     ExtractSentPacketsFromIos(ios[1..])
 }
 
-predicate LReplicaNextReadClockAndProcessPacket(s:LReplica, s':LReplica, ios:seq<RslIo>)
+ghost predicate LReplicaNextReadClockAndProcessPacket(s:LReplica, s':LReplica, ios:seq<RslIo>)
   requires |ios| >= 1
   requires ios[0].LIoOpReceive?
   requires ios[0].r.msg.RslMessage_Heartbeat?
@@ -276,7 +276,7 @@ predicate LReplicaNextReadClockAndProcessPacket(s:LReplica, s':LReplica, ios:seq
   && LReplicaNextProcessHeartbeat(s, s', ios[0].r, ios[1].t, ExtractSentPacketsFromIos(ios))
 }
 
-predicate LReplicaNextProcessPacketWithoutReadingClock(s:LReplica, s':LReplica, ios:seq<RslIo>)
+ghost predicate LReplicaNextProcessPacketWithoutReadingClock(s:LReplica, s':LReplica, ios:seq<RslIo>)
   requires |ios| >= 1
   requires ios[0].LIoOpReceive?
   requires !ios[0].r.msg.RslMessage_Heartbeat?
@@ -296,7 +296,7 @@ predicate LReplicaNextProcessPacketWithoutReadingClock(s:LReplica, s':LReplica, 
        case RslMessage_AppStateSupply(_, _, _) => LReplicaNextProcessAppStateSupply(s, s', ios[0].r, sent_packets)
 }
 
-predicate LReplicaNextProcessPacket(s:LReplica, s':LReplica, ios:seq<RslIo>)
+ghost predicate LReplicaNextProcessPacket(s:LReplica, s':LReplica, ios:seq<RslIo>)
 {
   && |ios| >= 1
   && if ios[0].LIoOpTimeoutReceive? then
@@ -310,12 +310,12 @@ predicate LReplicaNextProcessPacket(s:LReplica, s':LReplica, ios:seq<RslIo>)
       )
 }
 
-function LReplicaNumActions() : int
+ghost function LReplicaNumActions() : int
 {
   10
 }
 
-predicate SpontaneousIos(ios:seq<RslIo>, clocks:int)
+ghost predicate SpontaneousIos(ios:seq<RslIo>, clocks:int)
   requires 0<=clocks<=1
 {
   && clocks <= |ios|
@@ -323,12 +323,12 @@ predicate SpontaneousIos(ios:seq<RslIo>, clocks:int)
   && (forall i :: clocks<=i<|ios| ==> ios[i].LIoOpSend?)
 }
 
-function SpontaneousClock(ios:seq<RslIo>) : ClockReading
+ghost function SpontaneousClock(ios:seq<RslIo>) : ClockReading
 {
-  if SpontaneousIos(ios, 1) then ClockReading(ios[0].t) else ClockReading(0) // nonsense to avoid putting a precondition on this function
+  if SpontaneousIos(ios, 1) then ClockReading(ios[0].t) else ClockReading(0) // nonsense to avoid putting a precondition on this ghost function
 }
 
-predicate LReplicaNoReceiveNext(s:LReplica, nextActionIndex:int, s':LReplica, ios:seq<RslIo>)
+ghost predicate LReplicaNoReceiveNext(s:LReplica, nextActionIndex:int, s':LReplica, ios:seq<RslIo>)
 {
   var sent_packets := ExtractSentPacketsFromIos(ios);
 
@@ -364,14 +364,14 @@ predicate LReplicaNoReceiveNext(s:LReplica, nextActionIndex:int, s':LReplica, io
 
 datatype LScheduler = LScheduler(replica:LReplica, nextActionIndex:int)
 
-predicate LSchedulerInit(s:LScheduler, c:LReplicaConstants)
+ghost predicate LSchedulerInit(s:LScheduler, c:LReplicaConstants)
   requires WellFormedLConfiguration(c.all.config)
 {
   && LReplicaInit(s.replica, c)
   && s.nextActionIndex == 0
 }
 
-predicate LSchedulerNext(s:LScheduler, s':LScheduler, ios:seq<RslIo>)
+ghost predicate LSchedulerNext(s:LScheduler, s':LScheduler, ios:seq<RslIo>)
 {
   && s'.nextActionIndex == (s.nextActionIndex + 1) % LReplicaNumActions()
   && if s.nextActionIndex == 0 then

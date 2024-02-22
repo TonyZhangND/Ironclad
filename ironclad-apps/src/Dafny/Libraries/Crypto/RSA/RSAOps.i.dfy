@@ -2,7 +2,7 @@ include "RSASpec.s.dfy"
 include "RSA.i.dfy"
 
 //- Eventually useful for lemma_message_transmission
-predicate {:heap} EncryptionRelation(pubkey:RSAPubKeyImpl_internal, p:array<int>, c:array<int>)
+ghost predicate {:heap} EncryptionRelation(pubkey:RSAPubKeyImpl_internal, p:array<int>, c:array<int>)
     requires WellformedRSAPubKeyImpl_internal(pubkey);
     requires WellformedFatNat(p);
     requires WellformedFatNat(c);
@@ -61,7 +61,7 @@ method InnerEncrypt(pubkey:RSAPubKeyImpl_internal, plaintext:array<int>) returns
     ciphertext := R;
 }
 
-static predicate RSAEncryptionRequires(pubkey:RSAPubKeySpec, msg:seq<int>, padding:seq<int>)
+static ghost predicate RSAEncryptionRequires(pubkey:RSAPubKeySpec, msg:seq<int>, padding:seq<int>)
 {
     WellformedRSAPubKeySpec(pubkey)
         && IsByteSeq(msg)
@@ -225,7 +225,7 @@ method {:dafnycc_conservative_seq_triggers} EncryptSecondStep(ghost pubkey:RSAPu
                 cipherN;
             }
             //- Note that here we merely show equivalent integer values;
-            //- the legacy function IntegerToBESeq has been equipped with an
+            //- the legacy ghost function IntegerToBESeq has been equipped with an
             //- additional ensures about BEIntToByteSeq.
         }
         BEIntToByteSeq(cipherN);
@@ -236,7 +236,7 @@ method {:dafnycc_conservative_seq_triggers} EncryptSecondStep(ghost pubkey:RSAPu
 }
 
 //- Eventually useful for lemma_message_transmission
-predicate {:heap} DecryptionRelation(key:RSAKeyPairImpl_internal, c:array<int>, p:array<int>)
+ghost predicate {:heap} DecryptionRelation(key:RSAKeyPairImpl_internal, c:array<int>, p:array<int>)
     requires WellformedRSAKeyPairImpl_internal(key);
     requires WellformedFatNat(c);
     requires WellformedFatNat(p);
@@ -304,7 +304,7 @@ static lemma lemma_obvious_length(x:seq<int>, y:seq<int>, z:seq<int>)
 {
 }
 
-static predicate RSASignatureRequires(key: RSAKeyPairSpec, message: seq<int>)
+static ghost predicate RSASignatureRequires(key: RSAKeyPairSpec, message: seq<int>)
 {
     WellformedRSAKeyPairSpec(key)
     && IsByteSeq(message)
@@ -340,9 +340,9 @@ static lemma lemma_RSA_message_length_bound(message:seq<int>)
     }
 }
 
-static function method RSA_DIGEST_MIN_KEY_SIZE() : int { 62 }
+static function RSA_DIGEST_MIN_KEY_SIZE() : int { 62 }
 
-static predicate RSAVerificationRelationRequires(pubkey:RSAPubKeySpec, message:seq<int>, signature:seq<int>)
+static ghost predicate RSAVerificationRelationRequires(pubkey:RSAPubKeySpec, message:seq<int>, signature:seq<int>)
 {
     //- NB we premium-ify methods to trigger corresponding ensures
     IsByteSeq(signature)

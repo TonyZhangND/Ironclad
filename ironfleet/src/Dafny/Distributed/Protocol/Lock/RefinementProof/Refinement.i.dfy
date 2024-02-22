@@ -7,7 +7,7 @@ module Refinement_i {
     import opened AbstractServiceLock_s`All
     import opened Collections__Maps2_s
     
-    function AbstractifyGLS_State(gls:GLS_State) : ServiceState
+    ghost function AbstractifyGLS_State(gls:GLS_State) : ServiceState
     {
         ServiceState'(mapdomain(gls.ls.servers), gls.history)
     }

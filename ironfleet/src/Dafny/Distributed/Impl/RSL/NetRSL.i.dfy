@@ -22,10 +22,10 @@ import opened Logic__Option_i
 import opened Environment_s
 
 //////////////////////////////////////////////////////////////////////////////
-// These functions relate NetEvent to LiveRSL's LIoOps.
+// These ghost functions relate NetEvent to LiveRSL's LIoOps.
 // 
 
-predicate NetEventIsAbstractable(evt:NetEvent)
+ghost predicate NetEventIsAbstractable(evt:NetEvent)
 {
   match evt
     case LIoOpSend(s) => NetPacketIsAbstractable(s)
@@ -34,7 +34,7 @@ predicate NetEventIsAbstractable(evt:NetEvent)
     case LIoOpReadClock(t) => true
 }
 
-function AbstractifyNetEventToRslIo(evt:NetEvent) : RslIo
+ghost function AbstractifyNetEventToRslIo(evt:NetEvent) : RslIo
   requires NetEventIsAbstractable(evt)
 {
   match evt
@@ -44,12 +44,12 @@ function AbstractifyNetEventToRslIo(evt:NetEvent) : RslIo
     case LIoOpReadClock(t) => LIoOpReadClock(t as int)
 }
 
-predicate NetEventLogIsAbstractable(rawlog:seq<NetEvent>)
+ghost predicate NetEventLogIsAbstractable(rawlog:seq<NetEvent>)
 {
   forall i :: 0<=i<|rawlog| ==> NetEventIsAbstractable(rawlog[i])
 }
 
-function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<RslIo>
+ghost function {:opaque} AbstractifyRawLogToIos(rawlog:seq<NetEvent>) : seq<RslIo>
   requires NetEventLogIsAbstractable(rawlog)
   ensures |AbstractifyRawLogToIos(rawlog)| == |rawlog|
   ensures forall i {:trigger AbstractifyNetEventToRslIo(rawlog[i])} {:trigger AbstractifyRawLogToIos(rawlog)[i]} :: 0<=i<|rawlog| ==> AbstractifyRawLogToIos(rawlog)[i] == AbstractifyNetEventToRslIo(rawlog[i])
@@ -66,13 +66,13 @@ lemma lemma_EstablishAbstractifyRawLogToIos(rawlog:seq<NetEvent>, ios:seq<RslIo>
   reveal AbstractifyRawLogToIos();
 }
 
-predicate RawIoConsistentWithSpecIO(rawlog:seq<NetEvent>, ios:seq<RslIo>)
+ghost predicate RawIoConsistentWithSpecIO(rawlog:seq<NetEvent>, ios:seq<RslIo>)
 {
   && NetEventLogIsAbstractable(rawlog)
   && AbstractifyRawLogToIos(rawlog) == ios
 }
 
-predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
+ghost predicate OnlySentMarshallableData(rawlog:seq<NetEvent>)
 {
   forall io :: io in rawlog && io.LIoOpSend? ==> NetPacketBound(io.s.msg) && Marshallable(PaxosDemarshallData(io.s.msg))
 }
@@ -195,7 +195,7 @@ method ReadClock(netClient:NetClient) returns (clock:CClockReading, ghost clockE
   clock := CClockReading(t);
 }
 
-predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
+ghost predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
 {
   && event.LIoOpSend?
   && NetPacketIsAbstractable(event.s)
@@ -203,7 +203,7 @@ predicate SendLogEntryReflectsPacket(event:NetEvent, cpacket:CPacket)
   && AbstractifyCPacketToRslPacket(cpacket) == AbstractifyNetPacketToRslPacket(event.s)
 }
 
-predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<CPacket>)
+ghost predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<CPacket>)
 {
   match packet {
     case Some(p) => |netEventLog| == 1 && SendLogEntryReflectsPacket(netEventLog[0], p)
@@ -211,13 +211,13 @@ predicate SendLogReflectsPacket(netEventLog:seq<NetEvent>, packet:Option<CPacket
   }
 }
 
-predicate SendLogReflectsPacketSeq(netEventLog:seq<NetEvent>, packets:seq<CPacket>)
+ghost predicate SendLogReflectsPacketSeq(netEventLog:seq<NetEvent>, packets:seq<CPacket>)
 {
   && |netEventLog| == |packets| 
   && (forall i :: 0 <= i < |packets| ==> SendLogEntryReflectsPacket(netEventLog[i], packets[i]))
 }
 
-predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadcast, index:int)
+ghost predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadcast, index:int)
   requires CBroadcastIsAbstractable(broadcast)
   requires broadcast.CBroadcast?
   requires 0<=|netEventLog|<=|broadcast.dsts|
@@ -227,7 +227,7 @@ predicate SendLogMatchesRefinement(netEventLog:seq<NetEvent>, broadcast:CBroadca
   && AbstractifyCBroadcastToRlsPacketSeq(broadcast)[index] == AbstractifyNetPacketToRslPacket(netEventLog[index].s)
 }
 
-predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
+ghost predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
   requires CBroadcastIsAbstractable(broadcast)
   requires broadcast.CBroadcast?
 {
@@ -235,7 +235,7 @@ predicate SendLogReflectsBroadcastPrefix(netEventLog:seq<NetEvent>, broadcast:CB
   && forall i :: 0<=i<|netEventLog| ==> SendLogMatchesRefinement(netEventLog, broadcast, i)
 }
 
-predicate SendLogReflectsBroadcast(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
+ghost predicate SendLogReflectsBroadcast(netEventLog:seq<NetEvent>, broadcast:CBroadcast)
   requires CBroadcastIsAbstractable(broadcast)
 {
   if broadcast.CBroadcastNop? then

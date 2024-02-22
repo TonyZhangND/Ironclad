@@ -5,7 +5,7 @@ include "../../Math/round.i.dfy"
 include "../../Math/bit_vector_lemmas_premium.i.dfy"
 include "../../Util/integer_sequences_premium.i.dfy"
 
-static function SHA256_BytesToBytes_premium(M:seq<int>) : seq<int>
+static ghost function SHA256_BytesToBytes_premium(M:seq<int>) : seq<int>
     requires IsByteSeq(M);
     requires |M| < power2(61) || |BEByteSeqToBitSeq(M)| < power2(64);
 
@@ -24,7 +24,7 @@ static function SHA256_BytesToBytes_premium(M:seq<int>) : seq<int>
     BEWordSeqToByteSeq_premium(SHA256(BEByteSeqToBitSeq_premium(M)))
 }
 
-static function ByteSeqXor_premium(X:seq<int>, Y:seq<int>) : seq<int>
+static ghost function ByteSeqXor_premium(X:seq<int>, Y:seq<int>) : seq<int>
     requires IsByteSeq(X);
     requires IsByteSeq(Y);
     requires |X| == |Y|;
@@ -42,7 +42,7 @@ static function ByteSeqXor_premium(X:seq<int>, Y:seq<int>) : seq<int>
         [BitwiseXor(X[0], Y[0])] + ByteSeqXor_premium(X[1..], Y[1..])
 }
 
-static function I2OSP_premium(x:int, xLen:int) : seq<int>
+static ghost function I2OSP_premium(x:int, xLen:int) : seq<int>
     requires 0 <= xLen;
     requires 0 <= x < power(power2(8), xLen);
 
@@ -54,7 +54,7 @@ static function I2OSP_premium(x:int, xLen:int) : seq<int>
     BEIntToDigitSeq_premium(power2(8), xLen, x)
 }
 
-static function OS2IP_premium(X:seq<int>) : int
+static ghost function OS2IP_premium(X:seq<int>) : int
     requires IsByteSeq(X);
 
     ensures OS2IP_premium(X) == OS2IP(X);
@@ -64,7 +64,7 @@ static function OS2IP_premium(X:seq<int>) : int
     BEDigitSeqToInt_premium(power2(8), X)
 }
 
-static predicate MGF1_step_requirements_simplified(seed:seq<int>, counter:nat)
+static ghost predicate MGF1_step_requirements_simplified(seed:seq<int>, counter:nat)
     ensures MGF1_step_requirements_simplified(seed, counter) ==> MGF1_step_requirements(seed, counter);
 {
     if Word32(counter) && IsByteSeq(seed) && |seed| < power2(60) then
@@ -100,7 +100,7 @@ static lemma Lemma_MGF1_step_requirements_simplified_imply_MGF1_step_requirement
     assert |BEByteSeqToBitSeq(seed + I2OSP_premium(counter, 4))| < power2(64);
 }
 
-static function MGF1_step_premium(seed:seq<int>, counter:nat) : seq<int>
+static ghost function MGF1_step_premium(seed:seq<int>, counter:nat) : seq<int>
     requires IsByteSeq(seed);
     requires |seed| < power2(60);
     requires Word32(counter);
@@ -113,7 +113,7 @@ static function MGF1_step_premium(seed:seq<int>, counter:nat) : seq<int>
     SHA256_BytesToBytes_premium(seed + C)
 }
 
-static function MGF1_prefix_premium(seed:seq<int>, counter:nat) : seq<int>
+static ghost function MGF1_prefix_premium(seed:seq<int>, counter:nat) : seq<int>
     requires IsByteSeq(seed);
     requires |seed| < power2(60);
     requires Word32(counter);
@@ -147,7 +147,7 @@ static function MGF1_prefix_premium(seed:seq<int>, counter:nat) : seq<int>
         MGF1_prefix_premium(seed, counter-1) + MGF1_step_premium(seed, counter-1)
 }
 
-static function MGF1_premium(seed:seq<int>, maskLen:int) : seq<int>
+static ghost function MGF1_premium(seed:seq<int>, maskLen:int) : seq<int>
     requires IsByteSeq(seed);
     requires |seed| < power2(60);
     requires Word32(maskLen);
@@ -175,7 +175,7 @@ static function MGF1_premium(seed:seq<int>, maskLen:int) : seq<int>
     MGF1_prefix_premium(seed, counter)[..maskLen]
 }
 
-static function RSAEP_premium(pubkey:RSAPubKeySpec, m:int) : int
+static ghost function RSAEP_premium(pubkey:RSAPubKeySpec, m:int) : int
     requires WellformedRSAPubKeySpec(pubkey);
     requires 0 <= m < pubkey.n;
 
@@ -185,7 +185,7 @@ static function RSAEP_premium(pubkey:RSAPubKeySpec, m:int) : int
     power(m, pubkey.e) % pubkey.n
 }
 
-static function RSAES_OAEP_ENCRYPT_premium(pubkey:RSAPubKeySpec, M:seq<int>, L:seq<int>, seed:seq<int>) : seq<int>
+static ghost function RSAES_OAEP_ENCRYPT_premium(pubkey:RSAPubKeySpec, M:seq<int>, L:seq<int>, seed:seq<int>) : seq<int>
     requires WellformedRSAPubKeySpec(pubkey);
     requires IsByteSeq(M);
     requires IsByteSeq(L);

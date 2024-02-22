@@ -6,7 +6,7 @@ include "../../Libraries/Util/seqs_transforms.i.dfy"
 //- Request parsing
 //-//////////////////////////
 
-static predicate RequestValid (request:TrIncRequest)
+static ghost predicate RequestValid (request:TrIncRequest)
 {
     match request
         case InvalidRequest_ctor => true
@@ -120,7 +120,7 @@ static method ParseAdvanceCounterRequestPacket (data:seq<int>) returns (request:
 //- Response forming
 //-//////////////////////////
 
-static predicate WellformedResponse (response:TrIncResponse)
+static ghost predicate WellformedResponse (response:TrIncResponse)
 {
     match response
         case NullResponse_ctor => true

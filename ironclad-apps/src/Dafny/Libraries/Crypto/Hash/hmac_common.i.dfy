@@ -25,7 +25,7 @@ static lemma lemma_ConstPad_properties(len:int, const:int)
     }
 }
 
-static function ConstPad_premium(len:int, const:int) : seq<int>
+static ghost function ConstPad_premium(len:int, const:int) : seq<int>
     requires len >= 0;
     requires Mod32_const(len) == 0;
     requires Word32(const);
@@ -37,7 +37,7 @@ static function ConstPad_premium(len:int, const:int) : seq<int>
     ConstPad(len, const)
 }
 
-static function Ipad_premium(len:int) : seq<int>
+static ghost function Ipad_premium(len:int) : seq<int>
     requires len >= 0;
     requires Mod32_const(len) == 0;
     ensures IsBitSeq(Ipad_premium(len));
@@ -48,7 +48,7 @@ static function Ipad_premium(len:int) : seq<int>
     Ipad(len)
 }
 
-static function Opad_premium(len:int) : seq<int>
+static ghost function Opad_premium(len:int) : seq<int>
     requires len >= 0;
     requires Mod32_const(len) == 0;
     ensures IsBitSeq(Opad_premium(len));
@@ -76,7 +76,7 @@ static lemma{:dafnycc_conservative_seq_triggers} lemma_SeqXor_properties(a: seq<
     }
 }
 
-static function SeqXor_premium(a: seq<int>, b: seq<int>) : seq<int>
+static ghost function SeqXor_premium(a: seq<int>, b: seq<int>) : seq<int>
     requires IsBitSeq(a);
     requires IsBitSeq(b);
     requires |a|==|b|;

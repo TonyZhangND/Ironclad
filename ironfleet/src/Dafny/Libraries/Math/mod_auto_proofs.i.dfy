@@ -91,8 +91,8 @@ lemma lemma_mod_auto_basics(n:int)
     lemma_mod_range(x - n, n);
     var zp := (x + n) / n - x / n - 1;
     var zm := (x - n) / n - x / n + 1;
-    forall ensures 0 == n * zp + ((x + n) % n) - (x % n) { lemma_mul_auto(); }
-    forall ensures 0 == n * zm + ((x - n) % n) - (x % n) { lemma_mul_auto(); }
+    assert 0 == n * zp + ((x + n) % n) - (x % n) by { lemma_mul_auto(); }
+    assert 0 == n * zm + ((x - n) % n) - (x % n) by { lemma_mul_auto(); }
     if (zp > 0) { lemma_mul_inequality(1, zp, n); }
     if (zp < 0) { lemma_mul_inequality(zp, -1, n); }
     if (zp == 0) { lemma_mul_by_zero_is_zero(n); }

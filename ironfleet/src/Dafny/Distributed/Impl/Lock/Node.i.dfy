@@ -18,25 +18,25 @@ import opened Common__SeqIsUniqueDef_i
 
 datatype CNode = CNode(held:bool, epoch:uint64, my_index:uint64, config:Config)
 
-predicate ValidConfig(c:Config)
+ghost predicate ValidConfig(c:Config)
 {
     0 < |c| < 0x1_0000_0000_0000_0000
  && (forall e :: e in c ==> EndPointIsValidPublicKey(e))
  && SeqIsUnique(c)
 }
 
-predicate ValidConfigIndex(c:Config, index:uint64)
+ghost predicate ValidConfigIndex(c:Config, index:uint64)
 {
     0 <= index as int < |c|
 }
 
-predicate CNodeValid(c:CNode)
+ghost predicate CNodeValid(c:CNode)
 {
        ValidConfig(c.config)
     && ValidConfigIndex(c.config, c.my_index)
 }
 
-function AbstractifyCNode(n:CNode) : Node
+ghost function AbstractifyCNode(n:CNode) : Node
 {
     Node(n.held, n.epoch as int, n.my_index as int, n.config)
 }

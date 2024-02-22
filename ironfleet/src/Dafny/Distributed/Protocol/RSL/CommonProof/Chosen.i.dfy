@@ -35,7 +35,7 @@ import opened Environment_s
 
 datatype QuorumOf2bs = QuorumOf2bs(c:LConstants, indices:set<int>, packets:seq<RslPacket>, bal:Ballot, opn:OperationNumber, v:RequestBatch)
 
-predicate IsValidQuorumOf2bs(
+ghost predicate IsValidQuorumOf2bs(
   ps:RslState,
   q:QuorumOf2bs
   )

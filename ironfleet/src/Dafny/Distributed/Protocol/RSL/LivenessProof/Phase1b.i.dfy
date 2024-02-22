@@ -45,7 +45,7 @@ import opened Temporal__Time_s
 import opened Environment_s
 import opened Collections__Maps2_s
 
-predicate PrimaryInState1or2(
+ghost predicate PrimaryInState1or2(
   ps:RslState,
   view:Ballot
   )
@@ -55,7 +55,7 @@ predicate PrimaryInState1or2(
   && (ps.replicas[view.proposer_id].replica.proposer.current_state == 1 || ps.replicas[view.proposer_id].replica.proposer.current_state == 2)
 }
 
-function{:opaque} PrimaryInState1or2Temporal(
+ghost function{:opaque} PrimaryInState1or2Temporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -66,7 +66,7 @@ function{:opaque} PrimaryInState1or2Temporal(
   stepmap(imap i :: PrimaryInState1or2(b[i], view))
 }
 
-predicate PrimaryInState2(
+ghost predicate PrimaryInState2(
   ps:RslState,
   view:Ballot
   )
@@ -76,7 +76,7 @@ predicate PrimaryInState2(
   && ps.replicas[view.proposer_id].replica.proposer.current_state == 2
 }
 
-function{:opaque} PrimaryInState2Temporal(
+ghost function{:opaque} PrimaryInState2Temporal(
   b:Behavior<RslState>,
   view:Ballot
   ):temporal
@@ -87,7 +87,7 @@ function{:opaque} PrimaryInState2Temporal(
   stepmap(imap i :: PrimaryInState2(b[i], view))
 }
 
-predicate AcceptorHasMaxBalInView(
+ghost predicate AcceptorHasMaxBalInView(
   ps:RslState,
   view:Ballot,
   idx:int
@@ -97,7 +97,7 @@ predicate AcceptorHasMaxBalInView(
   && ps.replicas[idx].replica.acceptor.max_bal == view
 }
 
-function{:opaque} AcceptorHasMaxBalInViewTemporal(
+ghost function{:opaque} AcceptorHasMaxBalInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot,
   idx:int
@@ -109,7 +109,7 @@ function{:opaque} AcceptorHasMaxBalInViewTemporal(
   stepmap(imap i :: AcceptorHasMaxBalInView(b[i], view, idx))
 }
 
-predicate PrimaryHasSpecific1bFromAcceptorInView(
+ghost predicate PrimaryHasSpecific1bFromAcceptorInView(
   ps:RslState,
   view:Ballot,
   idx:int,
@@ -126,7 +126,7 @@ predicate PrimaryHasSpecific1bFromAcceptorInView(
   && ps.replicas[view.proposer_id].replica.proposer.current_state == 1
 }
 
-predicate PrimaryHas1bFromAcceptorInView(
+ghost predicate PrimaryHas1bFromAcceptorInView(
   ps:RslState,
   view:Ballot,
   idx:int
@@ -137,7 +137,7 @@ predicate PrimaryHas1bFromAcceptorInView(
   && exists p :: PrimaryHasSpecific1bFromAcceptorInView(ps, view, idx, p)
 }
 
-function{:opaque} PrimaryHas1bFromAcceptorInViewTemporal(
+ghost function{:opaque} PrimaryHas1bFromAcceptorInViewTemporal(
   b:Behavior<RslState>,
   view:Ballot,
   idx:int

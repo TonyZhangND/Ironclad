@@ -16,13 +16,13 @@ import opened AppStateMachine_s
 
 datatype COutstandingOperation = COutstandingOpKnown(v:CRequestBatch,bal:CBallot) | COutstandingOpUnknown()
 
-predicate COutstandingOperationIsAbstractable(op:COutstandingOperation)
+ghost predicate COutstandingOperationIsAbstractable(op:COutstandingOperation)
 {
   || op.COutstandingOpUnknown?
   || (CRequestBatchIsAbstractable(op.v) && CBallotIsAbstractable(op.bal))
 }
 
-function AbstractifyCOutstandingOperationToOutstandingOperation(op:COutstandingOperation):OutstandingOperation
+ghost function AbstractifyCOutstandingOperationToOutstandingOperation(op:COutstandingOperation):OutstandingOperation
   requires COutstandingOperationIsAbstractable(op)
 {
   match op
@@ -42,7 +42,7 @@ datatype ExecutorState = ExecutorState(
   next_op_to_execute:COutstandingOperation,
   ghost reply_cache:CReplyCache)
 
-predicate ExecutorState_IsAbstractable(executor:ExecutorState)
+ghost predicate ExecutorState_IsAbstractable(executor:ExecutorState)
 {
   && ReplicaConstantsStateIsAbstractable(executor.constants)
   && COperationNumberIsAbstractable(executor.ops_complete)
@@ -51,7 +51,7 @@ predicate ExecutorState_IsAbstractable(executor:ExecutorState)
   && CReplyCacheIsAbstractable(executor.reply_cache)
 }
 
-function AbstractifyExecutorStateToLExecutor(executor:ExecutorState) : LExecutor
+ghost function AbstractifyExecutorStateToLExecutor(executor:ExecutorState) : LExecutor
   reads executor.app
   requires ExecutorState_IsAbstractable(executor)
 {
@@ -64,7 +64,7 @@ function AbstractifyExecutorStateToLExecutor(executor:ExecutorState) : LExecutor
     AbstractifyCReplyCacheToReplyCache(executor.reply_cache))
 }
 
-predicate ExecutorState_IsValid(executor:ExecutorState)
+ghost predicate ExecutorState_IsValid(executor:ExecutorState)
 {
   && ExecutorState_IsAbstractable(executor)
   && ReplicaConstantsState_IsValid(executor.constants)
@@ -72,7 +72,7 @@ predicate ExecutorState_IsValid(executor:ExecutorState)
   && (executor.next_op_to_execute.COutstandingOpKnown? ==> ValidRequestBatch(executor.next_op_to_execute.v))
 }
 
-predicate ExecutorState_CommonPreconditions(executor:ExecutorState)
+ghost predicate ExecutorState_CommonPreconditions(executor:ExecutorState)
 {
   && ExecutorState_IsValid(executor)
   && ExecutorState_IsAbstractable(executor)    // Can I have this too?

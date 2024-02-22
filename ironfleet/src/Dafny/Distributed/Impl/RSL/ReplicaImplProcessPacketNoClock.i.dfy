@@ -210,7 +210,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_Request\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -218,7 +218,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_Request(r.replica, cpacket, r.cur_req_set, r.prev_req_set, r.reply_cache_mutable);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -292,7 +292,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_1a\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -300,7 +300,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_1a(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -374,7 +374,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_1b\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -382,7 +382,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_1b(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -455,7 +455,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_StartingPhase2\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -463,7 +463,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_StartingPhase2(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -537,7 +537,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_2a\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -545,7 +545,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_2a(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -619,7 +619,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_2b\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -627,7 +627,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_2b(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -750,7 +750,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_AppStateRequest\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -758,7 +758,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets;
   r.replica, sent_packets := Replica_Next_Process_AppStateRequest(r.replica, cpacket, r.reply_cache_mutable);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();
@@ -832,7 +832,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ghost var lpacket := AbstractifyCPacketToRslPacket(cpacket);
   //print ("Replica_Next_ProcessPacketWithoutReadingClock_body: Processing a CMessage_AppStateSupply\n");
 
-  // Mention unchanged predicates over mutable state in the old heap.
+  // Mention unchanged ghost predicates over mutable state in the old heap.
   ghost var net_client_old := r.netClient;
   ghost var net_addr_old := r.netClient.MyPublicKey();
   assert NetClientIsValid(net_client_old);
@@ -840,7 +840,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   var sent_packets, replicaChanged;
   r.replica, sent_packets, replicaChanged := Replica_Next_Process_AppStateSupply(r.replica, cpacket);
 
-  // Mention unchanged predicates over mutable state in the new heap.
+  // Mention unchanged ghost predicates over mutable state in the new heap.
   assert net_client_old == r.netClient;
   assert NetClientIsValid(r.netClient);
   assert net_addr_old == r.netClient.MyPublicKey();

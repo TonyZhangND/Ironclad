@@ -18,13 +18,13 @@ import opened Collections__Sets_i
 // DEFINITIONS
 /////////////////////////
 
-function{:opaque} andset(xs:set<temporal>):temporal
+ghost function{:opaque} andset(xs:set<temporal>):temporal
   ensures  forall i{:trigger sat(i, andset(xs))} :: sat(i, andset(xs)) <==> (forall x :: x in xs ==> sat(i, x))
 {
   stepmap(imap i{:trigger sat(i, andset(xs))} :: (forall x :: x in xs ==> sat(i, x)))
 }
 
-function{:opaque} orset(xs:set<temporal>):temporal
+ghost function{:opaque} orset(xs:set<temporal>):temporal
   ensures  forall i{:trigger sat(i, orset(xs))} :: sat(i, orset(xs)) <==> (exists x :: x in xs && sat(i, x))
 {
   stepmap(imap i{:trigger sat(i, orset(xs))} :: (exists x :: x in xs && sat(i, x)))
