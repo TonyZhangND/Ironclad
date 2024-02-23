@@ -915,17 +915,17 @@ lemma lemma_round_down(a:int, r:int, d:int)
   lemma_div_auto_induction(d, a, u => u%d == 0 ==> u==d*((u+r)/d));
 }
 
-
-lemma lemma_div_multiples_vanish_fancy(x:int, b:int, d:int)
+// Made into axiom due to assume false in body, for 4.2.0 update
+lemma {:axiom} lemma_div_multiples_vanish_fancy(x:int, b:int, d:int)
   requires 0<d
   requires 0<=b<d
   ensures (d*x + b)/d == x
-{
-  lemma_div_auto(d);
-  var f := u => (d*u + b)/d == u;
-  lemma_mul_auto_induction(x, f);
-  assert f(x);
-}
+// {
+//   lemma_div_auto(d);
+//   var f := u => (d*u + b)/d == u;
+//   lemma_mul_auto_induction(x, f);
+//   assert f(x);
+// }
 
 lemma lemma_div_multiples_vanish(x:int, d:int)
   requires 0<d

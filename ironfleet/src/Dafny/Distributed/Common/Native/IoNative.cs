@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using FStream = System.IO.FileStream;
 
 
-namespace Native____Io__s_Compile {
+namespace Native____Io__s {
 
   public partial class PrintParams
   {
@@ -189,9 +189,10 @@ namespace Native____Io__s_Compile {
       return (ulong) watch.ElapsedTicks;
     }
       
-    public static void RecordTiming(char[] name, ulong time)
+    public static void RecordTiming(Dafny.Rune[] name, ulong time)
     {
-      var str = new string(name);
+      
+      var str = name.ToString();
       IronfleetCommon.Profiler.Record(str, (long)time);
     }
   }

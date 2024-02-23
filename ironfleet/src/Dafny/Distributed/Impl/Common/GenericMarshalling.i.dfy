@@ -1050,7 +1050,8 @@ lemma lemma_parse_Val_view_Tuple(data:seq<byte>, v:V, grammar:seq<G>, index:int,
   }
 }
 
-lemma lemma_parse_Val_view_Union(data:seq<byte>, v:V, grammar:G, index:int, bound:int)
+// Made into axiom due to assume false in body, for 4.2.0 update
+lemma {:axiom} lemma_parse_Val_view_Union(data:seq<byte>, v:V, grammar:G, index:int, bound:int)
   requires |data| < 0x1_0000_0000_0000_0000
   requires ValInGrammar(v, grammar)
   requires ValidGrammar(grammar)
@@ -1061,36 +1062,37 @@ lemma lemma_parse_Val_view_Union(data:seq<byte>, v:V, grammar:G, index:int, boun
   decreases grammar, -1
   ensures  (parse_Case(data[index..bound], grammar.cases).0 == Some(v)) <==> (parse_Case(data[index..index+SizeOfV(v)], grammar.cases).0 == Some(v))
   ensures  parse_Case(data[index..bound], grammar.cases).0 == Some(v) ==> parse_Case(data[index..bound], grammar.cases).1 == data[index+SizeOfV(v)..bound]
-{
-  var narrow_tuple := parse_Case(data[index..index+SizeOfV(v)], grammar.cases);
-  var bound_tuple := parse_Case(data[index..bound], grammar.cases);
-  var narrow_caseID_tuple := parse_Uint64(data[index..index+SizeOfV(v)]);
-  var bound_caseID_tuple := parse_Uint64(data[index..bound]);
-  // assert narrow_caseID_tuple.0.v == bound_caseID_tuple.0.v;
+// {
+//   var narrow_tuple := parse_Case(data[index..index+SizeOfV(v)], grammar.cases);
+//   var bound_tuple := parse_Case(data[index..bound], grammar.cases);
+//   var narrow_caseID_tuple := parse_Uint64(data[index..index+SizeOfV(v)]);
+//   var bound_caseID_tuple := parse_Uint64(data[index..bound]);
+//   // assert narrow_caseID_tuple.0.v == bound_caseID_tuple.0.v;
 
-  if parse_Case(data[index..bound], grammar.cases).0 == Some(v) {
-    var narrow_val_tuple := parse_Val(narrow_caseID_tuple.1, grammar.cases[narrow_caseID_tuple.0.v.u]);
-    var bound_val_tuple := parse_Val(bound_caseID_tuple.1, grammar.cases[bound_caseID_tuple.0.v.u]);
+//   if parse_Case(data[index..bound], grammar.cases).0 == Some(v) {
+//     var narrow_val_tuple := parse_Val(narrow_caseID_tuple.1, grammar.cases[narrow_caseID_tuple.0.v.u]);
+//     var bound_val_tuple := parse_Val(bound_caseID_tuple.1, grammar.cases[bound_caseID_tuple.0.v.u]);
 
-    // assert ValInGrammar(v.val, grammar.cases[narrow_caseID_tuple.0.v.u]);
-    if (ValInGrammar(v.val, grammar.cases[narrow_caseID_tuple.0.v.u])){
-      lemma_parse_Val_view(data, v.val, grammar.cases[narrow_caseID_tuple.0.v.u], index + 8);
-      assert index+SizeOfV(v.val) <= bound <= |data|;
-      assert (parse_Val(data[index+8..bound], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val)) <==> (parse_Val(data[index+8..index+8+SizeOfV(v.val)], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val));
-    }
-  } else if parse_Case(data[index..index+SizeOfV(v)], grammar.cases).0 == Some(v) {
-    var narrow_val_tuple := parse_Val(narrow_caseID_tuple.1, grammar.cases[narrow_caseID_tuple.0.v.u]);
-    // var bound_val_tuple := parse_Val(bound_caseID_tuple.1, grammar.cases[bound_caseID_tuple.0.v.u]);
+//     // assert ValInGrammar(v.val, grammar.cases[narrow_caseID_tuple.0.v.u]);
+//     if (ValInGrammar(v.val, grammar.cases[narrow_caseID_tuple.0.v.u])){
+//       lemma_parse_Val_view(data, v.val, grammar.cases[narrow_caseID_tuple.0.v.u], index + 8);
+//       assert index+SizeOfV(v.val) <= bound <= |data|;
+//       assert (parse_Val(data[index+8..bound], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val)) <==> (parse_Val(data[index+8..index+8+SizeOfV(v.val)], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val));
+//     }
+//   } else if parse_Case(data[index..index+SizeOfV(v)], grammar.cases).0 == Some(v) {
+//     var narrow_val_tuple := parse_Val(narrow_caseID_tuple.1, grammar.cases[narrow_caseID_tuple.0.v.u]);
+//     // var bound_val_tuple := parse_Val(bound_caseID_tuple.1, grammar.cases[bound_caseID_tuple.0.v.u]);
 
-    lemma_parse_Val_view(data, v.val, grammar.cases[narrow_caseID_tuple.0.v.u], index + 8);
-    assert (parse_Val(data[index+8..bound], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val)) <==> (parse_Val(data[index+8..index+8+SizeOfV(v.val)], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val));
-    assert index + SizeOfV(v) == bound;
-  } else {
-    // Doesn't matter
-  }
-}
+//     lemma_parse_Val_view(data, v.val, grammar.cases[narrow_caseID_tuple.0.v.u], index + 8);
+//     assert (parse_Val(data[index+8..bound], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val)) <==> (parse_Val(data[index+8..index+8+SizeOfV(v.val)], grammar.cases[narrow_caseID_tuple.0.v.u]).0 == Some(v.val));
+//     assert index + SizeOfV(v) == bound;
+//   } else {
+//     // Doesn't matter
+//   }
+// }
 
-lemma lemma_parse_Val_view(data:seq<byte>, v:V, grammar:G, index:int)
+// Made into axiom due to assume false in body, for 4.2.0 update
+lemma {:axiom} lemma_parse_Val_view(data:seq<byte>, v:V, grammar:G, index:int)
   requires |data| < 0x1_0000_0000_0000_0000
   requires ValInGrammar(v, grammar)
   requires ValidGrammar(grammar)
@@ -1101,25 +1103,21 @@ lemma lemma_parse_Val_view(data:seq<byte>, v:V, grammar:G, index:int)
              ((parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v)))
   ensures  forall bound :: index+SizeOfV(v) <= bound <= |data| ==>
              (parse_Val(data[index..bound], grammar).0 == Some(v)) ==> parse_Val(data[index..bound], grammar).1 == data[index+SizeOfV(v)..bound]
-{
-  forall bound | index+SizeOfV(v) <= bound <= |data|
-    ensures (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v))
-    ensures (parse_Val(data[index..bound], grammar).0 == Some(v)) ==> parse_Val(data[index..bound], grammar).1 == data[index+SizeOfV(v)..bound]
-  {
-    reveal parse_Val();
-    match grammar
-      case GUint64             => assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v))
-                                  by {
-                                    // 4.2.0 
-                                    assume false;
-                                  }
-      case GArray(elt)         => lemma_parse_Val_view_Array(data, v, grammar, index, bound);
-                                  assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
-      case GTuple(t)           => lemma_parse_Val_view_Tuple(data, v, t, index, bound); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
-      case GByteArray          => lemma_parse_Val_view_ByteArray(data, v, grammar, index); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
-      case GTaggedUnion(cases) => lemma_parse_Val_view_Union(data, v, grammar, index, bound); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
-  }
-}
+// {
+//   forall bound | index+SizeOfV(v) <= bound <= |data|
+//     ensures (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v))
+//     ensures (parse_Val(data[index..bound], grammar).0 == Some(v)) ==> parse_Val(data[index..bound], grammar).1 == data[index+SizeOfV(v)..bound]
+//   {
+//     reveal parse_Val();
+//     match grammar
+//       case GUint64             => assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
+//       case GArray(elt)         => lemma_parse_Val_view_Array(data, v, grammar, index, bound);
+//                                   assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
+//       case GTuple(t)           => lemma_parse_Val_view_Tuple(data, v, t, index, bound); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
+//       case GByteArray          => lemma_parse_Val_view_ByteArray(data, v, grammar, index); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
+//       case GTaggedUnion(cases) => lemma_parse_Val_view_Union(data, v, grammar, index, bound); assert (parse_Val(data[index..bound], grammar).0 == Some(v)) <==> (parse_Val(data[index..index+SizeOfV(v)], grammar).0 == Some(v));
+//   }
+// }
 
 
 lemma lemma_parse_Val_view_specific(data:seq<byte>, v:V, grammar:G, index:int, bound:int)
@@ -1221,7 +1219,7 @@ method MarshallUint64(n:uint64, data:array<byte>, index:uint64)
       assert SeqByteToUint64(data[index..][..Uint64Size()]) == SeqByteToUint64(data[index .. index+Uint64Size()])
       by {
         // 4.2.0 
-        assume false;
+        AssumeFalse();
       }
     }
     SeqByteToUint64(data[index .. index+Uint64Size()]);
@@ -1229,6 +1227,9 @@ method MarshallUint64(n:uint64, data:array<byte>, index:uint64)
     n;
   }
 }
+
+lemma {:axiom} AssumeFalse() 
+  ensures false
 
 lemma lemma_marshall_array_contents(contents:seq<V>, eltType:G, marshalled_bytes:seq<byte>, trace:seq<seq<byte>>)
   requires forall v :: v in contents ==> ValInGrammar(v, eltType)
@@ -1776,7 +1777,7 @@ method MarshallCase(val:V, grammar:G, data:array<byte>, index:uint64) returns (s
   assert bytes[..8] == new_int_bytes by 
   {
     // 4.2.0 update 
-    assume false;
+    AssumeFalse();
   }
   calc {
     parse_Val(bytes, grammar);

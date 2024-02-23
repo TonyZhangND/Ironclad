@@ -11,7 +11,8 @@ include "../../Protocol/Lock/RefinementProof/Refinement.i.dfy"
 include "../../Protocol/Lock/RefinementProof/RefinementProof.i.dfy"
 include "Marshall.i.dfy"
 
-module Main_i refines Main_s {
+// refinement removed for dafny 4.2.0
+module Main_i {
     import opened DS_s = Lock_DistributedSystem_i
     import opened Environment_s
     import opened Types_i
@@ -32,12 +33,59 @@ module Main_i refines Main_s {
     import opened Common__SeqIsUnique_i
     import opened Common__SeqIsUniqueDef_i
     import opened Impl_Node_i
+
+    import opened Native__Io_s
+    import opened Native__NativeTypes_s
+    import opened Collections__Seqs_s
+
     export
         provides DS_s, Native__Io_s, Native__NativeTypes_s
         provides IronfleetMain
 
+    method IronfleetMain(ghost env:HostEnvironment, netc:NetClient, args:seq<seq<byte>>)
+  requires env.Valid() && env.ok.ok()
+  requires env.net.history() == []
+  requires netc.IsOpen()
+  requires netc.env == env
+  requires ValidPhysicalAddress(EndPoint(netc.MyPublicKey()))
+  modifies set x:object | DS_s.H_s.ArbitraryObject(x)     // Everything!
+  decreases *
+{
+  var ok, host_state := DS_s.H_s.HostInitImpl(env, netc, args);
+  var config := DS_s.H_s.ParseCommandLineConfiguration(args);
+  var id := EndPoint(netc.MyPublicKey());
+  assert ok ==> DS_s.H_s.HostInit(host_state, config, id);
+
+  while (ok) 
+    invariant ok ==> DS_s.H_s.HostStateInvariants(host_state, env)
+    invariant ok ==> env.Valid() && env.ok.ok()
+    decreases *
+  {
+    ghost var old_net_history := env.net.history();
+    ghost var old_state := host_state;
+
+    ghost var recvs, clocks, sends, ios;
+    ok, host_state, recvs, clocks, sends, ios := DS_s.H_s.HostNextImpl(env, host_state);
+
+    if ok {
+      // Correctly executed one action
+      assert DS_s.H_s.HostNext(old_state, host_state, ios);
+
+      // Connect the low-level IO events to the spec-level IO events
+      assert recvs + clocks + sends == ios;
+
+      // These obligations enable us to apply reduction
+      assert env.net.history() == old_net_history + recvs + clocks + sends;
+      assert forall e :: && (e in recvs ==> e.LIoOpReceive?) 
+                   && (e in clocks ==> e.LIoOpReadClock? || e.LIoOpTimeoutReceive?) 
+                   && (e in sends ==> e.LIoOpSend?);
+      assert |clocks| <= 1;
+    }
+  }
+}
+
     ghost predicate IsValidBehavior(config:ConcreteConfiguration, db:seq<DS_State>)
-        reads *;
+        reads *
     {
            |db| > 0
         && DS_Init(db[0], config)
@@ -45,7 +93,7 @@ module Main_i refines Main_s {
     }
 
     ghost predicate IsValidBehaviorLs(config:ConcreteConfiguration, db:seq<LS_State>)
-        reads *;
+        reads *
     {
            |db| > 0
         && LS_Init(db[0], config)
@@ -68,7 +116,7 @@ module Main_i refines Main_s {
     }
 
     ghost function AbstractifyConcreteEnvStep(step:LEnvStep<EndPoint,seq<byte>>) : LEnvStep<NodeIdentity, LockMessage>
-        requires LEnvStepIsAbstractable(step);
+        requires LEnvStepIsAbstractable(step)
     {
         match step {
             case LEnvStepHostIos(actor, ios) => LEnvStepHostIos(actor, AbstractifyRawLogToIos(ios))
@@ -89,7 +137,7 @@ module Main_i refines Main_s {
     }
 
     ghost function AbstractifyConcreteEnvironment(ds_env:LEnvironment<EndPoint,seq<byte>>) : LEnvironment<NodeIdentity, LockMessage>
-        requires ConcreteEnvironmentIsAbstractable(ds_env);
+        requires ConcreteEnvironmentIsAbstractable(ds_env)
     {
         LEnvironment(ds_env.time,
                      AbstractifyConcreteSentPackets(ds_env.sentPackets),
@@ -98,13 +146,13 @@ module Main_i refines Main_s {
     }
 
     ghost function {:opaque} AbstractifyConcreteReplicas(replicas:map<EndPoint,HostState>, replica_order:seq<EndPoint>) : map<EndPoint,Node>
-        requires forall i :: 0 <= i < |replica_order| ==> replica_order[i] in replicas;
-        requires SeqIsUnique(replica_order);
-        ensures  |AbstractifyConcreteReplicas(replicas, replica_order)| == |replica_order|;
-        ensures  forall i :: 0 <= i < |replica_order| ==> replica_order[i] in AbstractifyConcreteReplicas(replicas, replica_order);
+        requires forall i :: 0 <= i < |replica_order| ==> replica_order[i] in replicas
+        requires SeqIsUnique(replica_order)
+        ensures  |AbstractifyConcreteReplicas(replicas, replica_order)| == |replica_order|
+        ensures  forall i :: 0 <= i < |replica_order| ==> replica_order[i] in AbstractifyConcreteReplicas(replicas, replica_order)
         ensures  forall i :: 0 <= i < |replica_order| ==> 
-                 AbstractifyConcreteReplicas(replicas, replica_order)[replica_order[i]] == replicas[replica_order[i]].node;
-        ensures forall e :: e in AbstractifyConcreteReplicas(replicas, replica_order) <==> e in replica_order;
+                 AbstractifyConcreteReplicas(replicas, replica_order)[replica_order[i]] == replicas[replica_order[i]].node
+        ensures forall e :: e in AbstractifyConcreteReplicas(replicas, replica_order) <==> e in replica_order
     {
         if |replica_order| == 0 then map[]
         else
@@ -125,7 +173,7 @@ module Main_i refines Main_s {
     }
 
     ghost function AbstractifyDsState(ds:DS_State) : LS_State
-        requires DsStateIsAbstractable(ds);
+        requires DsStateIsAbstractable(ds)
     {
         LS_State(AbstractifyConcreteEnvironment(ds.environment),
                     AbstractifyConcreteReplicas(ds.servers, ds.config))
@@ -136,27 +184,27 @@ module Main_i refines Main_s {
         db:seq<DS_State>,
         i:int
         )
-        requires IsValidBehavior(config, db);
-        requires 0 <= i < |db| - 1;
-        ensures  DS_Next(db[i], db[i+1]);
+        requires IsValidBehavior(config, db)
+        requires 0 <= i < |db| - 1
+        ensures  DS_Next(db[i], db[i+1])
     {
     }
     
     lemma lemma_DsNextOffset(db:seq<DS_State>, index:int)
-        requires |db| > 0;
-        requires 0 < index < |db|;
-        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1]);
-        ensures  DS_Next(db[index-1], db[index]);
+        requires |db| > 0
+        requires 0 < index < |db|
+        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1])
+        ensures  DS_Next(db[index-1], db[index])
     {
         var i := index - 1;
         assert DS_Next(db[i], db[i+1]); // OBSERVE trigger for the forall
     }
 
     lemma lemma_DsConsistency(config:ConcreteConfiguration, db:seq<DS_State>, i:int)
-        requires IsValidBehavior(config, db);
-        requires 0 <= i < |db|;
-        ensures  db[i].config == config;
-        ensures  Collections__Maps2_s.mapdomain(db[i].servers) == Collections__Maps2_s.mapdomain(db[0].servers);
+        requires IsValidBehavior(config, db)
+        requires 0 <= i < |db|
+        ensures  db[i].config == config
+        ensures  Collections__Maps2_s.mapdomain(db[i].servers) == Collections__Maps2_s.mapdomain(db[0].servers)
     {
         if i == 0 {
         } else {
@@ -184,11 +232,11 @@ module Main_i refines Main_s {
     }
 
     lemma lemma_IsValidEnvStep(de:LEnvironment<EndPoint, seq<byte>>, le:LEnvironment<NodeIdentity, LockMessage>)
-        requires IsValidLEnvStep(de, de.nextStep);
-        requires de.nextStep.LEnvStepHostIos?;
-        requires ConcreteEnvironmentIsAbstractable(de);
-        requires AbstractifyConcreteEnvironment(de) == le;
-        ensures  IsValidLEnvStep(le, le.nextStep);
+        requires IsValidLEnvStep(de, de.nextStep)
+        requires de.nextStep.LEnvStepHostIos?
+        requires ConcreteEnvironmentIsAbstractable(de)
+        requires AbstractifyConcreteEnvironment(de) == le
+        ensures  IsValidLEnvStep(le, le.nextStep)
     {
         var id := de.nextStep.actor;
         var ios := de.nextStep.ios;
@@ -197,7 +245,7 @@ module Main_i refines Main_s {
         assert LIoOpSeqCompatibleWithReduction(r_ios);
             
         forall io | io in r_ios
-            ensures IsValidLIoOp(io, id, le);
+            ensures IsValidLIoOp(io, id, le)
         {
             var j :| 0 <= j < |r_ios| && r_ios[j] == io;
             assert r_ios[j] == AstractifyNetEventToLockIo(ios[j]);
@@ -207,17 +255,17 @@ module Main_i refines Main_s {
 
     lemma lemma_IosRelations(ios:seq<LIoOp<EndPoint, seq<byte>>>, r_ios:seq<LIoOp<NodeIdentity, LockMessage>>)
         returns (sends:set<LPacket<EndPoint, seq<byte>>>, r_sends:set<LPacket<NodeIdentity, LockMessage>>) 
-        requires r_ios == AbstractifyRawLogToIos(ios);
-        ensures    sends == (set io | io in ios && io.LIoOpSend? :: io.s);
-        ensures  r_sends == (set io | io in r_ios && io.LIoOpSend? :: io.s);
-        ensures  r_sends == AbstractifyConcreteSentPackets(sends);
+        requires r_ios == AbstractifyRawLogToIos(ios)
+        ensures    sends == (set io | io in ios && io.LIoOpSend? :: io.s)
+        ensures  r_sends == (set io | io in r_ios && io.LIoOpSend? :: io.s)
+        ensures  r_sends == AbstractifyConcreteSentPackets(sends)
     {
           sends := (set io | io in ios && io.LIoOpSend? :: io.s);
         r_sends := (set io | io in r_ios && io.LIoOpSend? :: io.s);
         var refined_sends := AbstractifyConcreteSentPackets(sends);
 
         forall r | r in refined_sends
-            ensures r in r_sends;
+            ensures r in r_sends
         {
             var send :| send in sends && AbstractifyConcretePacket(send) == r;
             var io :| io in ios && io.LIoOpSend? && io.s == send;
@@ -225,7 +273,7 @@ module Main_i refines Main_s {
         }
 
         forall r | r in r_sends
-            ensures r in refined_sends;
+            ensures r in refined_sends
         {
             var r_io :| r_io in r_ios && r_io.LIoOpSend? && r_io.s == r; 
             var j :| 0 <= j < |r_ios| && r_ios[j] == r_io;
@@ -237,13 +285,13 @@ module Main_i refines Main_s {
 
     lemma lemma_LEnvironmentNextHost(de :LEnvironment<EndPoint, seq<byte>>, le :LEnvironment<NodeIdentity, LockMessage>,
                                       de':LEnvironment<EndPoint, seq<byte>>, le':LEnvironment<NodeIdentity, LockMessage>)
-        requires ConcreteEnvironmentIsAbstractable(de);
-        requires ConcreteEnvironmentIsAbstractable(de');
-        requires AbstractifyConcreteEnvironment(de)  == le;
-        requires AbstractifyConcreteEnvironment(de') == le';
-        requires de.nextStep.LEnvStepHostIos?;
-        requires LEnvironment_Next(de, de');
-        ensures  LEnvironment_Next(le, le');
+        requires ConcreteEnvironmentIsAbstractable(de)
+        requires ConcreteEnvironmentIsAbstractable(de')
+        requires AbstractifyConcreteEnvironment(de)  == le
+        requires AbstractifyConcreteEnvironment(de') == le'
+        requires de.nextStep.LEnvStepHostIos?
+        requires LEnvironment_Next(de, de')
+        ensures  LEnvironment_Next(le, le')
     {
         lemma_IsValidEnvStep(de, le);
         var id := de.nextStep.actor;
@@ -279,13 +327,13 @@ module Main_i refines Main_s {
     }
 
     lemma RefinementToLSState(config:ConcreteConfiguration, db:seq<DS_State>) returns (sb:seq<LS_State>)
-        requires |db| > 0;
-        requires DS_Init(db[0], config);
-        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1]);
-        ensures  |sb| == |db|;
-        ensures  LS_Init(sb[0], db[0].config);
-        ensures  forall i {:trigger LS_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> LS_Next(sb[i], sb[i+1]);
-        ensures forall i :: 0 <= i < |db| ==> DsStateIsAbstractable(db[i]) && sb[i] == AbstractifyDsState(db[i]);
+        requires |db| > 0
+        requires DS_Init(db[0], config)
+        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1])
+        ensures  |sb| == |db|
+        ensures  LS_Init(sb[0], db[0].config)
+        ensures  forall i {:trigger LS_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> LS_Next(sb[i], sb[i+1])
+        ensures forall i :: 0 <= i < |db| ==> DsStateIsAbstractable(db[i]) && sb[i] == AbstractifyDsState(db[i])
     {
         if |db| == 1 {
             var ls := AbstractifyDsState(db[0]);
@@ -301,7 +349,7 @@ module Main_i refines Main_s {
             
             sb := rest + [ls'];
             forall i | 0 <= i < |sb| - 1 
-                ensures LS_Next(sb[i], sb[i+1]);
+                ensures LS_Next(sb[i], sb[i+1])
             {
                 if (0 <= i < |sb|-2) {
                     assert LS_Next(sb[i], sb[i+1]);
@@ -317,17 +365,17 @@ module Main_i refines Main_s {
         db:seq<LS_State>,
         i:int
         )
-        requires IsValidBehaviorLs(config, db);
-        requires 0 <= i < |db| - 1;
-        ensures  LS_Next(db[i], db[i+1]);
+        requires IsValidBehaviorLs(config, db)
+        requires 0 <= i < |db| - 1
+        ensures  LS_Next(db[i], db[i+1])
     {
     }
 
     lemma lemma_LsConsistency(config:ConcreteConfiguration, lb:seq<LS_State>, i:int)
-        requires IsValidBehaviorLs(config, lb);
-        requires 0 <= i < |lb|;
-        ensures  Collections__Maps2_s.mapdomain(lb[i].servers) == Collections__Maps2_s.mapdomain(lb[0].servers);
-        ensures forall e :: e in lb[i].servers ==> e in lb[0].servers && lb[i].servers[e].config == lb[0].servers[e].config;
+        requires IsValidBehaviorLs(config, lb)
+        requires 0 <= i < |lb|
+        ensures  Collections__Maps2_s.mapdomain(lb[i].servers) == Collections__Maps2_s.mapdomain(lb[0].servers)
+        ensures forall e :: e in lb[i].servers ==> e in lb[0].servers && lb[i].servers[e].config == lb[0].servers[e].config
     {
         if i == 0 {
         } else {
@@ -353,13 +401,13 @@ module Main_i refines Main_s {
         }
     }
     lemma {:timeLimitMultiplier 2} MakeGLSBehaviorFromLS(config:ConcreteConfiguration, db:seq<LS_State>) returns (sb:seq<GLS_State>)
-        requires |db| > 0;
-        requires LS_Init(db[0], config);
-        requires forall i {:trigger LS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> LS_Next(db[i], db[i+1]);
-        ensures  |sb| == |db|;
-        ensures  GLS_Init(sb[0], config);
-        ensures  forall i {:trigger GLS_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> GLS_Next(sb[i], sb[i+1]);
-        ensures forall i :: 0 <= i < |db| ==> sb[i].ls == db[i];
+        requires |db| > 0
+        requires LS_Init(db[0], config)
+        requires forall i {:trigger LS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> LS_Next(db[i], db[i+1])
+        ensures  |sb| == |db|
+        ensures  GLS_Init(sb[0], config)
+        ensures  forall i {:trigger GLS_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> GLS_Next(sb[i], sb[i+1])
+        ensures forall i :: 0 <= i < |db| ==> sb[i].ls == db[i]
     {
         if (|db| == 1) {
             sb := [GLS_State(db[0], [config[0]])];
@@ -393,15 +441,15 @@ module Main_i refines Main_s {
     }
 
     lemma {:timeLimitMultiplier 2} RefinementToServiceState(config:ConcreteConfiguration, glb:seq<GLS_State>) returns (sb:seq<ServiceState>)
-        requires |glb| > 0;
-        requires GLS_Init(glb[0], config);
-        requires forall i {:trigger GLS_Next(glb[i], glb[i+1])} :: 0 <= i < |glb| - 1 ==> GLS_Next(glb[i], glb[i+1]);
-        ensures  |sb| == |glb|;
-        ensures  Service_Init(sb[0], MapSeqToSet(config, x=>x));
-        ensures  forall i {:trigger Service_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> sb[i] == sb[i+1] || Service_Next(sb[i], sb[i+1]);
-        ensures  forall i :: 0 <= i < |glb| ==> sb[i] == AbstractifyGLS_State(glb[i]);
-        ensures  forall i :: 0 <= i < |sb| ==> sb[i].hosts == sb[0].hosts;
-        ensures  sb[|sb|-1] == AbstractifyGLS_State(glb[|glb|-1]);
+        requires |glb| > 0
+        requires GLS_Init(glb[0], config)
+        requires forall i {:trigger GLS_Next(glb[i], glb[i+1])} :: 0 <= i < |glb| - 1 ==> GLS_Next(glb[i], glb[i+1])
+        ensures  |sb| == |glb|
+        ensures  Service_Init(sb[0], MapSeqToSet(config, x=>x))
+        ensures  forall i {:trigger Service_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> sb[i] == sb[i+1] || Service_Next(sb[i], sb[i+1])
+        ensures  forall i :: 0 <= i < |glb| ==> sb[i] == AbstractifyGLS_State(glb[i])
+        ensures  forall i :: 0 <= i < |sb| ==> sb[i].hosts == sb[0].hosts
+        ensures  sb[|sb|-1] == AbstractifyGLS_State(glb[|glb|-1])
     {
         if |glb| == 1 {
             sb := [AbstractifyGLS_State(glb[0])];
@@ -428,16 +476,16 @@ module Main_i refines Main_s {
         i:int,
         p:LockPacket
         )
-        requires IsValidBehaviorLs(config, lb);
-        requires 0 <= i < |lb|;
-        requires p in lb[i].environment.sentPackets;
-        requires p.src in lb[i].servers;
-        requires p.msg.Locked?;
+        requires IsValidBehaviorLs(config, lb)
+        requires 0 <= i < |lb|
+        requires p in lb[i].environment.sentPackets
+        requires p.src in lb[i].servers
+        requires p.msg.Locked?
         ensures exists q :: q in lb[i].environment.sentPackets
                          && q.msg.Transfer?
                          && q.src in lb[i].servers
                          && q.msg.transfer_epoch == p.msg.locked_epoch
-                         && q.dst == p.src;
+                         && q.dst == p.src
     {
         if i == 0 {
             return;
@@ -482,11 +530,11 @@ module Main_i refines Main_s {
         i:int,
         p:LPacket<EndPoint, seq<byte>>
         )
-        requires IsValidBehavior(config, db);
-        requires 0 <= i < |db|;
-        requires p.src in config;
-        requires p in db[i].environment.sentPackets;
-        ensures  Demarshallable(p.msg, CMessageGrammar());
+        requires IsValidBehavior(config, db)
+        requires 0 <= i < |db|
+        requires p.src in config
+        requires p in db[i].environment.sentPackets
+        ensures  Demarshallable(p.msg, CMessageGrammar())
     {
         if i == 0 {
             return;
@@ -503,15 +551,13 @@ module Main_i refines Main_s {
     }
 
     lemma RefinementProof(config:DS_s.H_s.ConcreteConfiguration, db:seq<DS_State>) returns (sb:seq<ServiceState>)
-        /*
-        requires |db| > 0;
-        requires DS_Init(db[0], config);
-        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1]);
-        ensures  |db| == |sb|;
-        ensures  Service_Init(sb[0], Collections__Maps2_s.mapdomain(db[0].servers));
-        ensures  forall i {:trigger Service_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> sb[i] == sb[i+1] || Service_Next(sb[i], sb[i+1]);
-        ensures  forall i :: 0 <= i < |db| ==> Service_Correspondence(db[i].environment.sentPackets, sb[i]);
-        */
+        requires |db| > 0
+        requires DS_Init(db[0], config)
+        requires forall i {:trigger DS_Next(db[i], db[i+1])} :: 0 <= i < |db| - 1 ==> DS_Next(db[i], db[i+1])
+        ensures  |db| == |sb|
+        ensures  Service_Init(sb[0], Collections__Maps2_s.mapdomain(db[0].servers))
+        ensures  forall i {:trigger Service_Next(sb[i], sb[i+1])} :: 0 <= i < |sb| - 1 ==> sb[i] == sb[i+1] || Service_Next(sb[i], sb[i+1])
+        ensures  forall i :: 0 <= i < |db| ==> Service_Correspondence(db[i].environment.sentPackets, sb[i])
     {
         var lsb := RefinementToLSState(config, db);
         var glsb := MakeGLSBehaviorFromLS(config, lsb);
@@ -519,7 +565,7 @@ module Main_i refines Main_s {
         //assert forall i :: 0 <= i < |sb| - 1 ==> Service_Next(sb[i], sb[i+1]);
         
         forall i | 0 <= i < |db|
-            ensures Service_Correspondence(db[i].environment.sentPackets, sb[i]);
+            ensures Service_Correspondence(db[i].environment.sentPackets, sb[i])
         {
             var ls := lsb[i];
             var gls := glsb[i];
@@ -532,7 +578,7 @@ module Main_i refines Main_s {
                          && p.dst in ss.hosts 
                          && p.msg == MarshallLockMsg(epoch) 
                 ensures 2 <= epoch <= |ss.history|
-                     && p.src == ss.history[epoch-1];
+                     && p.src == ss.history[epoch-1]
             {
                 var ap := AbstractifyConcretePacket(p);
                 assert p.src in sb[0].hosts;

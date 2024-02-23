@@ -66,16 +66,16 @@ Allowed keys:
         return;
       }
 
-      var nc = Native____Io__s_Compile.NetClient.Create(privateIdentity, ps.LocalHostNameOrAddress, ps.LocalPort,
+      var nc = Native____Io__s.NetClient.Create(privateIdentity, ps.LocalHostNameOrAddress, ps.LocalPort,
                                                         serviceIdentity.Servers, ps.Verbose, serviceIdentity.UseSsl);
       Dafny.ISequence<byte>[] serverPublicKeys =
         serviceIdentity.Servers.Select(server => Dafny.Sequence<byte>.FromArray(nc.HashPublicKey(server.PublicKey))).ToArray();
       var ironArgs = Dafny.Sequence<Dafny.ISequence<byte>>.FromArray(serverPublicKeys);
 
       Profiler.Initialize();
-      Native____Io__s_Compile.Time.Initialize();
+      Native____Io__s.Time.Initialize();
       Console.WriteLine("[[READY]]");
-      Main__i_Compile.__default.IronfleetMain(nc, ironArgs);
+      Main__i.__default.IronfleetMain(nc, ironArgs);
       Console.WriteLine("[[EXIT]]");
     }
   }

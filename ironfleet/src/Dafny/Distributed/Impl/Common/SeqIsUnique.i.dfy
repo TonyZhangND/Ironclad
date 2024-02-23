@@ -70,7 +70,7 @@ method{:timeLimitMultiplier 5} SetToUniqueSeqConstruct<X(0)>(s:set<X>) returns (
   var s1 := s;
   ghost var s2 := {};
   ghost var i := 0;
-  forall ensures SeqIsUnique(arr[..i]) { reveal SeqIsUnique(); }
+  assert SeqIsUnique(arr[..i]) by { reveal SeqIsUnique(); }
   while (|s1| != 0)
     invariant 0 <= i <= |s|
     invariant s1 + s2 == s
@@ -202,7 +202,7 @@ lemma lemma_seqs_set_cardinality<T>(Q:seq<T>, S:set<T>)
   var q0 := Q[0];
   var Qr := Q[1..];
   var Sr := UniqueSeqToSet(Qr);
-  forall s | s in Sr + {q0} ensures s in S;
+  forall s | s in Sr + {q0} ensures s in S
   {
     if (s in Sr) {
       var idx :| 0<=idx<|Qr| && Qr[idx]==s;
@@ -216,7 +216,7 @@ lemma lemma_seqs_set_cardinality<T>(Q:seq<T>, S:set<T>)
       assert s in S;
     }
   }
-  forall s | s in S ensures s in Sr + {q0};
+  forall s | s in S ensures s in Sr + {q0}
   {
     var idx :| 0<=idx<|Q| && Q[idx]==s;
     if (idx==0) {
