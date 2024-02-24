@@ -78,7 +78,7 @@ method {:fuel ReplicaStateIsValid,0,0}{:timeLimitMultiplier 3} ReplicaNoReceiveR
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==> 
             && r.Valid()
             && r.Env() == old(r.Env())

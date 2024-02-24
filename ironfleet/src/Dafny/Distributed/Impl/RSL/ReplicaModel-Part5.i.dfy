@@ -111,12 +111,12 @@ method Replica_Next_Process_AppStateSupply(
 }
 
 method ReplicaNextSpontaneousMaybeExecuteIgnore(replica:ReplicaState) returns (replica':ReplicaState, packets_sent:OutboundPackets)
-  requires Replica_Next_Spontaneous_MaybeExecute_Preconditions(replica);
+  requires Replica_Next_Spontaneous_MaybeExecute_Preconditions(replica)
   requires || !replica.executor.next_op_to_execute.COutstandingOpKnown?
            || replica.executor.ops_complete.n >= replica.executor.constants.all.params.max_integer_val
   ensures  Replica_Next_Spontaneous_MaybeExecute_Postconditions(old(AbstractifyReplicaStateToLReplica(replica)), replica',
-                                                                packets_sent);
-  ensures  replica' == replica;
+                                                                packets_sent)
+  ensures  replica' == replica
 {
   replica' := replica;
   packets_sent := OutboundPacket(None);

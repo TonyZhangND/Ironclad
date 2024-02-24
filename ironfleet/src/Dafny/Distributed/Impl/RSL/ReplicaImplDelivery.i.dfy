@@ -99,7 +99,7 @@ method {:timeLimitMultiplier 2} DeliverPacketSequence(r:ReplicaImpl, packets:Out
 method{:timeLimitMultiplier 2} DeliverBroadcast(r:ReplicaImpl, broadcast:CBroadcast) returns (ok:bool, ghost netEventLog:seq<NetEvent>, ghost ios:seq<RslIo>)
   requires r.Valid()
   requires CBroadcastIsValid(broadcast)
-  requires broadcast.CBroadcast? ==> broadcast.src == r.replica.constants.all.config.replica_ids[r.replica.constants.my_index];
+  requires broadcast.CBroadcast? ==> broadcast.src == r.replica.constants.all.config.replica_ids[r.replica.constants.my_index]
   modifies r.Repr
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
@@ -192,7 +192,7 @@ method DeliverOutboundPackets(r:ReplicaImpl, packets:OutboundPackets) returns (o
   requires r.Valid()
   requires OutboundPacketsIsValid(packets)
   requires OutboundPacketsIsAbstractable(packets)
-  requires OutboundPacketsHasCorrectSrc(packets, r.replica.constants.all.config.replica_ids[r.replica.constants.my_index]);
+  requires OutboundPacketsHasCorrectSrc(packets, r.replica.constants.all.config.replica_ids[r.replica.constants.my_index])
   modifies r.Repr
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null

@@ -160,7 +160,7 @@ lemma lemma_RevealQFromReplicaNextProcessRequestPostconditions(
   )
   requires Replica_Next_Process_Request_Postconditions(replica, replica', inp, packets_sent)
   ensures  Q_LReplica_Next_Process_Request(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                           AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                           AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Process_Request();
 }
@@ -187,7 +187,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -249,7 +249,7 @@ lemma lemma_RevealQFromReplicaNextProcess1aPostconditions(
   )
   requires Replica_Next_Process_1a_Postconditions(replica, replica', inp, packets_sent)
   ensures  Q_LReplica_Next_Process_1a(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Process_1a();
 }
@@ -276,7 +276,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -331,7 +331,7 @@ lemma lemma_RevealQFromReplicaNextProcess1bPostconditions(
   )
   requires Replica_Next_Process_1b_Postconditions(replica, replica', inp, packets_sent)
   ensures  Q_LReplica_Next_Process_1b(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Process_1b();
 }
@@ -358,7 +358,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -439,7 +439,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -494,7 +494,7 @@ lemma lemma_RevealQFromReplicaNextProcess2aPostconditions(
   )
   requires Replica_Next_Process_2a_Postconditions(replica, replica', inp, packets_sent)
   ensures  Q_LReplica_Next_Process_2a(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Process_2a();
 }
@@ -521,7 +521,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -576,7 +576,7 @@ lemma lemma_RevealQFromReplicaNextProcess2bPostconditions(
   )
   requires Replica_Next_Process_2b_Postconditions(replica, replica', inp, packets_sent)
   ensures  Q_LReplica_Next_Process_2b(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                      AbstractifyCPacketToRslPacket(inp), AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Process_2b();
 }
@@ -603,7 +603,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -734,7 +734,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -816,7 +816,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -893,7 +893,7 @@ method {:fuel AbstractifyReplicaStateToLReplica,0,0} {:fuel ReplicaStateIsValid,
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)

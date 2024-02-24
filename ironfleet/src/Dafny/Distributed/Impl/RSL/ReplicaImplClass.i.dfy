@@ -44,17 +44,17 @@ import opened AppStateMachine_s
 
 class ReplicaImpl
 {
-  var replica:ReplicaState;
-  var nextActionIndex:uint64;
-  var netClient:NetClient?;
-  var localAddr:EndPoint;
+  var replica:ReplicaState
+  var nextActionIndex:uint64
+  var netClient:NetClient?
+  var localAddr:EndPoint
   // Optimized mutable sets for ElectionState
-  var cur_req_set:MutableSet<CRequestHeader>;
-  var prev_req_set:MutableSet<CRequestHeader>;
-  var reply_cache_mutable:MutableMap<EndPoint, CReply>;
-  var msg_grammar:G;
+  var cur_req_set:MutableSet<CRequestHeader>
+  var prev_req_set:MutableSet<CRequestHeader>
+  var reply_cache_mutable:MutableMap<EndPoint, CReply>
+  var msg_grammar:G
 
-  ghost var Repr : set<object>;
+  ghost var Repr : set<object>
 
   constructor()
   {

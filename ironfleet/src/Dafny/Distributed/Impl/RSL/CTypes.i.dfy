@@ -496,7 +496,7 @@ lemma lemma_VotesInjective(v1:CVotes, v2:CVotes)
     assert k in v1.v;
   }
   assert domain(v1.v)==domain(v2.v);
-  forall k | k in domain(v1.v) ensures v1.v[k] == v2.v[k];
+  forall k | k in domain(v1.v) ensures v1.v[k] == v2.v[k]
   {
     assert AbstractifyCVoteToVote(v1.v[k]) == AbstractifyCVotesToVotes(v1)[AbstractifyCOperationNumberToOperationNumber(k)];   // OBSERVER trigger map
     assert AbstractifyCVoteToVote(v2.v[k]) == AbstractifyCVotesToVotes(v2)[AbstractifyCOperationNumberToOperationNumber(k)];   // OBSERVER trigger map

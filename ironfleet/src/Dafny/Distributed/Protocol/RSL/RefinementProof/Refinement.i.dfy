@@ -89,7 +89,7 @@ lemma lemma_ProduceAbstractStateSatisfiesRefinementRelation(
     ensures exists p :: && p in ps.environment.sentPackets
                   && p.dst in rs.server_addresses
                   && p.msg.RslMessage_Request?
-                  && req == Request(p.src, p.msg.seqno_req, p.msg.val);
+                  && req == Request(p.src, p.msg.seqno_req, p.msg.val)
   {
     var batch_num, req_num :| 0 <= batch_num < |batches| && 0 <= req_num < |batches[batch_num]| && req == batches[batch_num][req_num];
     var p := lemma_DecidedRequestWasSentByClient(b, c, i, qs, batches, batch_num, req_num);

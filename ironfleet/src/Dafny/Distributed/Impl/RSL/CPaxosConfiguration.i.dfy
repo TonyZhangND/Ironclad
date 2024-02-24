@@ -58,7 +58,7 @@ lemma lemma_WFCPaxosConfiguration(config:CPaxosConfiguration)
   ensures && CPaxosConfigurationIsAbstractable(config)
           && 0 < |config.replica_ids|
           ==> && CPaxosConfigurationIsAbstractable(config)
-              && WellFormedLConfiguration(AbstractifyCPaxosConfigurationToConfiguration(config));
+              && WellFormedLConfiguration(AbstractifyCPaxosConfigurationToConfiguration(config))
 {
   if CPaxosConfigurationIsAbstractable(config) && 0 < |config.replica_ids|
   {

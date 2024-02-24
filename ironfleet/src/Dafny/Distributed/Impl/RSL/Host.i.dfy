@@ -3,7 +3,9 @@ include "ReplicaImplMain.i.dfy"
 include "CmdLineParser.i.dfy"
 include "Unsendable.i.dfy"
 
-module Host_i refines Host_s {
+// Remove refinement for Dafny 4.2.0
+// module Host_i refines Host_s {
+module Host_i {
 
 import opened LiveRSL__Configuration_i
 import opened LiveRSL__ConstantsState_i
@@ -24,10 +26,16 @@ import opened Common__NodeIdentity_i
 import opened Common__SeqIsUnique_i
 import opened Common__SeqIsUniqueDef_i
 
+import opened Native__Io_s
+import opened Environment_s 
+import opened Native__NativeTypes_s
+
 datatype CScheduler = CScheduler(ghost sched:LScheduler, replica_impl:ReplicaImpl)
 
 type HostState = CScheduler
 type ConcreteConfiguration = ConstantsState
+
+ghost predicate ArbitraryObject(o:object) { true }
 
 ghost predicate ConcreteConfigInit(config:ConcreteConfiguration) 
 {
@@ -40,6 +48,7 @@ ghost function ConcreteConfigToServers(config:ConcreteConfiguration) : set<EndPo
 }
 
 ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
+  reads *
 {
   && host_state.replica_impl.Valid() 
   && host_state.replica_impl.Env() == env
@@ -47,6 +56,7 @@ ghost predicate HostStateInvariants(host_state:HostState, env:HostEnvironment)
 }
 
 ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:EndPoint)
+  reads *
 {
   && host_state.replica_impl.Valid()
   && host_state.replica_impl.replica.constants.all == config
@@ -56,6 +66,7 @@ ghost predicate HostInit(host_state:HostState, config:ConcreteConfiguration, id:
 }
 
 ghost predicate HostNext(host_state:HostState, host_state':HostState, ios:seq<LIoOp<EndPoint, seq<byte>>>)
+  reads *
 {
   && NetEventLogIsAbstractable(ios)
   && OnlySentMarshallableData(ios)
@@ -78,6 +89,20 @@ method {:timeLimitMultiplier 4} HostInitImpl(
   ok:bool,
   host_state:HostState
   )
+   requires env.Valid()
+  requires env.ok.ok()
+  requires netc.IsOpen()
+  requires netc.env == env
+  requires ValidPhysicalAddress(EndPoint(netc.MyPublicKey()))
+  modifies set x:object | ArbitraryObject(x)     // Everything!
+  ensures  ok ==> env.Valid() && env.ok.ok()
+  ensures  ok ==> HostStateInvariants(host_state, env)
+  ensures  ok ==> var id := EndPoint(netc.MyPublicKey());
+                 var config := ParseCommandLineConfiguration(args);
+                 && id in ConcreteConfigToServers(config)
+                 && ConcreteConfigInit(config)
+                 && HostInit(host_state, config, id)
+  ensures  env.net.history() == old(env.net.history()) // Prohibit HostInitImpl from sending (and receiving) packets
 {
   var pconfig:CPaxosConfiguration, my_index;
   var id := EndPoint(netc.MyPublicKey());
@@ -120,7 +145,7 @@ ghost method RemoveRecvs(events:seq<NetEvent>) returns (recvs:seq<NetEvent>, res
   ensures forall e :: e in recvs ==> e.LIoOpReceive?
   ensures events == recvs + rest
   ensures rest != [] ==> !rest[0].LIoOpReceive?
-  ensures NetEventsReductionCompatible(events) ==> NetEventsReductionCompatible(rest);
+  ensures NetEventsReductionCompatible(events) ==> NetEventsReductionCompatible(rest)
 {
   recvs := [];
   rest := [];
@@ -207,6 +232,21 @@ method {:timeLimitMultiplier 3} HostNextImpl(ghost env:HostEnvironment, host_sta
   returns (ok:bool, host_state':HostState, 
            ghost recvs:seq<NetEvent>, ghost clocks:seq<NetEvent>, ghost sends:seq<NetEvent>, 
            ghost ios:seq<LIoOp<EndPoint, seq<byte>>>)
+    requires env.Valid() && env.ok.ok()
+    requires HostStateInvariants(host_state, env)
+    modifies set x:object | ArbitraryObject(x)     // Everything!
+    ensures  ok <==> env.Valid() && env.ok.ok()
+    ensures  ok ==> HostStateInvariants(host_state', env)
+    ensures  ok ==> HostNext(host_state, host_state', ios)
+    // Connect the low-level IO events to the spec-level IO events
+    ensures  ok ==> recvs + clocks + sends == ios
+    // These obligations enable us to apply reduction
+    // Even when !ok, if sent is non-empty, we need to return valid set of sent packets too
+    ensures  (ok || |sends| > 0) ==> env.net.history() == old(env.net.history()) + (recvs + clocks + sends)
+    ensures  forall e :: && (e in recvs ==> e.LIoOpReceive?) 
+                  && (e in clocks ==> e.LIoOpReadClock? || e.LIoOpTimeoutReceive?) 
+                  && (e in sends ==> e.LIoOpSend?)
+    ensures  |clocks| <= 1
 {
   var lschedule:LScheduler;
   var repImpl:ReplicaImpl := new ReplicaImpl(); 

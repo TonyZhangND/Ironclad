@@ -53,7 +53,7 @@ method ReplicaNoReceiveNoClockNextSpontaneousMaybeEnterNewViewAndSend1a(r:Replic
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -98,7 +98,7 @@ method ReplicaNoReceiveNoClockNextSpontaneousMaybeEnterPhase2(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -130,7 +130,7 @@ lemma lemma_RevealQFromReplicaNextSpontaneousTruncateLogBasedOnCheckpointsPostco
   )
   requires Replica_Next_Spontaneous_TruncateLogBasedOnCheckpoints_Postconditions(replica, replica', packets_sent)
   ensures  Q_LReplica_Next_Spontaneous_TruncateLogBasedOnCheckpoints(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                                                     AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                                                     AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Spontaneous_TruncateLogBasedOnCheckpoints();
 }
@@ -143,7 +143,7 @@ method ReplicaNoReceiveNoClockNextSpontaneousTruncateLogBasedOnCheckpoints(r:Rep
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -188,7 +188,7 @@ method{:timeLimitMultiplier 2} ReplicaNoReceiveNoClockNextSpontaneousMaybeMakeDe
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -220,7 +220,7 @@ lemma lemma_RevealQFromReplicaNextSpontaneousMaybeExecutePostconditions(
   )
   requires Replica_Next_Spontaneous_MaybeExecute_Postconditions(replica, replica', packets_sent)
   ensures  Q_LReplica_Next_Spontaneous_MaybeExecute(replica, AbstractifyReplicaStateToLReplica(replica'),
-                                                    AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent));
+                                                    AbstractifyOutboundCPacketsToSeqOfRslPackets(packets_sent))
 {
   reveal Q_LReplica_Next_Spontaneous_MaybeExecute();
 }
@@ -233,7 +233,7 @@ method ReplicaNoReceiveNoClockNextSpontaneousMaybeExecute(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -266,7 +266,7 @@ method Replica_NoReceive_NoClock_Next(r:ReplicaImpl) returns (ok:bool, ghost net
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)

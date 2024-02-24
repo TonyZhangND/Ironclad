@@ -97,7 +97,7 @@ method{:timeLimitMultiplier 2} Receive(netClient:NetClient, localAddr:EndPoint, 
   ensures !rr.RRFail? ==>
             && netClient.IsOpen()
             && old(netClient.env.net.history()) + [netEvent] == netClient.env.net.history()
-  ensures rr.RRTimeout? ==> netEvent.LIoOpTimeoutReceive?;
+  ensures rr.RRTimeout? ==> netEvent.LIoOpTimeoutReceive?
   ensures rr.RRPacket? ==>
             && netEvent.LIoOpReceive?
             && NetPacketIsAbstractable(netEvent.r)
@@ -475,8 +475,8 @@ method{:timeLimitMultiplier 2} SendPacketSequence(netClient:NetClient, packets:O
     invariant ok ==> netClientEnvHistory_old + netEventLog == netClient.env.net.history()
     invariant (i == 0) ==> |netEventLog| == 0
     invariant (0 < i as int < |cpackets|) ==> |netEventLog| == |cpackets[0..i]|
-    invariant (0 < i as int < |cpackets|) ==> SendLogReflectsPacketSeq(netEventLog, cpackets[0..i]);
-    invariant (i as int >= |cpackets|) ==> SendLogReflectsPacketSeq(netEventLog, cpackets);
+    invariant (0 < i as int < |cpackets|) ==> SendLogReflectsPacketSeq(netEventLog, cpackets[0..i])
+    invariant (i as int >= |cpackets|) ==> SendLogReflectsPacketSeq(netEventLog, cpackets)
     invariant OnlySentMarshallableData(netEventLog)
   {
     var cpacket := cpackets[i];

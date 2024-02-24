@@ -29,7 +29,7 @@ ghost function {:opaque} HandleRequestBatchHidden(state:AppState, batch:RequestB
 }
 
 lemma{:timeLimitMultiplier 2} lemma_HandleRequestBatchHidden(state:AppState, batch:RequestBatch, states:seq<AppState>, replies:seq<Reply>)
-  requires (states, replies) == HandleRequestBatchHidden(state, batch);
+  requires (states, replies) == HandleRequestBatchHidden(state, batch)
   ensures  && states[0] == state
            && |states| == |batch|+1 
            && |replies| == |batch|
@@ -88,7 +88,7 @@ lemma lemma_HandleBatchRequestProperties(state:AppState, batch:RequestBatch, sta
 // TODO: The forall in the ensures should have an explicit trigger,
 //       but the proof appears to be depending on the overly generous triggers in several places
 lemma lemma_HandleRequestBatchTriggerHappy(state:AppState, batch:RequestBatch, states:seq<AppState>, replies:seq<Reply>)
-  requires (states, replies) == HandleRequestBatch(state, batch);
+  requires (states, replies) == HandleRequestBatch(state, batch)
   ensures  && states[0] == state
            && |states| == |batch|+1 
            && |replies| == |batch|

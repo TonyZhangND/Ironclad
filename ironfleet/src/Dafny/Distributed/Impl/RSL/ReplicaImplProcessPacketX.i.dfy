@@ -104,7 +104,7 @@ method ReplicaNextProcessPacketHeartbeat(
   ensures  r.netClient != null
   ensures  ok == NetClientOk(r.netClient)
   ensures  r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures  r.Env() == old(r.Env());
+  ensures  r.Env() == old(r.Env())
   ensures  ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)
@@ -157,7 +157,7 @@ method ReplicaNextProcessPacketNonHeartbeat(
   ensures  r.netClient != null
   ensures  ok == NetClientOk(r.netClient)
   ensures  r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures  r.Env() == old(r.Env());
+  ensures  r.Env() == old(r.Env())
   ensures  ok ==>
              && r.Valid()
              && r.nextActionIndex == old(r.nextActionIndex)
@@ -193,7 +193,7 @@ method Replica_Next_ProcessPacketX(r:ReplicaImpl)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
   ensures r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==> 
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)

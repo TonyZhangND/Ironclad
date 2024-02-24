@@ -242,7 +242,7 @@ method {:timeLimitMultiplier 2} LearnerModel_Process2b(learner:CLearnerState, ex
     assert r_tup' == AbstractifyCLearnerTupleToLearnerTuple(tup');
     assert Eq_LLearner(r_learner', r'_learner);
 
-    forall ensures CLearnerTupleIsValid(tup')
+    assert CLearnerTupleIsValid(tup') by
     {
       reveal SeqIsUnique();
     }      
@@ -263,7 +263,7 @@ method {:timeLimitMultiplier 2} LearnerModel_Process2b(learner:CLearnerState, ex
     assert r_tup' == AbstractifyCLearnerTupleToLearnerTuple(tup');
     assert Eq_LLearner(r_learner', r'_learner);
 
-    forall ensures CLearnerTupleIsValid(tup')
+    assert CLearnerTupleIsValid(tup') by
     {
       reveal SeqIsUnique();
     }

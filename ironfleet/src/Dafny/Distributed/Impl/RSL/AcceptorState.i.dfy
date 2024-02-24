@@ -38,7 +38,7 @@ ghost predicate AcceptorIsAbstractable(acceptor:AcceptorState)
 }
 
 ghost function AbstractifyAcceptorStateToAcceptor(acceptor:AcceptorState) : LAcceptor
-    requires AcceptorIsAbstractable(acceptor);
+    requires AcceptorIsAbstractable(acceptor)
 {
   LAcceptor(
 //    AbstractifyEndPointToNodeIdentity(acceptor.constants.me),

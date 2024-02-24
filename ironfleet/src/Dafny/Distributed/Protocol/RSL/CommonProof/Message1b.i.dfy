@@ -49,7 +49,7 @@ lemma lemma_1bMessageImplicationsForAcceptorState(
   ensures  var s := b[i].replicas[acceptor_idx].replica.acceptor;
            opn !in p.msg.votes && opn >= s.log_truncation_point ==>
              || opn !in s.votes
-             || (opn in s.votes && BalLeq(p.msg.bal_1b, s.votes[opn].max_value_bal));
+             || (opn in s.votes && BalLeq(p.msg.bal_1b, s.votes[opn].max_value_bal))
   decreases i
 {
   if i == 0

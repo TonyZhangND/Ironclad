@@ -117,7 +117,7 @@ lemma lemma_AbstractifyEndPointToNodeIdentity_injective(e1:EndPoint, e2:EndPoint
 
 lemma lemma_AbstractifyEndPointToNodeIdentity_injective_forall()
   ensures forall e1, e2 {:trigger AbstractifyEndPointToNodeIdentity(e1),AbstractifyEndPointToNodeIdentity(e2)} ::
-            AbstractifyEndPointToNodeIdentity(e1) == AbstractifyEndPointToNodeIdentity(e2) ==> e1 == e2;
+            AbstractifyEndPointToNodeIdentity(e1) == AbstractifyEndPointToNodeIdentity(e2) ==> e1 == e2
 {
   forall e1, e2 | AbstractifyEndPointToNodeIdentity(e1) == AbstractifyEndPointToNodeIdentity(e2)
     ensures e1 == e2
@@ -188,7 +188,7 @@ lemma lemma_AbstractifyEndPointsToNodeIdentities_injective(s1:seq<EndPoint>, s2:
   requires forall e :: e in s1 ==> EndPointIsAbstractable(e)
   requires forall e :: e in s2 ==> EndPointIsAbstractable(e)
   requires AbstractifyEndPointsToNodeIdentities(s1) == AbstractifyEndPointsToNodeIdentities(s2)
-  ensures  s1 == s2;
+  ensures  s1 == s2
 {
   reveal AbstractifyEndPointsToNodeIdentities();
   lemma_AbstractifyEndPointToNodeIdentity_injective_forall();

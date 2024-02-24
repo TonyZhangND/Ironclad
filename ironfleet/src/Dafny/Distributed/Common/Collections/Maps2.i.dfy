@@ -44,14 +44,14 @@ lemma Lemma_EqualityConditionForMapsWithSameDomain<S, T>(m1:map<S, T>, m2:map<S,
   ensures  m1 == m2
 {
   forall s | s in m1
-    ensures s in m2;
+    ensures s in m2
   {
     assert s in mapdomain(m1);
     assert s in mapdomain(m2);
   }
 
   forall s | s in m2
-    ensures s in m1;
+    ensures s in m1
   {
     assert s in mapdomain(m2);
     assert s in mapdomain(m1);
@@ -78,7 +78,7 @@ lemma Lemma_imapInductionRange(start:int, end:int, f:imap<int, bool>)
   if (start != end) {
     assert TLe(start, start) && TLe(start + 1, end);
     forall i | TLe(start + 1, i) && TLe(i + 1, end)
-      ensures f[i] ==> f[i+1];
+      ensures f[i] ==> f[i+1]
     {
       assert TLe(start, i) && TLe(i + 1, end);
     }

@@ -126,7 +126,7 @@ lemma {:fuel ValInGrammar,3} lemma_ParseMarshallRequest(bytes:seq<byte>, msg:Rsl
   requires msg.RslMessage_Request?
   requires CMessageIsAbstractable(PaxosDemarshallData(bytes))
   requires AbstractifyCMessageToRslMessage(PaxosDemarshallData(bytes)) == msg
-  requires |msg.val| <= MaxAppRequestSize();
+  requires |msg.val| <= MaxAppRequestSize()
   ensures  bytes == MarshallServiceRequest(msg.seqno_req, msg.val)
 {
   var cmsg := PaxosDemarshallData(bytes);

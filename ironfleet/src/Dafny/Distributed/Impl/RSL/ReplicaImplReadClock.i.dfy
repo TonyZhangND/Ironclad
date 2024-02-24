@@ -123,7 +123,7 @@ method {:fuel ReplicaStateIsValid,0,0} {:timeLimitMultiplier 3} Replica_Next_Rea
   ensures r.Repr==old(r.Repr)
   ensures r.netClient != null
   ensures ok == NetClientOk(r.netClient)
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && r.nextActionIndex == old(r.nextActionIndex)

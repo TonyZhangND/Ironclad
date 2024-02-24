@@ -128,7 +128,7 @@ lemma lemma_EstablishQLReplicaNoReceiveNextFromNoClock(replica:LReplica, replica
     //
     || (nextActionIndex==4 && Q_LReplica_Next_Spontaneous_TruncateLogBasedOnCheckpoints(replica, replica', sent_packets))
     || (nextActionIndex==5 && Q_LReplica_Next_Spontaneous_MaybeMakeDecision(replica, replica', sent_packets))
-    || (nextActionIndex==6 && Q_LReplica_Next_Spontaneous_MaybeExecute(replica, replica', sent_packets));
+    || (nextActionIndex==6 && Q_LReplica_Next_Spontaneous_MaybeExecute(replica, replica', sent_packets))
   ensures Q_LReplica_NoReceive_Next(replica, nextActionIndex as int, replica', ios)
 {
   reveal Q_LReplica_Next_Spontaneous_MaybeEnterNewViewAndSend1a();

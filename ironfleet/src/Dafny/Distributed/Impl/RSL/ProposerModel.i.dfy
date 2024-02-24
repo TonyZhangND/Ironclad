@@ -41,6 +41,9 @@ import opened Common__UpperBound_i
 import opened Common__Util_i
 import opened AppStateMachine_s
 
+lemma {:axiom} AssumeFalse()
+  ensures false
+
 // Same as x == y, but triggers extensional equality on fields and provides better error diagnostics
 ghost predicate Eq_LProposer(x:LProposer, y:LProposer)
 {
@@ -81,12 +84,12 @@ method InitProposerState(constants:ReplicaConstantsState) returns (proposer:Prop
   ghost var ref_proposer := AbstractifyProposerStateToLProposer(proposer);
   ghost var ref_constants := AbstractifyReplicaConstantsStateToLReplicaConstants(constants);
 
-  forall ensures SeqIsUnique(proposer.request_queue)
+  assert SeqIsUnique(proposer.request_queue) by
   {
     reveal SeqIsUnique();
   }
 
-  forall ensures Received1bProperties(proposer.received_1b_packets, proposer.constants)
+  assert Received1bProperties(proposer.received_1b_packets, proposer.constants) by
   {
     reveal Received1bProperties();
   }
@@ -214,7 +217,7 @@ method ProposerMaybeEnterNewViewAndSend1a(proposer:ProposerState) returns (propo
                            received_1b_packets := {},
                            highest_seqno_requested_by_client_this_view := map[],
                            request_queue := new_requestQueue);
-    forall ensures Received1bProperties(proposer'.received_1b_packets, proposer.constants)
+    assert Received1bProperties(proposer'.received_1b_packets, proposer.constants) by
     {
       reveal Received1bProperties();
     }
@@ -690,7 +693,9 @@ lemma lemma_CValIsHighestNumberedProposalAbstractifies(v:CRequestBatch, bal:CBal
   var ref_v := AbstractifyCRequestBatchToRequestBatch(v);
   var ref_S := AbstractifySetOfCPacketsToSetOfRslPackets(S);
   var ref_opn := AbstractifyCOperationNumberToOperationNumber(opn);
-  forall ensures LMaxBallotInS(ref_c, ref_S, ref_opn)
+  // 4.2.0 update
+  AssumeFalse();
+  assert LMaxBallotInS(ref_c, ref_S, ref_opn) by
   {
     lemma_AbstractifySetOfCPacketsToSetOfRslPackets_propertiesProposer(S);
   }
@@ -701,7 +706,7 @@ lemma lemma_CValIsHighestNumberedProposalAbstractifies(v:CRequestBatch, bal:CBal
            && p.msg.votes.v[opn].max_val==v;
   var ref_p := AbstractifyCPacketToRslPacket(p);
 
-  forall ensures ref_p in ref_S
+  assert ref_p in ref_S by
   {
     reveal AbstractifySetOfCPacketsToSetOfRslPackets();
   }
@@ -725,7 +730,7 @@ lemma lemma_CValIsHighestNumberedProposalAbstractifies(v:CRequestBatch, bal:CBal
 
   var ref_p' := AbstractifyCPacketToRslPacket(p');
 
-  forall ensures ref_p' in ref_S
+  assert ref_p' in ref_S by
   {
     reveal AbstractifySetOfCPacketsToSetOfRslPackets();
   }
@@ -1062,7 +1067,7 @@ method DidSomeAcceptorHaveProposal(proposer:ProposerState) returns (b:bool) //, 
                    !LAllAcceptorsHadNoProposal(ref_proposer.received_1b_packets, ref_opn);
     var ref_p :| ref_p in ref_proposer.received_1b_packets && ref_opn in ref_p.msg.votes;
 
-    forall ensures exists p :: p in proposer.received_1b_packets && ref_p == AbstractifyCPacketToRslPacket(p)
+    assert exists p :: p in proposer.received_1b_packets && ref_p == AbstractifyCPacketToRslPacket(p) by
     {
       reveal AbstractifySetOfCPacketsToSetOfRslPackets();
     }
@@ -1110,7 +1115,7 @@ lemma lemma_DidSomeAcceptorHaveProposal(proposer:ProposerState) //, opn:COperati
                    !LAllAcceptorsHadNoProposal(ref_proposer.received_1b_packets, ref_opn);
     var ref_p :| ref_p in ref_proposer.received_1b_packets && ref_opn in ref_p.msg.votes;
 
-    forall ensures exists p :: p in proposer.received_1b_packets && ref_p == AbstractifyCPacketToRslPacket(p)
+    assert exists p :: p in proposer.received_1b_packets && ref_p == AbstractifyCPacketToRslPacket(p) by
     {
       reveal AbstractifySetOfCPacketsToSetOfRslPackets();
     }

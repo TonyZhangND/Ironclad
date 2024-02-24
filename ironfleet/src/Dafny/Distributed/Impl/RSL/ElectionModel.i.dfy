@@ -115,7 +115,7 @@ lemma FindMatchingRequest(s:seq<CRequest>, headers:set<CRequestHeader>, header:C
     } else {
       var new_set := headers - { head };
       forall r | r in s[1..]
-        ensures CRequestHeader(r.client, r.seqno) in new_set;
+        ensures CRequestHeader(r.client, r.seqno) in new_set
       {
         if CRequestHeader(r.client, r.seqno) != head {
           assert CRequestHeader(r.client, r.seqno) in new_set;
@@ -149,7 +149,7 @@ method BoundCRequestHeaders(s:seq<CRequest>, ghost headers:set<CRequestHeader>, 
   cur_req_set.RemoveAll();
 
   while i < lengthBound as int
-    invariant 0 <= i <= lengthBound as int;
+    invariant 0 <= i <= lengthBound as int
     invariant HeadersMatch(s[..i], new_headers)
       invariant forall h :: h in new_headers ==> h in headers
       invariant MutableSet.SetOf(cur_req_set) == new_headers
@@ -621,7 +621,7 @@ method {:timeLimitMultiplier 3} ElectionProcessHeartbeat(ces:CElectionState, cp:
 
         lemma_AbstractifyCRequestsSeqToRequestsSeq_concat(ces.requests_received_prev_epochs, ces.requests_received_this_epoch);
         lemma_BoundCRequestSequence(ces.requests_received_prev_epochs + ces.requests_received_this_epoch, ces.constants.all.params.max_integer_val);
-        forall ensures SeqIsUnique(ces'.current_view_suspectors)
+        assert SeqIsUnique(ces'.current_view_suspectors) by
         {
           reveal SeqIsUnique();
         }
@@ -898,7 +898,7 @@ lemma lemma_AddNewReqPreservesHeaderMatches(s1:seq<CRequest>,  headers1:set<CReq
   requires HeadersMatch(s1 + s2, headers1 + headers2)
   requires HeadersMatch(s1', headers1')
   requires HeadersMatch(s2', headers2')
-  requires headers1' == headers1;
+  requires headers1' == headers1
   requires s1' == s1
   requires forall req :: req in s2' && !CRequestsMatch(req, r) ==> req in s2
   requires forall h :: h in headers2' && h != CRequestHeader(r.client, r.seqno) ==> h in headers2
@@ -964,7 +964,7 @@ lemma lemma_AddNewReqPreservesHeaderMatches(s1:seq<CRequest>,  headers1:set<CReq
       assert CRequestsMatch(total_s[j'], total_s[i']);  // OBSERVE
     }
   }
-  forall ensures SeqIsUnique(header_seq)
+  assert SeqIsUnique(header_seq) by
   {
     reveal SeqIsUnique();
   }

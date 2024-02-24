@@ -51,7 +51,7 @@ method {:timeLimitMultiplier 2} ReplicaNextMainProcessPacketX(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && (|| Q_LScheduler_Next(old(r.AbstractifyToLScheduler()), r.AbstractifyToLScheduler(), ios)
@@ -116,7 +116,7 @@ method ReplicaNextMainNoClock(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && Q_LScheduler_Next(old(r.AbstractifyToLScheduler()), r.AbstractifyToLScheduler(), ios)
@@ -173,7 +173,7 @@ method ReplicaNextMainReadClock(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && Q_LScheduler_Next(old(r.AbstractifyToLScheduler()), r.AbstractifyToLScheduler(), ios)
@@ -228,7 +228,7 @@ method Replica_Next_main(r:ReplicaImpl)
   ensures r.Repr == old(r.Repr)
   ensures r.netClient != null
   ensures r.Env().Valid() && r.Env().ok.ok() ==> ok
-  ensures r.Env() == old(r.Env());
+  ensures r.Env() == old(r.Env())
   ensures ok ==>
             && r.Valid()
             && (|| Q_LScheduler_Next(old(r.AbstractifyToLScheduler()), r.AbstractifyToLScheduler(), ios)
